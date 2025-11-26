@@ -42,7 +42,8 @@ export const HospitalLocatorMapScreen: React.FC<HospitalLocatorMapScreenProps> =
                 setMapCenter(userPos);
                 
                 const nearby = await getNearbyHospitals(location.latitude, location.longitude, 15);
-                setHospitals(nearby.length > 0 ? nearby : getAllHospitals());
+                // Backend returns real hospitals, so use them directly
+                setHospitals(nearby);
             } catch (err: any) {
                 console.error('Error loading hospitals:', err);
                 setError(err.message || 'Failed to load location');

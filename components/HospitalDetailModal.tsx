@@ -22,9 +22,30 @@ export const HospitalDetailModal: React.FC<HospitalDetailModalProps> = ({
     onClose,
     onGetDirections
 }) => {
-    const nearestHospitals = userLocation
-        ? getNearestHospitals(hospital.id, userLocation.lat, userLocation.lng, 5)
-        : [];
+    const [nearestHospitals, setNearestHospitals] = React.useState<Hospital[]>([]);
+    const [loadingNearest, setLoadingNearest] = React.useState(false);
+
+    React.useEffect(() => {
+        const loadNearest = async () => {
+            if (userLocation && hospital.id) {
+                setLoadingNearest(true);
+                try {
+                    const nearest = await getNearestHospitals(
+                        hospital.id,
+                        userLocation.lat,
+                        userLocation.lng,
+                        5
+                    );
+                    setNearestHospitals(nearest);
+                } catch (error) {
+                    console.error('Error loading nearest hospitals:', error);
+                } finally {
+                    setLoadingNearest(false);
+                }
+            }
+        };
+        loadNearest();
+    }, [userLocation, hospital.id]);
 
     const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(hospital.address)}`;
 
@@ -131,7 +152,12 @@ export const HospitalDetailModal: React.FC<HospitalDetailModalProps> = ({
                     </div>
 
                     {/* Nearest Hospitals Section */}
-                    {nearestHospitals.length > 0 && (
+                    {loadingNearest ? (
+                        <div className="text-center py-8">
+                            <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+                            <p className="text-sm text-neutral-500 dark:text-neutral-400">Loading nearest hospitals...</p>
+                        </div>
+                    ) : nearestHospitals.length > 0 && (
                         <div>
                             <h3 className="text-xl font-bold text-neutral-900 dark:text-neutral-100 mb-4">
                                 Nearest Hospitals

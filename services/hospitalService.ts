@@ -1,6 +1,9 @@
 import { Hospital } from '../types';
+import { supabase } from '../lib/supabase';
 
-// Mock hospital data - In production, use Google Places API or a hospital database
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001';
+
+// Fallback mock data (used if backend is unavailable)
 const mockHospitals: Hospital[] = [
     {
         id: '1',
@@ -86,7 +89,8 @@ const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: numbe
 };
 
 /**
- * Get nearby hospitals based on user location
+ * Get nearby hospitals from backend API
+ * Falls back to mock data if backend is unavailable
  */
 export const getNearbyHospitals = async (
     userLat: number,
@@ -94,13 +98,57 @@ export const getNearbyHospitals = async (
     radiusKm: number = 10
 ): Promise<Hospital[]> => {
     try {
-        // Calculate distance for each hospital and filter by radius
+        // Try to fetch from backend API first
+        if (API_BASE_URL && API_BASE_URL !== 'http://localhost:3001' || import.meta.env.DEV) {
+            try {
+                // Get Supabase session token
+                const { data: { session } } = await supabase.auth.getSession();
+                
+                if (session) {
+                    const radiusMeters = radiusKm * 1000; // Convert km to meters
+                    const response = await fetch(
+                        `${API_BASE_URL}/api/hospitals?lat=${userLat}&lng=${userLon}&radius=${radiusMeters}`,
+                        {
+                            method: 'GET',
+                            headers: {
+                                'Authorization': `Bearer ${session.access_token}`,
+                                'Content-Type': 'application/json',
+                            },
+                        }
+                    );
+
+                    if (response.ok) {
+                        const backendHospitals = await response.json();
+                        // Transform backend response to frontend format
+                        return backendHospitals.map((h: any) => ({
+                            id: `${h.lat}-${h.lng}`, // Generate ID from coordinates
+                            name: h.name,
+                            address: h.address,
+                            latitude: h.lat,
+                            longitude: h.lng,
+                            distance: h.distance_km,
+                            specialties: h.fields || [],
+                            emergencyServices: h.fields?.includes('Emergency') || false,
+                            // Map fields to specialties for compatibility
+                            phone: '', // Not available from backend
+                            openHours: undefined, // Not available from backend
+                            rating: undefined, // Not available from backend
+                            reviewCount: undefined, // Not available from backend
+                        }));
+                    }
+                }
+            } catch (apiError) {
+                console.warn('Backend API unavailable, using fallback:', apiError);
+                // Fall through to mock data
+            }
+        }
+
+        // Fallback to mock data
         const hospitalsWithDistance = mockHospitals.map(hospital => ({
             ...hospital,
             distance: calculateDistance(userLat, userLon, hospital.latitude, hospital.longitude)
         }));
 
-        // Filter by radius and sort by distance
         const nearbyHospitals = hospitalsWithDistance
             .filter(h => h.distance <= radiusKm)
             .sort((a, b) => (a.distance || 0) - (b.distance || 0));
@@ -114,32 +162,74 @@ export const getNearbyHospitals = async (
 
 /**
  * Get nearest hospitals to a specific hospital (for recommendations)
+ * Uses backend API if available, otherwise uses mock data
  */
-export const getNearestHospitals = (
+export const getNearestHospitals = async (
     hospitalId: string,
     userLat: number,
     userLon: number,
     limit: number = 5
-): Hospital[] => {
+): Promise<Hospital[]> => {
     try {
+        // Try backend API first
+        if (API_BASE_URL && API_BASE_URL !== 'http://localhost:3001' || import.meta.env.DEV) {
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session) {
+                    const response = await fetch(
+                        `${API_BASE_URL}/api/hospitals?lat=${userLat}&lng=${userLon}&radius=15000`,
+                        {
+                            method: 'GET',
+                            headers: {
+                                'Authorization': `Bearer ${session.access_token}`,
+                                'Content-Type': 'application/json',
+                            },
+                        }
+                    );
+
+                    if (response.ok) {
+                        const backendHospitals = await response.json();
+                        // Filter out the selected hospital and limit results
+                        const transformed = backendHospitals
+                            .filter((h: any) => `${h.lat}-${h.lng}` !== hospitalId)
+                            .slice(0, limit)
+                            .map((h: any) => ({
+                                id: `${h.lat}-${h.lng}`,
+                                name: h.name,
+                                address: h.address,
+                                latitude: h.lat,
+                                longitude: h.lng,
+                                distance: h.distance_km,
+                                specialties: h.fields || [],
+                                emergencyServices: h.fields?.includes('Emergency') || false,
+                                phone: '',
+                                openHours: undefined,
+                                rating: undefined,
+                                reviewCount: undefined,
+                            }));
+                        return transformed;
+                    }
+                }
+            } catch (apiError) {
+                console.warn('Backend API unavailable, using fallback:', apiError);
+            }
+        }
+
+        // Fallback to mock data
         const selectedHospital = mockHospitals.find(h => h.id === hospitalId);
         if (!selectedHospital) return [];
 
-        // Calculate distance from user location for all hospitals
         const hospitalsWithDistance = mockHospitals
-            .filter(h => h.id !== hospitalId) // Exclude the selected hospital
+            .filter(h => h.id !== hospitalId)
             .map(hospital => ({
                 ...hospital,
                 distance: calculateDistance(userLat, userLon, hospital.latitude, hospital.longitude)
             }));
 
-        // Sort by distance and rating (prioritize closer hospitals with good ratings)
         const nearestHospitals = hospitalsWithDistance
             .sort((a, b) => {
-                // Primary sort: distance
                 const distanceDiff = (a.distance || 0) - (b.distance || 0);
                 if (Math.abs(distanceDiff) < 2) {
-                    // If distance is similar (within 2km), sort by rating
                     return (b.rating || 0) - (a.rating || 0);
                 }
                 return distanceDiff;
