@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MediGuardia</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/recharts/umd/Recharts.min.js"></script>
+    <style>
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            -webkit-tap-highlight-color: transparent;
+            color: #1A1A1A;
+            background-color: #F4F6F8;
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#7B61FF',
+                        'primary-light': '#E9E6FF',
+                        secondary: '#3A59FF',
+                        accent: {
+                            green: '#00D09C',
+                            blue: '#35A2FF',
+                            orange: '#FF7A00',
+                            red: '#FF4D4D',
+                        },
+                        neutral: {
+                            100: '#F4F6F8',
+                            200: '#E9EDF2',
+                            300: '#DDE3EA',
+                            400: '#BFC6D0',
+                            500: '#9FA9B6',
+                            600: '#7F8C9B',
+                            700: '#5F6E7F',
+                            800: '#404F60',
+                            900: '#1F2B39',
+                        }
+                    },
+                    borderRadius: {
+                        'xl': '1rem',
+                        '2xl': '1.25rem',
+                        '3xl': '1.5rem',
+                        '4xl': '2rem',
+                    }
+                }
+            }
+        }
+    </script>
+<script type="importmap">
+{
+  "imports": {
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0"
+  }
+}
+</script>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+</body>
+</html>

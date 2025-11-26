@@ -1,0 +1,146 @@
+
+import React, { useState, useEffect, useCallback } from 'react';
+import { OnboardingScreen } from './screens/OnboardingScreen';
+import { AuthScreen } from './screens/AuthScreen';
+import { HomeScreen } from './screens/HomeScreen';
+import { SymptomCheckerScreen } from './screens/SymptomCheckerScreen';
+import { EmergencyScreen } from './screens/EmergencyScreen';
+import { HistoryScreen } from './screens/HistoryScreen';
+import { ProfileScreen } from './screens/ProfileScreen';
+import { ComingSoonScreen } from './screens/ComingSoonScreen';
+import { AppIcon } from './constants';
+import { BottomNavBar } from './components/BottomNavBar';
+import { UserProfile, MedicalDocument, HealthLog, Medication } from './types';
+import { mockUser, mockDocs, mockHealthLogs, mockMedications } from './data/mock';
+
+
+type AppState = 'splash' | 'onboarding' | 'auth' | 'main';
+export type MainTab = 'home' | 'symptom' | 'sos' | 'history' | 'profile';
+
+const SplashScreen: React.FC = () => (
+    <div className="flex flex-col items-center justify-center h-screen w-screen bg-gradient-to-br from-[#7B61FF] to-[#9DBBFF]">
+        <div className="flex flex-col items-center justify-center flex-grow">
+            <div className="w-24 h-24 mb-4 text-white">
+                <AppIcon />
+            </div>
+            <h1 className="text-4xl font-bold text-white">MediGuardia</h1>
+            <p className="text-lg text-white/90 mt-2">Your Personal AI Health Companion</p>
+        </div>
+        <div className="mb-16">
+            <div className="w-8 h-8 border-4 border-white/50 border-t-white rounded-full animate-spin"></div>
+        </div>
+    </div>
+);
+
+export default function App() {
+    const [appState, setAppState] = useState<AppState>('splash');
+    const [activeTab, setActiveTab] = useState<MainTab>('home');
+    const [view, setView] = useState<string>('home');
+
+    // Centralized Application State
+    const [userProfile, setUserProfile] = useState<UserProfile>(mockUser);
+    const [documents, setDocuments] = useState<MedicalDocument[]>(mockDocs);
+    const [healthLogs, setHealthLogs] = useState<HealthLog[]>(mockHealthLogs);
+    const [medications, setMedications] = useState<Medication[]>(mockMedications);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            const onboardingCompleted = localStorage.getItem('onboardingCompleted');
+            if (!onboardingCompleted) {
+                setAppState('onboarding');
+            } else {
+                setAppState('auth');
+            }
+        }, 3000);
+        return () => clearTimeout(timer);
+    }, []);
+
+    // State Handler Functions
+    const handleUpdateProfile = (updatedProfile: UserProfile) => {
+        setUserProfile(updatedProfile);
+        setShowEditModal(false); // Close modal on save
+    };
+    
+    const handleAddHealthLog = (log: Omit<HealthLog, 'id' | 'date'>) => {
+        const newLog: HealthLog = {
+            ...log,
+            id: (healthLogs.length + 1).toString(),
+            date: new Date().toISOString().split('T')[0].replace(/-/g, '-'), // YYYY-MM-DD
+        };
+        setHealthLogs(prev => [newLog, ...prev]);
+    };
+
+    const handleAddMedication = (med: Omit<Medication, 'id'>) => {
+         const newMed: Medication = {
+            ...med,
+            id: (medications.length + 1).toString(),
+        };
+        setMedications(prev => [...prev, newMed]);
+    };
+
+    const handleLoginSuccess = () => {
+        setAppState('main');
+    };
+
+    const handleOnboardingComplete = () => {
+        localStorage.setItem('onboardingCompleted', 'true');
+        setAppState('auth');
+    };
+    
+    const navigate = useCallback((newView: string) => {
+        setView(newView);
+    }, []);
+
+    const [showEditModal, setShowEditModal] = useState(false);
+
+    const renderMainScreen = () => {
+        const screenProps = { navigate, setView };
+
+        if (view === 'chat_coming_soon') {
+            return <ComingSoonScreen featureName="Live Doctor Chat" onBack={() => { setActiveTab('home'); setView('home'); }} />;
+        }
+        if (view === 'subscription_coming_soon') {
+            return <ComingSoonScreen featureName="Subscription Plans" onBack={() => { setActiveTab('profile'); setView('profile'); }} />;
+        }
+
+        switch (activeTab) {
+            case 'home':
+                return <HomeScreen {...screenProps} user={userProfile} medications={medications} logs={healthLogs} />;
+            case 'symptom':
+                return <SymptomCheckerScreen {...screenProps} onSaveLog={handleAddHealthLog} />;
+            case 'sos':
+                return <EmergencyScreen {...screenProps} view={view} />;
+            case 'history':
+                return <HistoryScreen {...screenProps} view={view} logs={healthLogs} medications={medications} onAddMedication={handleAddMedication} />;
+            case 'profile':
+                return <ProfileScreen {...screenProps} user={userProfile} docs={documents} onUpdateProfile={handleUpdateProfile} onLogout={() => setAppState('auth')} />;
+            default:
+                return <HomeScreen {...screenProps} user={userProfile} medications={medications} logs={healthLogs} />;
+        }
+    };
+
+    const renderContent = () => {
+        switch (appState) {
+            case 'splash':
+                return <SplashScreen />;
+            case 'onboarding':
+                return <OnboardingScreen onComplete={handleOnboardingComplete} />;
+            case 'auth':
+                return <AuthScreen onLoginSuccess={handleLoginSuccess} />;
+            case 'main':
+                return (
+                    <div className="w-full min-h-screen bg-neutral-100">
+                        <main className="pb-28">{renderMainScreen()}</main>
+                        <BottomNavBar activeTab={activeTab} setActiveTab={(tab) => {
+                            setActiveTab(tab);
+                            setView(tab);
+                        }} />
+                    </div>
+                );
+            default:
+                return <SplashScreen />;
+        }
+    };
+
+    return <div className="w-screen h-screen overflow-x-hidden">{renderContent()}</div>;
+}

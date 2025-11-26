@@ -1,0 +1,7 @@
+{
+  "name": "MediGuardia",
+  "description": "A modern, clean, medical assistant app with AI symptom checking, first-aid guidance, SOS, health history, documents, analytics, and text-based doctor chat.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
