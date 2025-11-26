@@ -2,14 +2,20 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { SymptomAnalysisResult } from "../types";
 
-const API_KEY = process.env.API_KEY;
+const API_KEY = process.env.API_KEY || process.env.GEMINI_API_KEY;
 
-if (!API_KEY) {
-  // This is a fallback for development. In production, the key should be set.
-  console.warn("Gemini API key not found. Please set the API_KEY environment variable.");
-}
+// Lazy initialization to prevent crashes if API key is missing
+let ai: GoogleGenAI | null = null;
 
-const ai = new GoogleGenAI({ apiKey: API_KEY! });
+const getAI = (): GoogleGenAI => {
+  if (!ai) {
+    if (!API_KEY) {
+      throw new Error("Gemini API key not found. Please set the GEMINI_API_KEY environment variable.");
+    }
+    ai = new GoogleGenAI({ apiKey: API_KEY });
+  }
+  return ai;
+};
 
 const model = 'gemini-2.5-flash';
 
@@ -51,7 +57,8 @@ const schema = {
 
 export const analyzeSymptoms = async (symptoms: string): Promise<SymptomAnalysisResult> => {
     try {
-        const result = await ai.models.generateContent({
+        const aiInstance = getAI();
+        const result = await aiInstance.models.generateContent({
             model: model,
             contents: `Analyze the following symptoms: "${symptoms}"`,
             config: {
