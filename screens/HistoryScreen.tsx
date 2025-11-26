@@ -119,19 +119,86 @@ const HistoryTimelineView: React.FC<{ logs: HealthLog[], onSelect: (log: HealthL
     </div>
 );
 
-const HistoryDetailView: React.FC<{ log: HealthLog }> = ({ log }) => (
-    <div className="p-6">
-        <div className="bg-white p-6 rounded-3xl shadow-lg">
-            <h2 className="text-2xl font-bold">{log.symptom}</h2>
-            <p className="text-sm text-neutral-500 mb-4">{new Date(log.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-            <p className="text-neutral-700 mb-6">{log.details}</p>
-            <div className="grid grid-cols-2 gap-4">
-                <button className="py-3 bg-neutral-200 text-neutral-800 rounded-xl font-semibold">Edit</button>
-                <button className="py-3 bg-red-100 text-red-700 rounded-xl font-semibold">Delete</button>
+const HistoryDetailView: React.FC<{ 
+    log: HealthLog; 
+    onEdit?: (log: HealthLog) => void;
+    onDelete?: (logId: string) => void;
+    onBack: () => void;
+}> = ({ log, onEdit, onDelete, onBack }) => {
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+    const handleEdit = () => {
+        if (onEdit) {
+            onEdit(log);
+        } else {
+            alert('Edit functionality coming soon!');
+        }
+    };
+
+    const handleDelete = () => {
+        if (showDeleteConfirm && onDelete) {
+            onDelete(log.id);
+            onBack();
+        } else {
+            setShowDeleteConfirm(true);
+        }
+    };
+
+    return (
+        <div className="p-6">
+            <div className="bg-white dark:bg-neutral-800 p-6 rounded-3xl shadow-lg">
+                <h2 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">{log.symptom}</h2>
+                <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4">{new Date(log.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                <p className="text-neutral-700 dark:text-neutral-300 mb-6">{log.details}</p>
+                <div className="mb-4">
+                    <span className={`px-3 py-1 text-xs font-semibold rounded-full ${
+                        log.severity === 'Minor' 
+                            ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' 
+                            : log.severity === 'Moderate' 
+                            ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300' 
+                            : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
+                    }`}>
+                        {log.severity}
+                    </span>
+                </div>
+                {showDeleteConfirm ? (
+                    <div className="space-y-3">
+                        <p className="text-neutral-700 dark:text-neutral-300 mb-4">Are you sure you want to delete this log?</p>
+                        <div className="grid grid-cols-2 gap-4">
+                            <button 
+                                onClick={() => setShowDeleteConfirm(false)}
+                                className="py-3 bg-neutral-200 dark:bg-neutral-700 text-neutral-800 dark:text-neutral-200 rounded-xl font-semibold hover:bg-neutral-300 dark:hover:bg-neutral-600 transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                onClick={handleDelete}
+                                className="py-3 bg-red-500 text-white rounded-xl font-semibold hover:bg-red-600 transition-colors"
+                            >
+                                Confirm Delete
+                            </button>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-2 gap-4">
+                        <button 
+                            onClick={handleEdit}
+                            className="py-3 bg-primary-light dark:bg-primary/20 text-primary dark:text-primary-light rounded-xl font-semibold hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors"
+                        >
+                            Edit
+                        </button>
+                        <button 
+                            onClick={handleDelete}
+                            className="py-3 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded-xl font-semibold hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors"
+                        >
+                            Delete
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
-    </div>
-);
+    );
+};
 
 const MedicationListView: React.FC<{ medications: Medication[]; onAddMedication: (med: Omit<Medication, 'id'>) => void }> = ({ medications, onAddMedication }) => {
     const [showAddModal, setShowAddModal] = useState(false);

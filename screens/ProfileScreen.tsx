@@ -139,12 +139,47 @@ const ProfileInfoCard: React.FC<{ user: UserProfile, onEdit: () => void }> = ({ 
     </div>
 );
 
-const DocumentList: React.FC<{ docs: MedicalDocument[], onPreview: (doc: MedicalDocument) => void }> = ({ docs, onPreview }) => (
-     <div className="bg-white dark:bg-neutral-800 p-5 rounded-3xl shadow-sm transition-colors">
-        <div className="flex justify-between items-center mb-4">
-            <h3 className="font-bold text-lg text-neutral-800 dark:text-neutral-200">Documents</h3>
-            <button className="text-sm font-semibold text-primary dark:text-primary-light">Upload</button>
-        </div>
+const DocumentList: React.FC<{ 
+    docs: MedicalDocument[], 
+    onPreview: (doc: MedicalDocument) => void;
+    onUpload?: () => void;
+}> = ({ docs, onPreview, onUpload }) => {
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+    const handleUploadClick = () => {
+        if (onUpload) {
+            onUpload();
+        } else {
+            fileInputRef.current?.click();
+        }
+    };
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            // In production, upload to Firebase Storage
+            alert(`File selected: ${file.name}\n\nUpload functionality will save to Firebase Storage.\nFile size: ${(file.size / 1024).toFixed(2)} KB`);
+        }
+    };
+
+    return (
+        <div className="bg-white dark:bg-neutral-800 p-5 rounded-3xl shadow-sm transition-colors">
+            <div className="flex justify-between items-center mb-4">
+                <h3 className="font-bold text-lg text-neutral-800 dark:text-neutral-200">Documents</h3>
+                <button 
+                    onClick={handleUploadClick}
+                    className="text-sm font-semibold text-primary dark:text-primary-light hover:underline"
+                >
+                    Upload
+                </button>
+                <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    onChange={handleFileChange}
+                    className="hidden"
+                />
+            </div>
         <div className="space-y-3">
             {docs.map(doc => (
                 <div key={doc.id} onClick={() => onPreview(doc)} className="flex items-center p-3 bg-neutral-100 dark:bg-neutral-700 rounded-xl cursor-pointer hover:bg-neutral-200 dark:hover:bg-neutral-600 transition-colors">
@@ -157,8 +192,9 @@ const DocumentList: React.FC<{ docs: MedicalDocument[], onPreview: (doc: Medical
                 </div>
             ))}
         </div>
-    </div>
-);
+        </div>
+    );
+};
 
 const SettingsMenu: React.FC<{ onLogout: () => void; navigate: (view: string) => void }> = ({ onLogout, navigate }) => {
     const { theme, toggleTheme } = useTheme();
@@ -171,8 +207,22 @@ const SettingsMenu: React.FC<{ onLogout: () => void; navigate: (view: string) =>
             icon: theme === 'light' ? <SunIcon /> : <MoonIcon />,
             showIcon: true
         },
-        { id: 'language', label: 'Language', action: () => {}, showIcon: false },
-        { id: 'privacy', label: 'Privacy & Permissions', action: () => {}, showIcon: false },
+        { 
+            id: 'language', 
+            label: 'Language', 
+            action: () => {
+                alert('Language selection coming soon!\n\nSupported languages:\n- English\n- Spanish\n- French\n- Hindi');
+            }, 
+            showIcon: false 
+        },
+        { 
+            id: 'privacy', 
+            label: 'Privacy & Permissions', 
+            action: () => {
+                alert('Privacy & Permissions\n\nManage your data privacy settings:\n- Location access\n- Health data sharing\n- Analytics preferences\n\nFeature coming soon!');
+            }, 
+            showIcon: false 
+        },
         { id: 'subscription', label: 'Subscription Plan', action: () => navigate('subscription_coming_soon'), showIcon: false },
     ];
     
@@ -241,7 +291,19 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onLogout, navigate
             <ProfileHeader user={user} onEdit={() => setShowEditModal(true)} />
             <div className="p-6 space-y-6">
                 <ProfileInfoCard user={user} onEdit={() => setShowQuiz(true)} />
-                <DocumentList docs={docs} onPreview={setPreviewDoc} />
+                <DocumentList docs={docs} onPreview={setPreviewDoc} onUpload={() => {
+                    // You can add custom upload logic here
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = '.pdf,.jpg,.jpeg,.png';
+                    input.onchange = (e: any) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                            alert(`File selected: ${file.name}\n\nUpload functionality will save to Firebase Storage.`);
+                        }
+                    };
+                    input.click();
+                }} />
                 <SettingsMenu onLogout={onLogout} navigate={navigate} />
                 <div className="text-center text-neutral-400 dark:text-neutral-500 text-sm pt-4 space-y-2">
                     <p>Made By Harsh And Abhishek</p>

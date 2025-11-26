@@ -136,7 +136,20 @@ const SymptomResultView: React.FC<{
             </div>
 
             <div className="mt-8 grid grid-cols-2 gap-4">
-                <button className="w-full bg-primary-light text-primary py-3 rounded-xl text-md font-semibold">View First Aid</button>
+                <button 
+                    onClick={() => {
+                        // Navigate to first aid based on the condition
+                        const condition = topCondition?.name.toLowerCase() || '';
+                        if (condition.includes('breathing') || condition.includes('choking')) {
+                            window.location.href = '#sos/first-aid';
+                        } else {
+                            alert('First Aid guide for this condition is available in the Emergency section.');
+                        }
+                    }}
+                    className="w-full bg-primary-light dark:bg-primary/20 text-primary dark:text-primary-light py-3 rounded-xl text-md font-semibold hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors"
+                >
+                    View First Aid
+                </button>
                 <button 
                     onClick={handleSave}
                     disabled={isSaved}
