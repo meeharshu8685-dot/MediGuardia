@@ -15,10 +15,16 @@
             -webkit-tap-highlight-color: transparent;
             color: #1A1A1A;
             background-color: #F4F6F8;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .dark body {
+            color: #E9EDF2;
+            background-color: #1F2B39;
         }
     </style>
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {

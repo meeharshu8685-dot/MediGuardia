@@ -1,8 +1,9 @@
 
 import React, { useState, useRef } from 'react';
 import { UserProfile, MedicalDocument } from '../types';
-import { ChevronRightIcon, PdfFileIcon, ImageFileIcon, PencilIcon } from '../constants';
+import { ChevronRightIcon, PdfFileIcon, ImageFileIcon, PencilIcon, SunIcon, MoonIcon } from '../constants';
 import { MedicalQuizScreen } from './MedicalQuizScreen';
+import { useTheme } from '../contexts/ThemeContext';
 
 const EditProfileModal: React.FC<{
     user: UserProfile;
@@ -102,57 +103,57 @@ const DocumentPreviewModal: React.FC<{ doc: MedicalDocument; onClose: () => void
 };
 
 const ProfileHeader: React.FC<{ user: UserProfile, onEdit: () => void }> = ({ user, onEdit }) => (
-    <div className="bg-neutral-100 p-6 pt-16">
+    <div className="bg-neutral-100 dark:bg-neutral-800 p-6 pt-16 transition-colors">
         <div className="flex items-center justify-between">
             <div className="flex items-center">
                 <img src={user.avatarUrl} alt={user.name} className="w-20 h-20 rounded-full object-cover" />
                 <div className="ml-5">
-                    <h1 className="text-2xl font-bold text-neutral-900">{user.name}</h1>
-                    <p className="text-neutral-500">{user.email}</p>
+                    <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">{user.name}</h1>
+                    <p className="text-neutral-500 dark:text-neutral-400">{user.email}</p>
                 </div>
             </div>
-            <button onClick={onEdit} className="w-12 h-12 flex items-center justify-center rounded-full bg-white shadow-sm hover:bg-neutral-200 transition-colors">
-                <div className="w-6 h-6 text-neutral-600"><PencilIcon /></div>
+            <button onClick={onEdit} className="w-12 h-12 flex items-center justify-center rounded-full bg-white dark:bg-neutral-700 shadow-sm hover:bg-neutral-200 dark:hover:bg-neutral-600 transition-colors">
+                <div className="w-6 h-6 text-neutral-600 dark:text-neutral-300"><PencilIcon /></div>
             </button>
         </div>
     </div>
 );
 
 const ProfileInfoCard: React.FC<{ user: UserProfile, onEdit: () => void }> = ({ user, onEdit }) => (
-    <div className="bg-white p-5 rounded-3xl shadow-sm">
+    <div className="bg-white dark:bg-neutral-800 p-5 rounded-3xl shadow-sm transition-colors">
         <div className="flex justify-between items-center mb-4">
-            <h3 className="font-bold text-lg text-neutral-800">Medical Info</h3>
-            <button onClick={onEdit} className="flex items-center space-x-2 text-sm font-semibold text-primary bg-primary-light px-3 py-1.5 rounded-full hover:bg-primary/20 transition-colors">
+            <h3 className="font-bold text-lg text-neutral-800 dark:text-neutral-200">Medical Info</h3>
+            <button onClick={onEdit} className="flex items-center space-x-2 text-sm font-semibold text-primary dark:text-primary-light bg-primary-light dark:bg-primary/20 px-3 py-1.5 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors">
                 <div className="w-4 h-4"><PencilIcon /></div>
                 <span>Edit</span>
             </button>
         </div>
         <div className="space-y-3">
-            <div className="flex justify-between text-md"><span className="text-neutral-500">Age</span><span className="font-semibold text-neutral-700">{user.age ? `${user.age} years` : 'N/A'}</span></div>
-            <div className="flex justify-between text-md"><span className="text-neutral-500">Height</span><span className="font-semibold text-neutral-700">{user.height || 'N/A'}</span></div>
-            <div className="flex justify-between text-md"><span className="text-neutral-500">Weight</span><span className="font-semibold text-neutral-700">{user.weight || 'N/A'}</span></div>
-            <div className="flex justify-between text-md"><span className="text-neutral-500">Blood Group</span><span className="font-semibold text-neutral-700">{user.bloodGroup || 'N/A'}</span></div>
-            <div className="flex justify-between text-md"><span className="text-neutral-500">Allergies</span><span className="font-semibold text-neutral-700 text-right truncate">{user.allergies.length > 0 ? user.allergies.join(', ') : 'None'}</span></div>
-            <div className="flex justify-between text-md"><span className="text-neutral-500">Conditions</span><span className="font-semibold text-neutral-700 text-right truncate">{user.chronicConditions.length > 0 ? user.chronicConditions.join(', ') : 'None'}</span></div>
+            <div className="flex justify-between text-md"><span className="text-neutral-500 dark:text-neutral-400">Age</span><span className="font-semibold text-neutral-700 dark:text-neutral-200">{user.age ? `${user.age} years` : 'N/A'}</span></div>
+            <div className="flex justify-between text-md"><span className="text-neutral-500 dark:text-neutral-400">Height</span><span className="font-semibold text-neutral-700 dark:text-neutral-200">{user.height || 'N/A'}</span></div>
+            <div className="flex justify-between text-md"><span className="text-neutral-500 dark:text-neutral-400">Weight</span><span className="font-semibold text-neutral-700 dark:text-neutral-200">{user.weight || 'N/A'}</span></div>
+            <div className="flex justify-between text-md"><span className="text-neutral-500 dark:text-neutral-400">Blood Group</span><span className="font-semibold text-neutral-700 dark:text-neutral-200">{user.bloodGroup || 'N/A'}</span></div>
+            <div className="flex justify-between text-md"><span className="text-neutral-500 dark:text-neutral-400">Allergies</span><span className="font-semibold text-neutral-700 dark:text-neutral-200 text-right truncate">{user.allergies.length > 0 ? user.allergies.join(', ') : 'None'}</span></div>
+            <div className="flex justify-between text-md"><span className="text-neutral-500 dark:text-neutral-400">Conditions</span><span className="font-semibold text-neutral-700 dark:text-neutral-200 text-right truncate">{user.chronicConditions.length > 0 ? user.chronicConditions.join(', ') : 'None'}</span></div>
         </div>
     </div>
 );
 
 const DocumentList: React.FC<{ docs: MedicalDocument[], onPreview: (doc: MedicalDocument) => void }> = ({ docs, onPreview }) => (
-     <div className="bg-white p-5 rounded-3xl shadow-sm">
+     <div className="bg-white dark:bg-neutral-800 p-5 rounded-3xl shadow-sm transition-colors">
         <div className="flex justify-between items-center mb-4">
-            <h3 className="font-bold text-lg text-neutral-800">Documents</h3>
-            <button className="text-sm font-semibold text-primary">Upload</button>
+            <h3 className="font-bold text-lg text-neutral-800 dark:text-neutral-200">Documents</h3>
+            <button className="text-sm font-semibold text-primary dark:text-primary-light">Upload</button>
         </div>
         <div className="space-y-3">
             {docs.map(doc => (
-                <div key={doc.id} onClick={() => onPreview(doc)} className="flex items-center p-3 bg-neutral-100 rounded-xl cursor-pointer hover:bg-neutral-200 transition-colors">
+                <div key={doc.id} onClick={() => onPreview(doc)} className="flex items-center p-3 bg-neutral-100 dark:bg-neutral-700 rounded-xl cursor-pointer hover:bg-neutral-200 dark:hover:bg-neutral-600 transition-colors">
                     <div className="mr-4 flex-shrink-0"><GetDocIcon type={doc.type} /></div>
                     <div className="flex-grow">
-                        <p className="font-medium text-neutral-800">{doc.name}</p>
-                        <p className="text-xs text-neutral-500">{doc.uploadDate}</p>
+                        <p className="font-medium text-neutral-800 dark:text-neutral-200">{doc.name}</p>
+                        <p className="text-xs text-neutral-500 dark:text-neutral-400">{doc.uploadDate}</p>
                     </div>
-                    <div className="text-neutral-400"><ChevronRightIcon /></div>
+                    <div className="text-neutral-400 dark:text-neutral-500"><ChevronRightIcon /></div>
                 </div>
             ))}
         </div>
@@ -160,21 +161,52 @@ const DocumentList: React.FC<{ docs: MedicalDocument[], onPreview: (doc: Medical
 );
 
 const SettingsMenu: React.FC<{ onLogout: () => void; navigate: (view: string) => void }> = ({ onLogout, navigate }) => {
+    const { theme, toggleTheme } = useTheme();
+    
     const menuItems = [
-        { id: 'language', label: 'Language', action: () => {} },
-        { id: 'privacy', label: 'Privacy & Permissions', action: () => {} },
-        { id: 'subscription', label: 'Subscription Plan', action: () => navigate('subscription_coming_soon') },
+        { 
+            id: 'theme', 
+            label: 'Theme', 
+            action: toggleTheme,
+            icon: theme === 'light' ? <SunIcon /> : <MoonIcon />,
+            showIcon: true
+        },
+        { id: 'language', label: 'Language', action: () => {}, showIcon: false },
+        { id: 'privacy', label: 'Privacy & Permissions', action: () => {}, showIcon: false },
+        { id: 'subscription', label: 'Subscription Plan', action: () => navigate('subscription_coming_soon'), showIcon: false },
     ];
     
     return (
-        <div className="bg-white p-3 rounded-3xl shadow-sm">
+        <div className="bg-white dark:bg-neutral-800 p-3 rounded-3xl shadow-sm">
             {menuItems.map(item => (
-                <div key={item.id} onClick={item.action} className="flex justify-between items-center p-4 hover:bg-neutral-50 rounded-xl cursor-pointer">
-                    <span className="font-medium text-neutral-800">{item.label}</span>
-                    <div className="text-neutral-400"><ChevronRightIcon /></div>
+                <div 
+                    key={item.id} 
+                    onClick={item.action} 
+                    className="flex justify-between items-center p-4 hover:bg-neutral-50 dark:hover:bg-neutral-700 rounded-xl cursor-pointer transition-colors"
+                >
+                    <div className="flex items-center space-x-3">
+                        {item.showIcon && (
+                            <div className="w-5 h-5 text-primary dark:text-primary-light">
+                                {item.icon}
+                            </div>
+                        )}
+                        <span className="font-medium text-neutral-800 dark:text-neutral-200">{item.label}</span>
+                    </div>
+                    {item.id === 'theme' ? (
+                        <div className="flex items-center space-x-2">
+                            <span className="text-sm text-neutral-500 dark:text-neutral-400">
+                                {theme === 'light' ? 'Light' : 'Dark'}
+                            </span>
+                        </div>
+                    ) : (
+                        <div className="text-neutral-400 dark:text-neutral-500"><ChevronRightIcon /></div>
+                    )}
                 </div>
             ))}
-             <div onClick={onLogout} className="flex justify-between items-center p-4 hover:bg-neutral-50 rounded-xl cursor-pointer text-accent-red">
+             <div 
+                onClick={onLogout} 
+                className="flex justify-between items-center p-4 hover:bg-neutral-50 dark:hover:bg-neutral-700 rounded-xl cursor-pointer text-accent-red transition-colors"
+            >
                 <span className="font-medium">Logout</span>
             </div>
         </div>
@@ -205,15 +237,15 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onLogout, navigate
     }
 
     return (
-        <div className="min-h-screen bg-neutral-100">
+        <div className="min-h-screen bg-neutral-100 dark:bg-neutral-900 transition-colors">
             <ProfileHeader user={user} onEdit={() => setShowEditModal(true)} />
             <div className="p-6 space-y-6">
                 <ProfileInfoCard user={user} onEdit={() => setShowQuiz(true)} />
                 <DocumentList docs={docs} onPreview={setPreviewDoc} />
                 <SettingsMenu onLogout={onLogout} navigate={navigate} />
-                <div className="text-center text-neutral-400 text-sm pt-4 space-y-2">
+                <div className="text-center text-neutral-400 dark:text-neutral-500 text-sm pt-4 space-y-2">
                     <p>Made By Harsh And Abhishek</p>
-                    <p className="text-xs text-neutral-400 px-4">
+                    <p className="text-xs px-4">
                         © {new Date().getFullYear()} MediGuardia. All rights reserved. <br/> This is not a substitute for professional medical advice.
                     </p>
                 </div>

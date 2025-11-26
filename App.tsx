@@ -12,6 +12,7 @@ import { AppIcon } from './constants';
 import { BottomNavBar } from './components/BottomNavBar';
 import { UserProfile, MedicalDocument, HealthLog, Medication } from './types';
 import { mockUser, mockDocs, mockHealthLogs, mockMedications } from './data/mock';
+import { ThemeProvider } from './contexts/ThemeContext';
 
 
 type AppState = 'splash' | 'onboarding' | 'auth' | 'main';
@@ -129,7 +130,7 @@ export default function App() {
                 return <AuthScreen onLoginSuccess={handleLoginSuccess} />;
             case 'main':
                 return (
-                    <div className="w-full min-h-screen bg-neutral-100">
+                    <div className="w-full min-h-screen bg-neutral-100 dark:bg-neutral-900 transition-colors">
                         <main className="pb-28">{renderMainScreen()}</main>
                         <BottomNavBar activeTab={activeTab} setActiveTab={(tab) => {
                             setActiveTab(tab);
@@ -142,5 +143,9 @@ export default function App() {
         }
     };
 
-    return <div className="w-screen h-screen overflow-x-hidden">{renderContent()}</div>;
+    return (
+        <ThemeProvider>
+            <div className="w-screen h-screen overflow-x-hidden">{renderContent()}</div>
+        </ThemeProvider>
+    );
 }
