@@ -20,12 +20,23 @@ View your app in AI Studio: https://ai.studio/apps/drive/1isoIEEt1JQlppUZ65ddi6w
 2. Set up environment variables:
    Create a `.env.local` file in the root directory:
    ```env
-   # Supabase Configuration
+   # Supabase Configuration (for Authentication)
    VITE_SUPABASE_URL=your_supabase_project_url
    VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
    
+   # Firebase Configuration (for Database & Storage)
+   VITE_FIREBASE_API_KEY=your-firebase-api-key
+   VITE_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+   VITE_FIREBASE_PROJECT_ID=your-project-id
+   VITE_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
+   VITE_FIREBASE_MESSAGING_SENDER_ID=123456789
+   VITE_FIREBASE_APP_ID=1:123456789:web:abcdef
+   
    # Gemini API Key
    GEMINI_API_KEY=your_gemini_api_key
+   
+   # Google Maps API Key (for Hospital Locator)
+   VITE_GOOGLE_MAPS_API_KEY=your_google_maps_api_key
    ```
 
 3. Run the app:
@@ -33,44 +44,34 @@ View your app in AI Studio: https://ai.studio/apps/drive/1isoIEEt1JQlppUZ65ddi6w
    npm run dev
    ```
 
-## Supabase Setup
+## Backend Setup
 
-This app uses Supabase for authentication (Email/Password, Google OAuth, Facebook OAuth).
+This app uses a **hybrid backend approach**:
+- **Supabase**: Authentication (Email/Password, Google OAuth, Facebook OAuth)
+- **Firebase**: Database (Firestore) and Storage
 
 ### Quick Setup Guide
 
-For a **complete step-by-step guide** with screenshots and detailed instructions, see:
-👉 **[SUPABASE_SETUP_GUIDE.md](./SUPABASE_SETUP_GUIDE.md)**
+**For Authentication (Supabase):**
+👉 See **[SUPABASE_SETUP_GUIDE.md](./SUPABASE_SETUP_GUIDE.md)**
+
+**For Database (Firebase):**
+👉 See **[FIREBASE_SETUP_GUIDE.md](./FIREBASE_SETUP_GUIDE.md)** (Database section only)
 
 ### Quick Steps:
 
-1. **Create Supabase Project**
-   - Go to [supabase.com](https://supabase.com) and create a project
-   - Get your **Project URL** and **anon key** from Settings → API
+#### Supabase (Authentication):
+1. Create Supabase project at [supabase.com](https://supabase.com)
+2. Get Project URL and anon key from Settings → API
+3. Enable Email/Password, Google, and Facebook in Authentication → Providers
+4. Add credentials to `.env.local`
 
-2. **Enable Email/Password** (Already enabled by default)
-   - Go to Authentication → Providers
-   - Email should already be ON
-
-3. **Enable Google OAuth**
-   - Get credentials from [Google Cloud Console](https://console.cloud.google.com/)
-   - Add them in Supabase: Authentication → Providers → Google
-
-4. **Enable Facebook OAuth**
-   - Get credentials from [Facebook Developers](https://developers.facebook.com/)
-   - Add them in Supabase: Authentication → Providers → Facebook
-
-5. **Configure Redirect URLs**
-   - In Supabase: Authentication → URL Configuration
-   - Add: `http://localhost:3000/auth/callback` (local)
-   - Add: `https://your-domain.com/auth/callback` (production)
-
-6. **Set Environment Variables**
-   - Create `.env.local` with:
-     ```env
-     VITE_SUPABASE_URL=your-project-url
-     VITE_SUPABASE_ANON_KEY=your-anon-key
-     ```
+#### Firebase (Database):
+1. Create Firebase project at [Firebase Console](https://console.firebase.google.com)
+2. Create Firestore database (test mode for development)
+3. Set up security rules (see FIREBASE_SETUP_GUIDE.md)
+4. Get Firebase config from Project Settings → Your apps
+5. Add Firebase config to `.env.local` (only database config needed, not auth)
 
 ## Deploy to Vercel
 
@@ -107,6 +108,12 @@ This project is configured for deployment on Vercel.
 5. Configure environment variables:
    - `VITE_SUPABASE_URL`: Your Supabase project URL
    - `VITE_SUPABASE_ANON_KEY`: Your Supabase anon key
+   - `VITE_FIREBASE_API_KEY`: Your Firebase API key
+   - `VITE_FIREBASE_AUTH_DOMAIN`: Your Firebase auth domain
+   - `VITE_FIREBASE_PROJECT_ID`: Your Firebase project ID
+   - `VITE_FIREBASE_STORAGE_BUCKET`: Your Firebase storage bucket
+   - `VITE_FIREBASE_MESSAGING_SENDER_ID`: Your Firebase messaging sender ID
+   - `VITE_FIREBASE_APP_ID`: Your Firebase app ID
    - `GEMINI_API_KEY`: Your Gemini API key
 6. Click "Deploy"
 
@@ -114,16 +121,46 @@ This project is configured for deployment on Vercel.
 
 Make sure to set the following environment variables in your Vercel project settings:
 - `VITE_SUPABASE_URL`: Your Supabase project URL
-- `VITE_SUPABASE_ANON_KEY`: Your Supabase anon/public key
+- `VITE_SUPABASE_ANON_KEY`: Your Supabase anon key
+- `VITE_FIREBASE_API_KEY`: Your Firebase API key
+- `VITE_FIREBASE_AUTH_DOMAIN`: Your Firebase auth domain
+- `VITE_FIREBASE_PROJECT_ID`: Your Firebase project ID
+- `VITE_FIREBASE_STORAGE_BUCKET`: Your Firebase storage bucket
+- `VITE_FIREBASE_MESSAGING_SENDER_ID`: Your Firebase messaging sender ID
+- `VITE_FIREBASE_APP_ID`: Your Firebase app ID
 - `GEMINI_API_KEY`: Your Gemini API key
 
 The build will automatically use these environment variables during the build process.
 
-## Authentication Features
+## Features
 
+### Authentication (Supabase)
 - ✅ Email/Password authentication
-- ✅ Google OAuth (requires Supabase configuration)
-- ✅ Facebook OAuth (requires Supabase configuration)
+- ✅ Google OAuth
+- ✅ Facebook OAuth
 - ✅ Session management with auto-refresh
 - ✅ Protected routes
-- ✅ User profile management
+
+### Medical Profile (Firebase Firestore)
+- ✅ Medical profile management
+- ✅ Profile CRUD operations
+- ✅ Emergency contact storage
+- ✅ Allergies and conditions tracking
+- ✅ Real-time data sync
+
+### Backend Architecture
+- ✅ **Supabase**: Authentication only
+- ✅ **Firebase Firestore**: Database for medical data
+- ✅ **Firebase Storage**: Document storage (optional)
+
+### Emergency Features
+- ✅ **Hospital Locator Map**: Interactive map with nearby hospitals
+- ✅ **SOS Location Sharing**: Share location via WhatsApp/SMS
+- ✅ **Real-time Location**: Get current coordinates and address
+- ✅ **Hospital Details**: View hospital info and get directions
+
+### Medical Features
+- ✅ **Symptom Checker**: AI-powered symptom analysis
+- ✅ **Medical Profile**: Store health information
+- ✅ **Health History**: Track symptoms and medications
+- ✅ **First Aid Guide**: Step-by-step emergency instructions

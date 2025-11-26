@@ -48,3 +48,24 @@ export interface UserProfile {
         phone: string;
     };
 }
+
+export interface Hospital {
+    id: string;
+    name: string;
+    address: string;
+    phone: string;
+    latitude: number;
+    longitude: number;
+    distance?: number;
+    openHours?: string;
+    emergencyServices?: boolean;
+    specialties?: string[];
+    rating?: number;
+    reviewCount?: number;
+}
+
+export interface Location {
+    latitude: number;
+    longitude: number;
+    address?: string;
+}

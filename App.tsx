@@ -14,6 +14,7 @@ import { UserProfile, MedicalDocument, HealthLog, Medication } from './types';
 import { mockUser, mockDocs, mockHealthLogs, mockMedications } from './data/mock';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { getMedicalProfile, saveMedicalProfile, MedicalProfileData } from './services/medicalProfileService';
 
 
 type AppState = 'splash' | 'onboarding' | 'auth' | 'main';
@@ -47,11 +48,13 @@ const AppContent: React.FC = () => {
     const [medications, setMedications] = useState<Medication[]>(mockMedications);
 
     useEffect(() => {
-        // Check for OAuth callback in URL
+        // Check for Supabase OAuth callback in URL
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
         const hasOAuthCallback = hashParams.get('access_token') || hashParams.get('error');
 
         if (hasOAuthCallback) {
+            // Clear hash from URL
+            window.history.replaceState(null, '', window.location.pathname);
             // OAuth callback detected - wait for auth state to update
             // The AuthContext will handle the session automatically
             return;
@@ -70,22 +73,58 @@ const AppContent: React.FC = () => {
         return () => clearTimeout(timer);
     }, [isAuthenticated]);
 
-    // Update user profile when auth user changes
+    // Load medical profile from Firebase when user is authenticated
     useEffect(() => {
-        if (user) {
-            setUserProfile({
-                ...mockUser,
-                name: user.name,
-                email: user.email,
-                avatarUrl: user.avatarUrl || mockUser.avatarUrl
-            });
+        const loadMedicalProfile = async () => {
+            if (isAuthenticated && user) {
+                const profile = await getMedicalProfile();
+                if (profile) {
+                    setUserProfile(profile);
+                } else {
+                    // If no profile exists, use basic user info
+                    setUserProfile({
+                        ...mockUser,
+                        name: user.name,
+                        email: user.email,
+                        avatarUrl: user.avatarUrl || mockUser.avatarUrl
+                    });
+                }
+            }
+        };
+
+        if (!isLoading) {
+            loadMedicalProfile();
         }
-    }, [user]);
+    }, [isAuthenticated, user, isLoading]);
 
     // State Handler Functions
-    const handleUpdateProfile = (updatedProfile: UserProfile) => {
-        setUserProfile(updatedProfile);
-        setShowEditModal(false); // Close modal on save
+    const handleUpdateProfile = async (updatedProfile: UserProfile) => {
+        // Save to Firebase
+        const profileData: MedicalProfileData = {
+            full_name: updatedProfile.name,
+            age: updatedProfile.age,
+            gender: undefined, // Add if you have gender field
+            blood_group: updatedProfile.bloodGroup as any,
+            allergies: updatedProfile.allergies,
+            chronic_conditions: updatedProfile.chronicConditions,
+            emergency_contact_name: updatedProfile.emergencyContact?.name,
+            emergency_contact_phone: updatedProfile.emergencyContact?.phone,
+            height: updatedProfile.height,
+            weight: updatedProfile.weight,
+            avatar_url: updatedProfile.avatarUrl,
+        };
+
+        const result = await saveMedicalProfile(profileData);
+        
+        if (result.success) {
+            setUserProfile(updatedProfile);
+            setShowEditModal(false);
+        } else {
+            console.error('Failed to save profile:', result.error);
+            // Still update local state even if save fails
+            setUserProfile(updatedProfile);
+            setShowEditModal(false);
+        }
     };
     
     const handleAddHealthLog = (log: Omit<HealthLog, 'id' | 'date'>) => {
@@ -138,7 +177,7 @@ const AppContent: React.FC = () => {
             case 'symptom':
                 return <SymptomCheckerScreen {...screenProps} onSaveLog={handleAddHealthLog} />;
             case 'sos':
-                return <EmergencyScreen {...screenProps} view={view} />;
+                return <EmergencyScreen {...screenProps} view={view} user={userProfile} />;
             case 'history':
                 return <HistoryScreen {...screenProps} view={view} logs={healthLogs} medications={medications} onAddMedication={handleAddMedication} />;
             case 'profile':

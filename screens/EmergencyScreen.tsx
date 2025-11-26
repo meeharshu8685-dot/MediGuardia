@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { BackArrowIcon, CheckCircleIcon, LocationMarkerIcon, PhoneIcon, BreathingIcon, ChestPainIcon, BleedingIcon, FeverIcon, AllergyIcon, BurnIcon } from '../constants';
+import { HospitalLocatorMapScreen } from './HospitalLocatorMapScreen';
+import { SOSLocationScreen } from './SOSLocationScreen';
 
 const firstAidData = {
     "Breathing Difficulty": {
@@ -109,14 +111,20 @@ const FirstAidDetailView: React.FC<{ category: string, onBack: () => void }> = (
     );
 };
 
-const SOSView: React.FC = () => {
+interface SOSViewProps {
+    onShareLocation?: () => void;
+    emergencyContact?: {
+        name: string;
+        phone: string;
+    };
+}
+
+const SOSView: React.FC<SOSViewProps> = ({ onShareLocation, emergencyContact = { name: "Emergency Contact", phone: "911" } }) => {
     const [isSending, setIsSending] = useState(false);
     const [alertSent, setAlertSent] = useState(false);
     const [countdown, setCountdown] = useState(5);
     const [location, setLocation] = useState<string | null>(null);
     const timerRef = useRef<number | null>(null);
-
-    const emergencyContact = { name: "Jane Doe", phone: "123-456-7890" };
 
     const startCountdown = () => {
         setIsSending(true);
@@ -198,14 +206,24 @@ const SOSView: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="mt-8 text-left bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg w-full">
-                    <h4 className="font-bold text-blue-800">What to do now:</h4>
-                    <ul className="list-disc list-inside text-sm text-blue-700 mt-2 space-y-1">
+                <div className="mt-8 text-left bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-400 dark:border-blue-500 p-4 rounded-r-lg w-full">
+                    <h4 className="font-bold text-blue-800 dark:text-blue-300">What to do now:</h4>
+                    <ul className="list-disc list-inside text-sm text-blue-700 dark:text-blue-300 mt-2 space-y-1">
                         <li>Stay as calm as possible.</li>
                         <li>If it is safe, stay in your current location.</li>
                         <li>Keep your phone line open.</li>
                     </ul>
                 </div>
+
+                {onShareLocation && (
+                    <button
+                        onClick={onShareLocation}
+                        className="mt-6 w-full bg-primary text-white py-4 rounded-2xl font-semibold flex items-center justify-center gap-2 shadow-lg hover:bg-primary/90 transition-colors"
+                    >
+                        <LocationMarkerIcon />
+                        Share Location Details
+                    </button>
+                )}
             </div>
         );
     }
@@ -234,40 +252,9 @@ const SOSView: React.FC = () => {
     );
 };
 
-const HospitalLocatorView: React.FC = () => (
-    <div>
-        <h1 className="text-3xl font-bold text-neutral-900 text-center mb-6">Hospital Locator</h1>
-        <div className="mb-4">
-            <input type="text" placeholder="Search for hospitals, clinics..." className="w-full p-4 bg-white rounded-2xl border-2 border-transparent focus:border-primary outline-none shadow-sm text-lg" />
-        </div>
-        <div className="w-full h-48 bg-neutral-200 rounded-2xl mb-4 flex items-center justify-center text-neutral-500 overflow-hidden">
-            <img src="https://i.imgur.com/gK2E2p8.png" alt="Map placeholder" className="w-full h-full object-cover" />
-        </div>
-        <div className="space-y-3">
-            {[
-                {name: "City General Hospital", address: "123 Main St, Downtown", open: "24 Hours", distance: "0.8 miles"}, 
-                {name: "Oak Valley Clinic", address: "456 Oak Ave, Suburbia", open: "9am - 5pm", distance: "2.3 miles"}
-            ].map(h =>(
-                <div key={h.name} className="bg-white p-4 rounded-2xl shadow-sm">
-                    <div className="flex justify-between items-start">
-                        <div>
-                            <h3 className="font-bold text-lg">{h.name}</h3>
-                            <p className="text-sm text-neutral-500">{h.address}</p>
-                        </div>
-                        <span className="text-sm font-semibold text-neutral-600">{h.distance}</span>
-                    </div>
-                    <div className="flex justify-between items-center mt-3 pt-3 border-t border-neutral-100">
-                        <span className={`text-sm font-bold ${h.open === '24 Hours' ? 'text-accent-green' : 'text-accent-orange'}`}>{h.open}</span>
-                        <button className="text-sm font-semibold text-primary bg-primary-light px-4 py-2 rounded-full">Directions</button>
-                    </div>
-                </div>
-            ))}
-        </div>
-    </div>
-);
 
 
-export const EmergencyScreen: React.FC<{ view: string; navigate: (view: string) => void }> = ({ view, navigate }) => {
+export const EmergencyScreen: React.FC<{ view: string; navigate: (view: string) => void; user?: any }> = ({ view, navigate, user }) => {
     const [currentView, setCurrentView] = useState(view.split('/')[1] || 'sos');
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
@@ -286,23 +273,37 @@ export const EmergencyScreen: React.FC<{ view: string; navigate: (view: string) 
         setCurrentView('first-aid');
     };
 
+    const handleBackToSOS = () => {
+        setCurrentView('sos');
+        navigate('sos/sos');
+    };
+
+    const emergencyContact = user?.emergencyContact || { name: 'Emergency Contact', phone: '911' };
+
+    const handleShareLocation = () => {
+        setCurrentView('location-share');
+        navigate('sos/location-share');
+    };
+
     const renderContent = () => {
         switch (currentView) {
             case 'sos':
-                return <SOSView />;
+                return <SOSView onShareLocation={handleShareLocation} emergencyContact={emergencyContact} />;
+            case 'location-share':
+                return <SOSLocationScreen emergencyContact={emergencyContact} />;
             case 'first-aid':
                 return <FirstAidCategoriesView onSelect={handleSelectCategory} />;
             case 'first-aid-detail':
                 return <FirstAidDetailView category={selectedCategory || "Details"} onBack={handleBackToCategories} />;
             case 'hospitals':
-                return <HospitalLocatorView />;
+                return <HospitalLocatorMapScreen onBack={handleBackToSOS} />;
             default:
-                return <SOSView />;
+                return <SOSView onShareLocation={handleShareLocation} emergencyContact={emergencyContact} />;
         }
     };
 
     return (
-        <div className="min-h-screen bg-neutral-100 pt-10 p-6">
+        <div className="min-h-screen bg-neutral-100 dark:bg-neutral-900">
             {renderContent()}
         </div>
     );
