@@ -69,37 +69,33 @@ const AppContent: React.FC = () => {
             return; // Still loading, keep splash screen
         }
 
-        // Prevent resetting app state if already in main and still authenticated
-        // This prevents the login loop
-        if (appState === 'main' && isAuthenticated && hasInitialized.current) {
-            return; // Already in main screen and authenticated, don't reset
-        }
-
         // Once loading is complete, check authentication state
         const onboardingCompleted = localStorage.getItem('onboardingCompleted');
         
+        // Determine the target state based on authentication
+        let targetState: AppState;
+        
         if (!onboardingCompleted) {
-            // Only set onboarding if not already there
-            if (appState !== 'onboarding') {
-                setAppState('onboarding');
-                hasInitialized.current = true;
-            }
+            targetState = 'onboarding';
         } else if (isAuthenticated) {
-            // User is authenticated, go to main screen
-            if (appState !== 'main') {
-                setAppState('main');
-                hasInitialized.current = true;
-            }
+            targetState = 'main';
         } else {
-            // User is not authenticated, go to auth screen
-            // Only reset if we're coming from splash or if user was logged out
-            if (appState === 'splash' || appState === 'main') {
-                setAppState('auth');
-                hasInitialized.current = true;
-            } else if (appState !== 'auth') {
-                setAppState('auth');
-                hasInitialized.current = true;
+            targetState = 'auth';
+        }
+        
+        // Only update state if:
+        // 1. We haven't initialized yet, OR
+        // 2. The target state is different from current state, OR
+        // 3. We're in splash screen (initial load)
+        if (!hasInitialized.current || appState !== targetState || appState === 'splash') {
+            // Special case: Don't reset from main to auth unless user is actually logged out
+            if (appState === 'main' && targetState === 'auth' && isAuthenticated) {
+                // User is still authenticated, don't reset
+                return;
             }
+            
+            setAppState(targetState);
+            hasInitialized.current = true;
         }
     }, [isAuthenticated, isLoading]);
 
@@ -233,9 +229,9 @@ const AppContent: React.FC = () => {
     };
 
     const handleLoginSuccess = () => {
-        if (isAuthenticated) {
-            setAppState('main');
-        }
+        // Reset initialization flag to allow state update after login
+        hasInitialized.current = false;
+        // The useEffect will handle the state transition when isAuthenticated changes
     };
 
     const handleOnboardingComplete = () => {

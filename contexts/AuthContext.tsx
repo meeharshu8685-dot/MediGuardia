@@ -70,13 +70,38 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         // Listen for auth changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
             console.log('Auth state changed:', event, session?.user?.email);
+            
+            // Handle SIGNED_OUT event
+            if (event === 'SIGNED_OUT') {
+                setUser(null);
+                setIsLoading(false);
+                return;
+            }
+            
+            // Handle TOKEN_REFRESHED without session
+            if (event === 'TOKEN_REFRESHED' && !session) {
+                setUser(null);
+                setIsLoading(false);
+                return;
+            }
+            
+            // Handle sessions with user
             if (session?.user) {
                 const appUser = await convertSupabaseUser(session.user);
                 setUser(appUser);
-            } else {
+                setIsLoading(false);
+            } else if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
+                // These events should have a session, but if not, don't clear user
+                setIsLoading(false);
+            } else if (event !== 'INITIAL_SESSION') {
+                // Only clear user if it's not the initial session check
+                // This prevents clearing user on first load
                 setUser(null);
+                setIsLoading(false);
+            } else {
+                // INITIAL_SESSION event
+                setIsLoading(false);
             }
-            setIsLoading(false);
         });
 
         return () => {
@@ -86,24 +111,31 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
         try {
+            setIsLoading(true);
             const { data, error } = await supabase.auth.signInWithPassword({
                 email,
                 password,
             });
 
             if (error) {
+                setIsLoading(false);
                 return { success: false, error: error.message };
             }
 
-            if (data.user) {
+            if (data.user && data.session) {
+                // Wait a bit for the session to be fully established
                 const appUser = await convertSupabaseUser(data.user);
                 setUser(appUser);
+                // Don't set isLoading to false here - let onAuthStateChange handle it
+                // This prevents race conditions
                 return { success: true };
             }
 
+            setIsLoading(false);
             return { success: false, error: 'Login failed' };
         } catch (error: any) {
             console.error('Login error:', error);
+            setIsLoading(false);
             return { success: false, error: error.message || 'An error occurred during login' };
         }
     };
