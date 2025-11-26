@@ -101,6 +101,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 return;
             }
             
+            // Handle SIGNED_IN event (OAuth callback) - this is critical for OAuth
+            if (event === 'SIGNED_IN' && session?.user) {
+                const appUser = await convertSupabaseUser(session.user);
+                setUser(appUser);
+                hasUserRef.current = true;
+                setIsLoading(false);
+                console.log('OAuth SIGNED_IN event, user set:', appUser.email);
+                return;
+            }
+            
             // Handle sessions with user - ALWAYS set user if session exists
             if (session?.user) {
                 const appUser = await convertSupabaseUser(session.user);

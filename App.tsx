@@ -56,17 +56,23 @@ const AppContent: React.FC = () => {
         const hasOAuthCallback = hashParams.get('access_token') || hashParams.get('error');
 
         if (hasOAuthCallback) {
+            console.log('OAuth callback detected, waiting for session...');
             // Clear hash from URL
             window.history.replaceState(null, '', window.location.pathname);
             // OAuth callback detected - wait for auth state to update
-            // The AuthContext will handle the session automatically
-            hasInitialized.current = false; // Reset to allow state update after OAuth
+            // The AuthContext will handle the session automatically via onAuthStateChange
+            // Don't reset hasInitialized - let the auth state change handler update it
+            // Just wait for isLoading to become false and isAuthenticated to become true
             return;
         }
 
         // Wait for auth to finish loading before deciding app state
         if (isLoading) {
-            return; // Still loading, keep splash screen
+            // If we have a user but still loading, don't reset to auth
+            if (user && appState === 'main') {
+                return; // Keep main screen if user exists
+            }
+            return; // Still loading, keep current screen
         }
 
         // Once loading is complete, check authentication state

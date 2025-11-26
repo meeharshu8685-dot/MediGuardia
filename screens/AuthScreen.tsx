@@ -136,13 +136,14 @@ const LoginView: React.FC<{ setMode: (mode: AuthMode) => void; onLogin: () => vo
         setError('');
         setIsSocialLoading(true);
         const result = await loginWithGoogle();
-        setIsSocialLoading(false);
         
-        if (result.success) {
-            onLogin();
-        } else {
+        // OAuth redirects to provider, so we don't call onLogin() here
+        // The redirect will happen and the app will handle the callback
+        if (!result.success) {
+            setIsSocialLoading(false);
             setError(result.error || 'Google sign in failed');
         }
+        // If success, the redirect will happen - don't set loading to false
     };
 
     const handleFacebookLogin = async () => {
