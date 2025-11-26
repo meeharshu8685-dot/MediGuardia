@@ -173,7 +173,7 @@ const AppContent: React.FC = () => {
 
         switch (activeTab) {
             case 'home':
-                return <HomeScreen {...screenProps} user={userProfile} medications={medications} logs={healthLogs} />;
+                return <HomeScreen {...screenProps} setActiveTab={setActiveTab} user={userProfile} medications={medications} logs={healthLogs} />;
             case 'symptom':
                 return <SymptomCheckerScreen {...screenProps} onSaveLog={handleAddHealthLog} />;
             case 'sos':

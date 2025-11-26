@@ -81,12 +81,13 @@ const MedicationCard: React.FC<{ medication: Medication; onClick?: () => void }>
 interface HomeScreenProps {
     navigate: (view: string) => void;
     setView: (view: string) => void;
+    setActiveTab?: (tab: 'home' | 'symptom' | 'sos' | 'history' | 'profile') => void;
     user: UserProfile;
     medications: Medication[];
     logs: HealthLog[];
 }
 
-export const HomeScreen: React.FC<HomeScreenProps> = ({ navigate, setView, user, medications, logs }) => {
+export const HomeScreen: React.FC<HomeScreenProps> = ({ navigate, setView, setActiveTab, user, medications, logs }) => {
     const handleNotificationClick = () => {
         // Navigate to notifications or show notification list
         alert('Notifications feature coming soon!\n\nYou can check:\n- Medication reminders\n- Health log reminders\n- Appointment alerts');
@@ -110,10 +111,42 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigate, setView, user,
             <div className="p-6 space-y-8">
                 {/* Quick Tiles Section */}
                 <div className="grid grid-cols-2 gap-4">
-                    <QuickTile icon={<StethoscopeIcon />} label="Symptom Check" onClick={() => setView('symptom')} color="bg-gradient-to-br from-purple-500 to-primary" />
-                    <QuickTile icon={<FirstAidIcon />} label="First Aid" onClick={() => setView('sos/first-aid')} color="bg-gradient-to-br from-green-500 to-accent-green" />
-                    <QuickTile icon={<SosIcon />} label="SOS" onClick={() => setView('sos/sos')} color="bg-gradient-to-br from-red-500 to-accent-red" />
-                    <QuickTile icon={<HospitalIcon />} label="Hospitals" onClick={() => setView('sos/hospitals')} color="bg-gradient-to-br from-blue-500 to-accent-blue" />
+                    <QuickTile 
+                        icon={<StethoscopeIcon />} 
+                        label="Symptom Check" 
+                        onClick={() => {
+                            setActiveTab?.('symptom');
+                            setView('symptom');
+                        }} 
+                        color="bg-gradient-to-br from-purple-500 to-primary" 
+                    />
+                    <QuickTile 
+                        icon={<FirstAidIcon />} 
+                        label="First Aid" 
+                        onClick={() => {
+                            setActiveTab?.('sos');
+                            setView('sos/first-aid');
+                        }} 
+                        color="bg-gradient-to-br from-green-500 to-accent-green" 
+                    />
+                    <QuickTile 
+                        icon={<SosIcon />} 
+                        label="SOS" 
+                        onClick={() => {
+                            setActiveTab?.('sos');
+                            setView('sos/sos');
+                        }} 
+                        color="bg-gradient-to-br from-red-500 to-accent-red" 
+                    />
+                    <QuickTile 
+                        icon={<HospitalIcon />} 
+                        label="Hospitals" 
+                        onClick={() => {
+                            setActiveTab?.('sos');
+                            setView('sos/hospitals');
+                        }} 
+                        color="bg-gradient-to-br from-blue-500 to-accent-blue" 
+                    />
                 </div>
                 
                  {/* Premium Chat Card */}
