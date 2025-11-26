@@ -98,8 +98,12 @@ export const getNearbyHospitals = async (
     radiusKm: number = 10
 ): Promise<Hospital[]> => {
     try {
-        // Try to fetch from backend API first
-        if (API_BASE_URL && API_BASE_URL !== 'http://localhost:3001' || import.meta.env.DEV) {
+        // Try to fetch from backend API first (if API_BASE_URL is set and not localhost)
+        const shouldUseBackend = API_BASE_URL && 
+                                 API_BASE_URL !== 'http://localhost:3001' && 
+                                 API_BASE_URL.startsWith('http');
+        
+        if (shouldUseBackend) {
             try {
                 // Get Supabase session token
                 const { data: { session } } = await supabase.auth.getSession();

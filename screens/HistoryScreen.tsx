@@ -122,7 +122,7 @@ const HistoryTimelineView: React.FC<{ logs: HealthLog[], onSelect: (log: HealthL
 const HistoryDetailView: React.FC<{ 
     log: HealthLog; 
     onEdit?: (log: HealthLog) => void;
-    onDelete?: (logId: string) => void;
+    onDelete?: () => void | Promise<void>;
     onBack: () => void;
 }> = ({ log, onEdit, onDelete, onBack }) => {
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -135,9 +135,9 @@ const HistoryDetailView: React.FC<{
         }
     };
 
-    const handleDelete = () => {
+    const handleDelete = async () => {
         if (showDeleteConfirm && onDelete) {
-            onDelete(log.id);
+            await onDelete();
             onBack();
         } else {
             setShowDeleteConfirm(true);
@@ -269,9 +269,11 @@ interface HistoryScreenProps {
     logs: HealthLog[];
     medications: Medication[];
     onAddMedication: (med: Omit<Medication, 'id'>) => void;
+    onDeleteLog?: (logId: string) => Promise<void>;
+    onUpdateLog?: (logId: string, updates: Partial<HealthLog>) => Promise<void>;
 }
 
-export const HistoryScreen: React.FC<HistoryScreenProps> = ({ view, setView, logs, medications, onAddMedication }) => {
+export const HistoryScreen: React.FC<HistoryScreenProps> = ({ view, setView, logs, medications, onAddMedication, onDeleteLog, onUpdateLog }) => {
     const [selectedLog, setSelectedLog] = useState<HealthLog | null>(null);
 
     const handleSelectLog = (log: HealthLog) => {
@@ -294,7 +296,17 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({ view, setView, log
         switch (page) {
             case 'analytics': return <AnalyticsDashboardView />;
             case 'timeline': return <HistoryTimelineView logs={logs} onSelect={handleSelectLog} />;
-            case 'detail': return selectedLog ? <HistoryDetailView log={selectedLog} /> : <HistoryTimelineView logs={logs} onSelect={handleSelectLog} />;
+            case 'detail': return selectedLog ? (
+                <HistoryDetailView 
+                    log={selectedLog} 
+                    onEdit={handleEditLog}
+                    onDelete={onDeleteLog ? async () => {
+                        await onDeleteLog(selectedLog.id);
+                        handleBack();
+                    } : undefined}
+                    onBack={handleBack}
+                />
+            ) : <HistoryTimelineView logs={logs} onSelect={handleSelectLog} />;
             case 'medications': return <MedicationListView medications={medications} onAddMedication={onAddMedication} />;
             default: return <AnalyticsDashboardView />;
         }

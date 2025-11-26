@@ -15,6 +15,8 @@ import { mockUser, mockDocs, mockHealthLogs, mockMedications } from './data/mock
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { getMedicalProfile, saveMedicalProfile, MedicalProfileData } from './services/medicalProfileService';
+import { getMedications, addMedication as saveMedication, updateMedication, deleteMedication } from './services/medicationService';
+import { getHealthLogs, addHealthLog as saveHealthLog, updateHealthLog, deleteHealthLog } from './services/healthLogService';
 
 
 type AppState = 'splash' | 'onboarding' | 'auth' | 'main';
@@ -60,28 +62,64 @@ const AppContent: React.FC = () => {
             return;
         }
 
-        const timer = setTimeout(() => {
-            const onboardingCompleted = localStorage.getItem('onboardingCompleted');
-            if (!onboardingCompleted) {
-                setAppState('onboarding');
-            } else if (isAuthenticated) {
-                setAppState('main');
-            } else {
-                setAppState('auth');
-            }
-        }, 3000);
-        return () => clearTimeout(timer);
-    }, [isAuthenticated]);
+        // Wait for auth to finish loading before deciding app state
+        if (isLoading) {
+            return; // Still loading, keep splash screen
+        }
 
-    // Load medical profile from Firebase when user is authenticated
+        // Once loading is complete, check authentication state
+        const onboardingCompleted = localStorage.getItem('onboardingCompleted');
+        if (!onboardingCompleted) {
+            setAppState('onboarding');
+        } else if (isAuthenticated) {
+            setAppState('main');
+        } else {
+            setAppState('auth');
+        }
+    }, [isAuthenticated, isLoading]);
+
+    // Load all user data from Firebase when authenticated
+    // This runs in the background and doesn't block the UI
     useEffect(() => {
-        const loadMedicalProfile = async () => {
-            if (isAuthenticated && user) {
-                const profile = await getMedicalProfile();
-                if (profile) {
-                    setUserProfile(profile);
-                } else {
-                    // If no profile exists, use basic user info
+        const loadUserData = async () => {
+            if (isAuthenticated && user && !isLoading) {
+                try {
+                    // Load medical profile
+                    const profile = await getMedicalProfile();
+                    if (profile) {
+                        setUserProfile(profile);
+                    } else {
+                        // If no profile exists, use basic user info
+                        setUserProfile({
+                            ...mockUser,
+                            name: user.name,
+                            email: user.email,
+                            avatarUrl: user.avatarUrl || mockUser.avatarUrl
+                        });
+                    }
+
+                    // Load medications (don't block if this fails)
+                    try {
+                        const userMedications = await getMedications();
+                        if (userMedications.length > 0) {
+                            setMedications(userMedications);
+                        }
+                    } catch (medError) {
+                        console.warn('Error loading medications:', medError);
+                    }
+
+                    // Load health logs (don't block if this fails)
+                    try {
+                        const userHealthLogs = await getHealthLogs();
+                        if (userHealthLogs.length > 0) {
+                            setHealthLogs(userHealthLogs);
+                        }
+                    } catch (logError) {
+                        console.warn('Error loading health logs:', logError);
+                    }
+                } catch (error) {
+                    console.error('Error loading user data:', error);
+                    // Even if profile loading fails, set basic user info
                     setUserProfile({
                         ...mockUser,
                         name: user.name,
@@ -92,9 +130,7 @@ const AppContent: React.FC = () => {
             }
         };
 
-        if (!isLoading) {
-            loadMedicalProfile();
-        }
+        loadUserData();
     }, [isAuthenticated, user, isLoading]);
 
     // State Handler Functions
@@ -127,21 +163,48 @@ const AppContent: React.FC = () => {
         }
     };
     
-    const handleAddHealthLog = (log: Omit<HealthLog, 'id' | 'date'>) => {
-        const newLog: HealthLog = {
-            ...log,
-            id: (healthLogs.length + 1).toString(),
-            date: new Date().toISOString().split('T')[0].replace(/-/g, '-'), // YYYY-MM-DD
-        };
-        setHealthLogs(prev => [newLog, ...prev]);
+    const handleAddHealthLog = async (log: Omit<HealthLog, 'id' | 'date'>) => {
+        // Save to Firebase
+        const result = await saveHealthLog(log);
+        
+        if (result.success && result.id) {
+            const newLog: HealthLog = {
+                ...log,
+                id: result.id,
+                date: new Date().toISOString().split('T')[0],
+            };
+            setHealthLogs(prev => [newLog, ...prev]);
+        } else {
+            // Fallback: save locally if Firebase fails
+            console.warn('Failed to save health log to Firebase, saving locally:', result.error);
+            const newLog: HealthLog = {
+                ...log,
+                id: `local-${Date.now()}`,
+                date: new Date().toISOString().split('T')[0],
+            };
+            setHealthLogs(prev => [newLog, ...prev]);
+        }
     };
 
-    const handleAddMedication = (med: Omit<Medication, 'id'>) => {
-         const newMed: Medication = {
-            ...med,
-            id: (medications.length + 1).toString(),
-        };
-        setMedications(prev => [...prev, newMed]);
+    const handleAddMedication = async (med: Omit<Medication, 'id'>) => {
+        // Save to Firebase
+        const result = await saveMedication(med);
+        
+        if (result.success && result.id) {
+            const newMed: Medication = {
+                ...med,
+                id: result.id,
+            };
+            setMedications(prev => [...prev, newMed]);
+        } else {
+            // Fallback: save locally if Firebase fails
+            console.warn('Failed to save medication to Firebase, saving locally:', result.error);
+            const newMed: Medication = {
+                ...med,
+                id: `local-${Date.now()}`,
+            };
+            setMedications(prev => [...prev, newMed]);
+        }
     };
 
     const handleLoginSuccess = () => {
@@ -179,7 +242,29 @@ const AppContent: React.FC = () => {
             case 'sos':
                 return <EmergencyScreen {...screenProps} view={view} user={userProfile} />;
             case 'history':
-                return <HistoryScreen {...screenProps} view={view} logs={healthLogs} medications={medications} onAddMedication={handleAddMedication} />;
+                return (
+                    <HistoryScreen 
+                        {...screenProps} 
+                        view={view} 
+                        logs={healthLogs} 
+                        medications={medications} 
+                        onAddMedication={handleAddMedication}
+                        onDeleteLog={async (logId: string) => {
+                            const result = await deleteHealthLog(logId);
+                            if (result.success) {
+                                setHealthLogs(prev => prev.filter(log => log.id !== logId));
+                            }
+                        }}
+                        onUpdateLog={async (logId: string, updates: Partial<HealthLog>) => {
+                            const result = await updateHealthLog(logId, updates);
+                            if (result.success) {
+                                setHealthLogs(prev => prev.map(log => 
+                                    log.id === logId ? { ...log, ...updates } : log
+                                ));
+                            }
+                        }}
+                    />
+                );
             case 'profile':
                 return <ProfileScreen {...screenProps} user={userProfile} docs={documents} onUpdateProfile={handleUpdateProfile} onLogout={() => { logout(); setAppState('auth'); }} />;
             default:

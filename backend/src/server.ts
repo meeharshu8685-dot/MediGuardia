@@ -26,6 +26,19 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Root endpoint
+app.get('/', (req, res) => {
+  res.json({ 
+    status: 'ok', 
+    message: 'MediGuardia Backend API',
+    version: '1.0.0',
+    endpoints: {
+      health: '/health',
+      hospitals: '/api/hospitals?lat=XX&lng=YY&radius=5000'
+    }
+  });
+});
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', message: 'MediGuardia Backend API is running' });
