@@ -17,6 +17,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { getMedicalProfile, saveMedicalProfile, MedicalProfileData } from './services/medicalProfileService';
 import { getMedications, addMedication as saveMedication, updateMedication, deleteMedication } from './services/medicationService';
 import { getHealthLogs, addHealthLog as saveHealthLog, updateHealthLog, deleteHealthLog } from './services/healthLogService';
+import { supabase } from './lib/supabase';
 
 
 type AppState = 'splash' | 'onboarding' | 'auth' | 'main';
@@ -64,15 +65,40 @@ const AppContent: React.FC = () => {
             window.history.replaceState(null, '', window.location.pathname);
             // OAuth callback detected - wait for auth state to update
             // The AuthContext will handle the session automatically via onAuthStateChange
-            // Don't process app state until session is established
+            // Also manually trigger a session check after a short delay
+            setTimeout(async () => {
+                try {
+                    const { data: { session } } = await supabase.auth.getSession();
+                    if (session?.user) {
+                        console.log('OAuth session found after callback');
+                        // The onAuthStateChange will handle setting the user
+                    }
+                } catch (error) {
+                    console.error('Error checking OAuth session:', error);
+                }
+            }, 500);
             return;
         }
         
         // If we're waiting for OAuth callback to complete
         if (isOAuthCallback.current) {
-            // Wait for authentication to be established
+            // Wait for authentication to be established, but with a timeout
             if (isLoading || !isAuthenticated) {
-                console.log('Waiting for OAuth session to be established...', { isLoading, isAuthenticated });
+                console.log('Waiting for OAuth session to be established...', { isLoading, isAuthenticated, hasUser: !!user });
+                // If we have a user but isLoading is still true, it might be stuck
+                // Give it a moment and then proceed
+                if (user && isLoading) {
+                    // User exists but still loading - might be a race condition
+                    // Wait a bit more
+                    return;
+                }
+                // Set a timeout to prevent infinite loading (10 seconds max)
+                setTimeout(() => {
+                    if (isOAuthCallback.current && (!isAuthenticated || isLoading)) {
+                        console.warn('OAuth callback timeout, clearing flag');
+                        isOAuthCallback.current = false;
+                    }
+                }, 10000);
                 return; // Still waiting
             }
             // OAuth callback completed, user is authenticated

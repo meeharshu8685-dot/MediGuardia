@@ -60,14 +60,26 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                     const appUser = await convertSupabaseUser(session.user);
                     setUser(appUser);
                     hasUserRef.current = true;
+                    setIsLoading(false);
                     console.log('Session found on load:', appUser.email);
                 } else {
-                    console.log('No session found on load');
+                    // Check if there's a hash in URL (OAuth callback)
+                    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+                    const hasOAuthCallback = hashParams.get('access_token');
+                    
+                    if (hasOAuthCallback) {
+                        // OAuth callback detected - wait for onAuthStateChange to handle it
+                        console.log('OAuth callback in URL, waiting for onAuthStateChange');
+                        // Don't set isLoading to false yet - let onAuthStateChange handle it
+                    } else {
+                        setIsLoading(false);
+                        console.log('No session found on load');
+                    }
                 }
             } catch (error) {
                 console.error('Error checking session:', error);
-            } finally {
                 setIsLoading(false);
+            } finally {
                 // Mark that initial check is done after a delay
                 setTimeout(() => {
                     isInitialCheckRef.current = false;
