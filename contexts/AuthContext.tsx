@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, ReactNode } from 'react';
 import { supabase } from '../lib/supabase';
 import type { User as SupabaseUser, Session } from '@supabase/supabase-js';
 
@@ -47,10 +47,10 @@ const convertSupabaseUser = async (supabaseUser: SupabaseUser | null): Promise<U
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const isInitialCheckRef = useRef(true);
+    const hasUserRef = useRef(false);
 
     useEffect(() => {
-        let isInitialCheck = true;
-        
         // Check for existing session
         const checkSession = async () => {
             try {
@@ -59,15 +59,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 if (session?.user) {
                     const appUser = await convertSupabaseUser(session.user);
                     setUser(appUser);
+                    hasUserRef.current = true;
+                    console.log('Session found on load:', appUser.email);
+                } else {
+                    console.log('No session found on load');
                 }
             } catch (error) {
                 console.error('Error checking session:', error);
             } finally {
                 setIsLoading(false);
-                // Mark that initial check is done after a short delay
+                // Mark that initial check is done after a delay
                 setTimeout(() => {
-                    isInitialCheck = false;
-                }, 1000);
+                    isInitialCheckRef.current = false;
+                    console.log('Initial check phase completed');
+                }, 2000);
             }
         };
 
@@ -75,52 +80,64 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
         // Listen for auth changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-            console.log('Auth state changed:', event, session?.user?.email, 'isInitialCheck:', isInitialCheck);
+            console.log('Auth state changed:', event, session?.user?.email, 'hasUser:', hasUserRef.current, 'isInitialCheck:', isInitialCheckRef.current);
             
             // Handle SIGNED_OUT event
             if (event === 'SIGNED_OUT') {
                 setUser(null);
+                hasUserRef.current = false;
                 setIsLoading(false);
                 return;
             }
             
             // Handle TOKEN_REFRESHED without session
             if (event === 'TOKEN_REFRESHED' && !session) {
-                setUser(null);
+                // Only clear if we're not in initial check and user was set
+                if (!isInitialCheckRef.current) {
+                    setUser(null);
+                    hasUserRef.current = false;
+                }
                 setIsLoading(false);
                 return;
             }
             
-            // Handle sessions with user
+            // Handle sessions with user - ALWAYS set user if session exists
             if (session?.user) {
                 const appUser = await convertSupabaseUser(session.user);
                 setUser(appUser);
+                hasUserRef.current = true;
                 setIsLoading(false);
                 return;
             }
             
-            // For INITIAL_SESSION event without session, don't clear user if we just checked
+            // For INITIAL_SESSION event without session
             if (event === 'INITIAL_SESSION') {
-                // Don't clear user on initial session if we're still in initial check phase
-                // This prevents race condition where checkSession sets user but INITIAL_SESSION clears it
-                if (isInitialCheck) {
-                    console.log('INITIAL_SESSION during initial check, not clearing user');
+                // Don't clear user on initial session if we have a user and are in initial check
+                if (isInitialCheckRef.current && hasUserRef.current) {
+                    console.log('INITIAL_SESSION during initial check with user, not clearing');
                     setIsLoading(false);
                     return;
                 }
+                // If no user was found, it's safe to clear
+                if (!hasUserRef.current) {
+                    setUser(null);
+                }
+                setIsLoading(false);
+                return;
             }
             
-            // For other events without session, only clear if not initial check
+            // For SIGNED_IN or USER_UPDATED events without session - don't clear
             if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
                 // These events should have a session, but if not, don't clear user
                 setIsLoading(false);
-            } else if (!isInitialCheck) {
-                // Only clear user if it's not the initial check phase
-                setUser(null);
-                setIsLoading(false);
-            } else {
-                setIsLoading(false);
+                return;
             }
+            
+            // For other events without session, only clear if not initial check and no user
+            if (!isInitialCheckRef.current && !hasUserRef.current) {
+                setUser(null);
+            }
+            setIsLoading(false);
         });
 
         return () => {
@@ -145,6 +162,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 // Immediately set user to prevent any race conditions
                 const appUser = await convertSupabaseUser(data.user);
                 setUser(appUser);
+                hasUserRef.current = true;
                 // Keep isLoading true - onAuthStateChange will set it to false
                 // This ensures the session is fully established
                 console.log('Login successful, user set:', appUser.email);

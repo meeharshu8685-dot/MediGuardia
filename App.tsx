@@ -86,6 +86,23 @@ const AppContent: React.FC = () => {
         // Critical: Never reset from main to auth if user is authenticated
         if (appState === 'main' && isAuthenticated) {
             // User is in main and authenticated - never reset to auth
+            console.log('User authenticated in main, preventing reset');
+            return;
+        }
+        
+        // If authenticated and not in main, go to main
+        if (isAuthenticated && appState !== 'main') {
+            console.log('User authenticated, transitioning to main');
+            setAppState('main');
+            hasInitialized.current = true;
+            return;
+        }
+        
+        // If not authenticated and in main, go to auth (user logged out)
+        if (!isAuthenticated && appState === 'main') {
+            console.log('User not authenticated in main, going to auth');
+            setAppState('auth');
+            hasInitialized.current = true;
             return;
         }
         
@@ -94,6 +111,7 @@ const AppContent: React.FC = () => {
         // 2. The target state is different from current state, OR
         // 3. We're in splash screen (initial load)
         if (!hasInitialized.current || appState !== targetState || appState === 'splash') {
+            console.log('Updating app state:', appState, '->', targetState);
             setAppState(targetState);
             hasInitialized.current = true;
         }
