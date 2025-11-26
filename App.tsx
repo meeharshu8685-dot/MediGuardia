@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { OnboardingScreen } from './screens/OnboardingScreen';
 import { AuthScreen } from './screens/AuthScreen';
 import { HomeScreen } from './screens/HomeScreen';
@@ -42,6 +42,7 @@ const AppContent: React.FC = () => {
     const [appState, setAppState] = useState<AppState>('splash');
     const [activeTab, setActiveTab] = useState<MainTab>('home');
     const [view, setView] = useState<string>('home');
+    const hasInitialized = useRef(false);
 
     // Centralized Application State
     const [userProfile, setUserProfile] = useState<UserProfile>(mockUser);
@@ -59,6 +60,7 @@ const AppContent: React.FC = () => {
             window.history.replaceState(null, '', window.location.pathname);
             // OAuth callback detected - wait for auth state to update
             // The AuthContext will handle the session automatically
+            hasInitialized.current = false; // Reset to allow state update after OAuth
             return;
         }
 
@@ -67,14 +69,37 @@ const AppContent: React.FC = () => {
             return; // Still loading, keep splash screen
         }
 
+        // Prevent resetting app state if already in main and still authenticated
+        // This prevents the login loop
+        if (appState === 'main' && isAuthenticated && hasInitialized.current) {
+            return; // Already in main screen and authenticated, don't reset
+        }
+
         // Once loading is complete, check authentication state
         const onboardingCompleted = localStorage.getItem('onboardingCompleted');
+        
         if (!onboardingCompleted) {
-            setAppState('onboarding');
+            // Only set onboarding if not already there
+            if (appState !== 'onboarding') {
+                setAppState('onboarding');
+                hasInitialized.current = true;
+            }
         } else if (isAuthenticated) {
-            setAppState('main');
+            // User is authenticated, go to main screen
+            if (appState !== 'main') {
+                setAppState('main');
+                hasInitialized.current = true;
+            }
         } else {
-            setAppState('auth');
+            // User is not authenticated, go to auth screen
+            // Only reset if we're coming from splash or if user was logged out
+            if (appState === 'splash' || appState === 'main') {
+                setAppState('auth');
+                hasInitialized.current = true;
+            } else if (appState !== 'auth') {
+                setAppState('auth');
+                hasInitialized.current = true;
+            }
         }
     }, [isAuthenticated, isLoading]);
 
