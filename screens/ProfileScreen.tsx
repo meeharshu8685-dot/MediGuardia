@@ -128,6 +128,9 @@ const ProfileInfoCard: React.FC<{ user: UserProfile, onEdit: () => void }> = ({ 
             </button>
         </div>
         <div className="space-y-3">
+            <div className="flex justify-between text-md"><span className="text-neutral-500">Age</span><span className="font-semibold text-neutral-700">{user.age ? `${user.age} years` : 'N/A'}</span></div>
+            <div className="flex justify-between text-md"><span className="text-neutral-500">Height</span><span className="font-semibold text-neutral-700">{user.height || 'N/A'}</span></div>
+            <div className="flex justify-between text-md"><span className="text-neutral-500">Weight</span><span className="font-semibold text-neutral-700">{user.weight || 'N/A'}</span></div>
             <div className="flex justify-between text-md"><span className="text-neutral-500">Blood Group</span><span className="font-semibold text-neutral-700">{user.bloodGroup || 'N/A'}</span></div>
             <div className="flex justify-between text-md"><span className="text-neutral-500">Allergies</span><span className="font-semibold text-neutral-700 text-right truncate">{user.allergies.length > 0 ? user.allergies.join(', ') : 'None'}</span></div>
             <div className="flex justify-between text-md"><span className="text-neutral-500">Conditions</span><span className="font-semibold text-neutral-700 text-right truncate">{user.chronicConditions.length > 0 ? user.chronicConditions.join(', ') : 'None'}</span></div>

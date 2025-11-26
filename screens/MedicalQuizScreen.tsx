@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { UserProfile } from '../types';
 
@@ -13,7 +14,7 @@ const quizData = {
     commonConditions: ["Asthma", "Diabetes", "Hypertension", "Migraines", "Arthritis"],
 };
 
-const TOTAL_STEPS = 4;
+const TOTAL_STEPS = 5;
 
 const ProgressBar: React.FC<{ current: number; total: number }> = ({ current, total }) => (
     <div className="w-full bg-neutral-200 rounded-full h-2 mb-4">
@@ -78,6 +79,35 @@ export const MedicalQuizScreen: React.FC<MedicalQuizProps> = ({ initialProfile, 
             case 2:
                 return (
                     <div>
+                        <h2 className="text-2xl font-bold mb-4 text-center">Your Vitals</h2>
+                        <div className="space-y-4">
+                             <input
+                                type="number"
+                                value={profileData.age || ''}
+                                onChange={(e) => setProfileData({...profileData, age: parseInt(e.target.value, 10) || undefined})}
+                                placeholder="Age (years)"
+                                className="w-full p-3 border-2 rounded-xl bg-neutral-100 border-neutral-200 focus:border-primary outline-none"
+                             />
+                              <input
+                                type="text"
+                                value={profileData.height || ''}
+                                onChange={(e) => setProfileData({...profileData, height: e.target.value})}
+                                placeholder="Height (e.g., 180 cm / 5' 11\")"
+                                className="w-full p-3 border-2 rounded-xl bg-neutral-100 border-neutral-200 focus:border-primary outline-none"
+                             />
+                             <input
+                                type="text"
+                                value={profileData.weight || ''}
+                                onChange={(e) => setProfileData({...profileData, weight: e.target.value})}
+                                placeholder="Weight (e.g., 75 kg / 165 lbs)"
+                                className="w-full p-3 border-2 rounded-xl bg-neutral-100 border-neutral-200 focus:border-primary outline-none"
+                             />
+                        </div>
+                    </div>
+                );
+            case 3:
+                return (
+                    <div>
                         <h2 className="text-2xl font-bold mb-4 text-center">Do you have any allergies?</h2>
                         <div className="grid grid-cols-2 gap-3 mb-4">
                              {quizData.commonAllergies.map(allergy => (
@@ -98,7 +128,7 @@ export const MedicalQuizScreen: React.FC<MedicalQuizProps> = ({ initialProfile, 
                          />
                     </div>
                 );
-            case 3:
+            case 4:
                  return (
                     <div>
                         <h2 className="text-2xl font-bold mb-4 text-center">Any chronic conditions?</h2>
@@ -121,7 +151,7 @@ export const MedicalQuizScreen: React.FC<MedicalQuizProps> = ({ initialProfile, 
                          />
                     </div>
                 );
-            case 4:
+            case 5:
                 return (
                     <div>
                         <h2 className="text-2xl font-bold mb-4 text-center">Emergency Contact</h2>
