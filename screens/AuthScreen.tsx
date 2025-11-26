@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-// FIX: Import `ChevronRightIcon` to resolve reference error.
 import { GoogleIcon, BackArrowIcon, FacebookIcon, ChevronRightIcon } from '../constants';
+import { useAuth } from '../contexts/AuthContext';
 
 type AuthMode = 'login' | 'signup' | 'forgot';
 
@@ -34,85 +34,357 @@ const BackButton: React.FC<{ onClick: () => void }> = ({ onClick }) => (
     </button>
 );
 
-const SocialIcons: React.FC = () => (
+const SocialIcons: React.FC<{ 
+    onGoogleLogin: () => void; 
+    onFacebookLogin: () => void; 
+    isLoading?: boolean 
+}> = ({ onGoogleLogin, onFacebookLogin, isLoading = false }) => (
     <div className="flex justify-center space-x-4">
-        {[<GoogleIcon />, <FacebookIcon />].map((Icon, i) => (
-            <button key={i} className="w-12 h-12 flex items-center justify-center border border-gray-200 rounded-full text-gray-700 hover:bg-gray-100 transition-colors">
-                {Icon}
-            </button>
-        ))}
+        <button 
+            onClick={onGoogleLogin}
+            disabled={isLoading}
+            className="w-12 h-12 flex items-center justify-center border border-gray-200 dark:border-neutral-600 rounded-full text-gray-700 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Sign in with Google"
+        >
+            <GoogleIcon />
+        </button>
+        <button 
+            onClick={onFacebookLogin}
+            disabled={isLoading}
+            className="w-12 h-12 flex items-center justify-center border border-gray-200 dark:border-neutral-600 rounded-full text-gray-700 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Sign in with Facebook"
+        >
+            <FacebookIcon />
+        </button>
     </div>
 );
 
-const InputField: React.FC<{ id: string, label: string, type: string, placeholder: string }> = ({ id, label, type, placeholder }) => (
+const InputField: React.FC<{ 
+    id: string, 
+    label: string, 
+    type: string, 
+    placeholder: string,
+    value: string,
+    onChange: (value: string) => void,
+    error?: string
+}> = ({ id, label, type, placeholder, value, onChange, error }) => (
     <div className="mb-4">
         <label className="block text-gray-500 text-sm font-bold mb-2" htmlFor={id}>
             {label}
         </label>
-        <input className="w-full px-4 py-3 bg-gray-100 rounded-lg border-2 border-transparent focus:border-[#3A59FF] focus:bg-white outline-none transition-colors text-[#1A1A1A]" id={id} type={type} placeholder={placeholder} />
+        <input 
+            className={`w-full px-4 py-3 bg-gray-100 dark:bg-neutral-700 rounded-lg border-2 ${
+                error ? 'border-red-500' : 'border-transparent'
+            } focus:border-[#3A59FF] focus:bg-white dark:focus:bg-neutral-600 outline-none transition-colors text-[#1A1A1A] dark:text-neutral-200`}
+            id={id} 
+            type={type} 
+            placeholder={placeholder}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+        />
+        {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
     </div>
 );
 
 const LoginView: React.FC<{ setMode: (mode: AuthMode) => void; onLogin: () => void }> = ({ setMode, onLogin }) => {
+    const { login, loginWithGoogle, loginWithFacebook } = useAuth();
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [rememberMe, setRememberMe] = useState(true);
+    const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [isSocialLoading, setIsSocialLoading] = useState(false);
+    const [emailError, setEmailError] = useState('');
+    const [passwordError, setPasswordError] = useState('');
+
+    const validateEmail = (email: string) => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    };
+
+    const handleLogin = async () => {
+        setError('');
+        setEmailError('');
+        setPasswordError('');
+
+        // Validation
+        if (!email) {
+            setEmailError('Email is required');
+            return;
+        }
+        if (!validateEmail(email)) {
+            setEmailError('Please enter a valid email');
+            return;
+        }
+        if (!password) {
+            setPasswordError('Password is required');
+            return;
+        }
+
+        setIsLoading(true);
+        const result = await login(email, password);
+        setIsLoading(false);
+
+        if (result.success) {
+            onLogin();
+        } else {
+            setError(result.error || 'Login failed');
+        }
+    };
+
+    const handleGoogleLogin = async () => {
+        setError('');
+        setIsSocialLoading(true);
+        const result = await loginWithGoogle();
+        setIsSocialLoading(false);
+        
+        if (result.success) {
+            onLogin();
+        } else {
+            setError(result.error || 'Google sign in failed');
+        }
+    };
+
+    const handleFacebookLogin = async () => {
+        setError('');
+        setIsSocialLoading(true);
+        const result = await loginWithFacebook();
+        setIsSocialLoading(false);
+        
+        if (result.success) {
+            onLogin();
+        } else {
+            setError(result.error || 'Facebook sign in failed');
+        }
+    };
+
     return (
         <div className="space-y-6">
-             <BackButton onClick={() => alert("Navigate to previous screen")} />
-            <h2 className="text-3xl font-bold text-[#1A1A1A]">Welcome back</h2>
+            <BackButton onClick={() => alert("Navigate to previous screen")} />
+            <h2 className="text-3xl font-bold text-[#1A1A1A] dark:text-neutral-100">Welcome back</h2>
             
-            <InputField id="login-email" label="Email" type="email" placeholder="kristin.watson@example.com" />
-            <InputField id="login-password" label="Password" type="password" placeholder="••••••••••" />
+            {error && (
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg text-sm">
+                    {error}
+                </div>
+            )}
+
+            <InputField 
+                id="login-email" 
+                label="Email" 
+                type="email" 
+                placeholder="kristin.watson@example.com"
+                value={email}
+                onChange={setEmail}
+                error={emailError}
+            />
+            <InputField 
+                id="login-password" 
+                label="Password" 
+                type="password" 
+                placeholder="••••••••••"
+                value={password}
+                onChange={setPassword}
+                error={passwordError}
+            />
 
             <div className="flex justify-between items-center text-sm">
-                <label className="flex items-center text-gray-600">
-                    <input type="checkbox" className="h-4 w-4 rounded border-gray-300 text-[#3A59FF] focus:ring-[#3A59FF]" defaultChecked />
+                <label className="flex items-center text-gray-600 dark:text-neutral-300">
+                    <input 
+                        type="checkbox" 
+                        className="h-4 w-4 rounded border-gray-300 text-[#3A59FF] focus:ring-[#3A59FF]" 
+                        checked={rememberMe}
+                        onChange={(e) => setRememberMe(e.target.checked)}
+                    />
                     <span className="ml-2">Remember me</span>
                 </label>
                 <a href="#" onClick={(e) => { e.preventDefault(); setMode('forgot'); }} className="font-medium text-[#3A59FF] hover:underline">Forgot password?</a>
             </div>
 
-            <button onClick={onLogin} className="w-full bg-[#3A59FF] text-white py-3 rounded-xl text-lg font-semibold shadow-lg hover:opacity-90 transition-opacity">Sign In</button>
+            <button 
+                onClick={handleLogin} 
+                disabled={isLoading}
+                className="w-full bg-[#3A59FF] text-white py-3 rounded-xl text-lg font-semibold shadow-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+                {isLoading ? 'Signing in...' : 'Sign In'}
+            </button>
             
             <div className="my-4 flex items-center">
-                <hr className="flex-grow border-gray-200" />
-                <span className="mx-4 text-gray-500 text-xs">Sign in with</span>
-                <hr className="flex-grow border-gray-200" />
+                <hr className="flex-grow border-gray-200 dark:border-neutral-600" />
+                <span className="mx-4 text-gray-500 dark:text-neutral-400 text-xs">Sign in with</span>
+                <hr className="flex-grow border-gray-200 dark:border-neutral-600" />
             </div>
             
-            <SocialIcons />
+            <SocialIcons 
+                onGoogleLogin={handleGoogleLogin}
+                onFacebookLogin={handleFacebookLogin}
+                isLoading={isSocialLoading || isLoading}
+            />
             
-            <p className="mt-6 text-center text-sm text-gray-600">
-                Don’t have an account? <a href="#" onClick={(e) => { e.preventDefault(); setMode('signup'); }} className="font-bold text-[#3A59FF] hover:underline">Sign up</a>
+            <p className="mt-6 text-center text-sm text-gray-600 dark:text-neutral-400">
+                Don't have an account? <a href="#" onClick={(e) => { e.preventDefault(); setMode('signup'); }} className="font-bold text-[#3A59FF] hover:underline">Sign up</a>
             </p>
         </div>
     );
 };
 
 const SignupView: React.FC<{ setMode: (mode: AuthMode) => void; onSignup: () => void }> = ({ setMode, onSignup }) => {
+    const { signup, loginWithGoogle, loginWithFacebook } = useAuth();
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [agreeToTerms, setAgreeToTerms] = useState(false);
+    const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [isSocialLoading, setIsSocialLoading] = useState(false);
+    const [nameError, setNameError] = useState('');
+    const [emailError, setEmailError] = useState('');
+    const [passwordError, setPasswordError] = useState('');
+
+    const validateEmail = (email: string) => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    };
+
+    const handleSignup = async () => {
+        setError('');
+        setNameError('');
+        setEmailError('');
+        setPasswordError('');
+
+        // Validation
+        if (!name.trim()) {
+            setNameError('Name is required');
+            return;
+        }
+        if (!email) {
+            setEmailError('Email is required');
+            return;
+        }
+        if (!validateEmail(email)) {
+            setEmailError('Please enter a valid email');
+            return;
+        }
+        if (!password) {
+            setPasswordError('Password is required');
+            return;
+        }
+        if (password.length < 6) {
+            setPasswordError('Password must be at least 6 characters');
+            return;
+        }
+        if (!agreeToTerms) {
+            setError('Please agree to the terms and conditions');
+            return;
+        }
+
+        setIsLoading(true);
+        const result = await signup(name.trim(), email, password);
+        setIsLoading(false);
+
+        if (result.success) {
+            onSignup();
+        } else {
+            setError(result.error || 'Signup failed');
+        }
+    };
+
+    const handleGoogleSignup = async () => {
+        setError('');
+        setIsSocialLoading(true);
+        const result = await loginWithGoogle();
+        setIsSocialLoading(false);
+        
+        if (result.success) {
+            onSignup();
+        } else {
+            setError(result.error || 'Google sign up failed');
+        }
+    };
+
+    const handleFacebookSignup = async () => {
+        setError('');
+        setIsSocialLoading(true);
+        const result = await loginWithFacebook();
+        setIsSocialLoading(false);
+        
+        if (result.success) {
+            onSignup();
+        } else {
+            setError(result.error || 'Facebook sign up failed');
+        }
+    };
+
     return (
         <div className="space-y-6">
             <BackButton onClick={() => setMode('login')} />
-            <h2 className="text-3xl font-bold text-[#1A1A1A]">Get Started</h2>
+            <h2 className="text-3xl font-bold text-[#1A1A1A] dark:text-neutral-100">Get Started</h2>
             
-            <InputField id="signup-name" label="Full Name" type="text" placeholder="Enter Full Name" />
-            <InputField id="signup-email" label="Email" type="email" placeholder="Enter Email" />
-            <InputField id="signup-password" label="Password" type="password" placeholder="••••••••••" />
+            {error && (
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg text-sm">
+                    {error}
+                </div>
+            )}
             
-             <label className="flex items-start text-gray-600 text-sm">
-                <input type="checkbox" className="h-4 w-4 rounded border-gray-300 text-[#3A59FF] focus:ring-[#3A59FF] mt-1" defaultChecked />
+            <InputField 
+                id="signup-name" 
+                label="Full Name" 
+                type="text" 
+                placeholder="Enter Full Name"
+                value={name}
+                onChange={setName}
+                error={nameError}
+            />
+            <InputField 
+                id="signup-email" 
+                label="Email" 
+                type="email" 
+                placeholder="Enter Email"
+                value={email}
+                onChange={setEmail}
+                error={emailError}
+            />
+            <InputField 
+                id="signup-password" 
+                label="Password" 
+                type="password" 
+                placeholder="••••••••••"
+                value={password}
+                onChange={setPassword}
+                error={passwordError}
+            />
+            
+            <label className="flex items-start text-gray-600 dark:text-neutral-300 text-sm">
+                <input 
+                    type="checkbox" 
+                    className="h-4 w-4 rounded border-gray-300 text-[#3A59FF] focus:ring-[#3A59FF] mt-1" 
+                    checked={agreeToTerms}
+                    onChange={(e) => setAgreeToTerms(e.target.checked)}
+                />
                 <span className="ml-2">I agree to the processing of <a href="#" className="font-bold text-[#3A59FF]">Personal data</a></span>
             </label>
             
-            <button onClick={onSignup} className="w-full bg-[#3A59FF] text-white py-3 rounded-xl text-lg font-semibold shadow-lg hover:opacity-90 transition-opacity">Sign Up</button>
+            <button 
+                onClick={handleSignup} 
+                disabled={isLoading}
+                className="w-full bg-[#3A59FF] text-white py-3 rounded-xl text-lg font-semibold shadow-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+                {isLoading ? 'Creating account...' : 'Sign Up'}
+            </button>
             
-             <div className="my-4 flex items-center">
-                <hr className="flex-grow border-gray-200" />
-                <span className="mx-4 text-gray-500 text-xs">Sign up with</span>
-                <hr className="flex-grow border-gray-200" />
+            <div className="my-4 flex items-center">
+                <hr className="flex-grow border-gray-200 dark:border-neutral-600" />
+                <span className="mx-4 text-gray-500 dark:text-neutral-400 text-xs">Sign up with</span>
+                <hr className="flex-grow border-gray-200 dark:border-neutral-600" />
             </div>
 
-            <SocialIcons />
+            <SocialIcons 
+                onGoogleLogin={handleGoogleSignup}
+                onFacebookLogin={handleFacebookSignup}
+                isLoading={isSocialLoading || isLoading}
+            />
 
-            <p className="mt-6 text-center text-sm text-gray-600">
+            <p className="mt-6 text-center text-sm text-gray-600 dark:text-neutral-400">
                 Already have an account? <a href="#" onClick={(e) => { e.preventDefault(); setMode('login'); }} className="font-bold text-[#3A59FF] hover:underline">Sign in</a>
             </p>
         </div>
@@ -120,15 +392,55 @@ const SignupView: React.FC<{ setMode: (mode: AuthMode) => void; onSignup: () => 
 };
 
 const ForgotPasswordView: React.FC<{ setMode: (mode: AuthMode) => void }> = ({ setMode }) => {
+    const [email, setEmail] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [message, setMessage] = useState('');
+
+    const handleReset = async () => {
+        if (!email) {
+            setMessage('Please enter your email');
+            return;
+        }
+
+        setIsLoading(true);
+        // Simulate API call
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        setIsLoading(false);
+        setMessage('Password reset link has been sent to your email!');
+    };
+
     return (
         <div className="space-y-6">
-             <BackButton onClick={() => setMode('login')} />
-            <h2 className="text-3xl font-bold text-[#1A1A1A]">Forgot Password</h2>
-            <p className="text-gray-500">Enter your email to receive a password reset link.</p>
+            <BackButton onClick={() => setMode('login')} />
+            <h2 className="text-3xl font-bold text-[#1A1A1A] dark:text-neutral-100">Forgot Password</h2>
+            <p className="text-gray-500 dark:text-neutral-400">Enter your email to receive a password reset link.</p>
             
-            <InputField id="forgot-email" label="Email" type="email" placeholder="Enter your email" />
+            {message && (
+                <div className={`px-4 py-3 rounded-lg text-sm ${
+                    message.includes('sent') 
+                        ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300'
+                        : 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300'
+                }`}>
+                    {message}
+                </div>
+            )}
+
+            <InputField 
+                id="forgot-email" 
+                label="Email" 
+                type="email" 
+                placeholder="Enter your email"
+                value={email}
+                onChange={setEmail}
+            />
             
-            <button className="w-full bg-[#3A59FF] text-white py-3 rounded-xl text-lg font-semibold shadow-lg hover:opacity-90 transition-opacity mt-4">Send Reset Link</button>
+            <button 
+                onClick={handleReset}
+                disabled={isLoading}
+                className="w-full bg-[#3A59FF] text-white py-3 rounded-xl text-lg font-semibold shadow-lg hover:opacity-90 transition-opacity mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+                {isLoading ? 'Sending...' : 'Send Reset Link'}
+            </button>
         </div>
     );
 };
@@ -140,7 +452,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
         <div className="relative min-h-screen w-screen bg-[#ECF3FF] flex flex-col items-center justify-center p-4 overflow-hidden">
             <AuthBackground />
             <div className="relative z-10 w-full max-w-sm">
-                <div className="bg-white/90 backdrop-blur-lg rounded-3xl shadow-2xl p-8">
+                <div className="bg-white/90 dark:bg-neutral-800/90 backdrop-blur-lg rounded-3xl shadow-2xl p-8">
                     {mode === 'login' && <LoginView setMode={setMode} onLogin={onLoginSuccess} />}
                     {mode === 'signup' && <SignupView setMode={setMode} onSignup={onLoginSuccess} />}
                     {mode === 'forgot' && <ForgotPasswordView setMode={setMode} />}

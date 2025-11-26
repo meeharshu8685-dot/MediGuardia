@@ -13,6 +13,7 @@ import { BottomNavBar } from './components/BottomNavBar';
 import { UserProfile, MedicalDocument, HealthLog, Medication } from './types';
 import { mockUser, mockDocs, mockHealthLogs, mockMedications } from './data/mock';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 
 
 type AppState = 'splash' | 'onboarding' | 'auth' | 'main';
@@ -33,7 +34,8 @@ const SplashScreen: React.FC = () => (
     </div>
 );
 
-export default function App() {
+const AppContent: React.FC = () => {
+    const { isAuthenticated, isLoading, user, logout } = useAuth();
     const [appState, setAppState] = useState<AppState>('splash');
     const [activeTab, setActiveTab] = useState<MainTab>('home');
     const [view, setView] = useState<string>('home');
@@ -45,16 +47,40 @@ export default function App() {
     const [medications, setMedications] = useState<Medication[]>(mockMedications);
 
     useEffect(() => {
+        // Check for OAuth callback in URL
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const hasOAuthCallback = hashParams.get('access_token') || hashParams.get('error');
+
+        if (hasOAuthCallback) {
+            // OAuth callback detected - wait for auth state to update
+            // The AuthContext will handle the session automatically
+            return;
+        }
+
         const timer = setTimeout(() => {
             const onboardingCompleted = localStorage.getItem('onboardingCompleted');
             if (!onboardingCompleted) {
                 setAppState('onboarding');
+            } else if (isAuthenticated) {
+                setAppState('main');
             } else {
                 setAppState('auth');
             }
         }, 3000);
         return () => clearTimeout(timer);
-    }, []);
+    }, [isAuthenticated]);
+
+    // Update user profile when auth user changes
+    useEffect(() => {
+        if (user) {
+            setUserProfile({
+                ...mockUser,
+                name: user.name,
+                email: user.email,
+                avatarUrl: user.avatarUrl || mockUser.avatarUrl
+            });
+        }
+    }, [user]);
 
     // State Handler Functions
     const handleUpdateProfile = (updatedProfile: UserProfile) => {
@@ -80,7 +106,9 @@ export default function App() {
     };
 
     const handleLoginSuccess = () => {
-        setAppState('main');
+        if (isAuthenticated) {
+            setAppState('main');
+        }
     };
 
     const handleOnboardingComplete = () => {
@@ -114,7 +142,7 @@ export default function App() {
             case 'history':
                 return <HistoryScreen {...screenProps} view={view} logs={healthLogs} medications={medications} onAddMedication={handleAddMedication} />;
             case 'profile':
-                return <ProfileScreen {...screenProps} user={userProfile} docs={documents} onUpdateProfile={handleUpdateProfile} onLogout={() => setAppState('auth')} />;
+                return <ProfileScreen {...screenProps} user={userProfile} docs={documents} onUpdateProfile={handleUpdateProfile} onLogout={() => { logout(); setAppState('auth'); }} />;
             default:
                 return <HomeScreen {...screenProps} user={userProfile} medications={medications} logs={healthLogs} />;
         }
@@ -143,9 +171,27 @@ export default function App() {
         }
     };
 
+    if (isLoading) {
+        return (
+            <ThemeProvider>
+                <div className="w-screen h-screen overflow-x-hidden flex items-center justify-center">
+                    <SplashScreen />
+                </div>
+            </ThemeProvider>
+        );
+    }
+
     return (
         <ThemeProvider>
             <div className="w-screen h-screen overflow-x-hidden">{renderContent()}</div>
         </ThemeProvider>
+    );
+};
+
+export default function App() {
+    return (
+        <AuthProvider>
+            <AppContent />
+        </AuthProvider>
     );
 }

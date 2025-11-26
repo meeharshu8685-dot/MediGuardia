@@ -9,11 +9,11 @@ let ai: GoogleGenAI | null = null;
 
 const getAI = (): GoogleGenAI => {
   if (!ai) {
-    if (!API_KEY) {
+if (!API_KEY) {
       throw new Error("Gemini API key not found. Please set the GEMINI_API_KEY environment variable.");
     }
     ai = new GoogleGenAI({ apiKey: API_KEY });
-  }
+}
   return ai;
 };
 
