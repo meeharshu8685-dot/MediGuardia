@@ -113,19 +113,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 return;
             }
             
-            // Handle SIGNED_IN event (OAuth callback) - this is critical for OAuth
-            if (event === 'SIGNED_IN') {
-                if (session?.user) {
-                    const appUser = await convertSupabaseUser(session.user);
-                    setUser(appUser);
-                    hasUserRef.current = true;
-                    setIsLoading(false);
-                    console.log('OAuth SIGNED_IN event, user set:', appUser.email);
-                } else {
-                    // SIGNED_IN without session - shouldn't happen but handle it
-                    console.warn('SIGNED_IN event without session');
-                    setIsLoading(false);
-                }
+            // Handle TOKEN_REFRESHED event (can happen during OAuth) - check for session
+            if (event === 'TOKEN_REFRESHED' && session?.user) {
+                const appUser = await convertSupabaseUser(session.user);
+                setUser(appUser);
+                hasUserRef.current = true;
+                setIsLoading(false);
+                console.log('TOKEN_REFRESHED event with session, user set:', appUser.email);
                 return;
             }
             
@@ -154,9 +148,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 return;
             }
             
-            // For SIGNED_IN or USER_UPDATED events without session - don't clear
-            if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
-                // These events should have a session, but if not, don't clear user
+            // For USER_UPDATED events without session - don't clear
+            if (event === 'USER_UPDATED') {
+                // This event should have a session, but if not, don't clear user
                 setIsLoading(false);
                 return;
             }
