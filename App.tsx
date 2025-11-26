@@ -43,6 +43,7 @@ const AppContent: React.FC = () => {
     const [activeTab, setActiveTab] = useState<MainTab>('home');
     const [view, setView] = useState<string>('home');
     const hasInitialized = useRef(false);
+    const isOAuthCallback = useRef(false);
 
     // Centralized Application State
     const [userProfile, setUserProfile] = useState<UserProfile>(mockUser);
@@ -57,13 +58,27 @@ const AppContent: React.FC = () => {
 
         if (hasOAuthCallback) {
             console.log('OAuth callback detected, waiting for session...');
+            // Mark that we're in OAuth callback state
+            isOAuthCallback.current = true;
             // Clear hash from URL
             window.history.replaceState(null, '', window.location.pathname);
             // OAuth callback detected - wait for auth state to update
             // The AuthContext will handle the session automatically via onAuthStateChange
-            // Don't reset hasInitialized - let the auth state change handler update it
-            // Just wait for isLoading to become false and isAuthenticated to become true
+            // Don't process app state until session is established
             return;
+        }
+        
+        // If we're waiting for OAuth callback to complete
+        if (isOAuthCallback.current) {
+            // Wait for authentication to be established
+            if (isLoading || !isAuthenticated) {
+                console.log('Waiting for OAuth session to be established...', { isLoading, isAuthenticated });
+                return; // Still waiting
+            }
+            // OAuth callback completed, user is authenticated
+            console.log('OAuth callback completed, user authenticated');
+            isOAuthCallback.current = false;
+            // Fall through to set app state to main
         }
 
         // Wait for auth to finish loading before deciding app state
@@ -101,6 +116,7 @@ const AppContent: React.FC = () => {
             console.log('User authenticated, transitioning to main');
             setAppState('main');
             hasInitialized.current = true;
+            isOAuthCallback.current = false; // Clear OAuth callback flag
             return;
         }
         
