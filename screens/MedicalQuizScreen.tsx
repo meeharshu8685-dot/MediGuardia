@@ -92,7 +92,7 @@ export const MedicalQuizScreen: React.FC<MedicalQuizProps> = ({ initialProfile, 
                                 type="text"
                                 value={profileData.height || ''}
                                 onChange={(e) => setProfileData({...profileData, height: e.target.value})}
-                                placeholder="Height (e.g., 180 cm / 5' 11\")"
+                                placeholder="Height (e.g., 180 cm or 5 feet 11 inches)"
                                 className="w-full p-3 border-2 rounded-xl bg-neutral-100 border-neutral-200 focus:border-primary outline-none"
                              />
                              <input
