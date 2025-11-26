@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect, useRef } from 'react';
-import { BackArrowIcon, CheckCircleIcon, LocationMarkerIcon, PhoneIcon } from '../constants';
+import { BackArrowIcon, CheckCircleIcon, LocationMarkerIcon, PhoneIcon, BreathingIcon, ChestPainIcon, BleedingIcon, FeverIcon, AllergyIcon, BurnIcon } from '../constants';
 
 const firstAidData = {
-    "Breathing": {
+    "Breathing Difficulty": {
         steps: [
             "Call emergency services immediately.",
             "Check the person's airway and remove any obstructions.",
@@ -61,19 +60,24 @@ const firstAidData = {
 
 
 const firstAidCategories = [
-    { name: "Breathing", icon: "💨" }, { name: "Chest Pain", icon: "💔" },
-    { name: "Bleeding", icon: "🩸" }, { name: "Fever", icon: "🤒" },
-    { name: "Allergies", icon: "🐝" }, { name: "Burns", icon: "🔥" },
+    { name: "Breathing Difficulty", icon: <BreathingIcon /> }, 
+    { name: "Chest Pain", icon: <ChestPainIcon /> },
+    { name: "Bleeding", icon: <BleedingIcon /> }, 
+    { name: "Fever", icon: <FeverIcon /> },
+    { name: "Allergies", icon: <AllergyIcon /> }, 
+    { name: "Burns", icon: <BurnIcon /> },
 ];
 
 const FirstAidCategoriesView: React.FC<{ onSelect: (category: string) => void }> = ({ onSelect }) => (
     <div>
-        <h1 className="text-3xl font-bold text-[#1A1A1A] text-center mb-8">First Aid</h1>
+        <h1 className="text-3xl font-bold text-neutral-900 text-center mb-8">First Aid</h1>
         <div className="grid grid-cols-2 gap-4">
             {firstAidCategories.map(cat => (
-                <div key={cat.name} onClick={() => onSelect(cat.name)} className="bg-white p-4 rounded-2xl shadow-md text-center cursor-pointer hover:shadow-lg transition-shadow">
-                    <div className="text-4xl mb-2">{cat.icon}</div>
-                    <p className="font-semibold text-gray-800">{cat.name}</p>
+                <div key={cat.name} onClick={() => onSelect(cat.name)} className="bg-white p-4 rounded-3xl shadow-sm text-center cursor-pointer hover:shadow-lg transition-shadow flex flex-col items-center">
+                    <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-3 bg-primary-light">
+                        <div className="w-8 h-8 text-primary">{cat.icon}</div>
+                    </div>
+                    <p className="font-bold text-neutral-800">{cat.name}</p>
                 </div>
             ))}
         </div>
