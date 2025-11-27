@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { OnboardingScreen } from './screens/OnboardingScreen';
+import { WelcomeScreen } from './screens/WelcomeScreen';
 import { AuthScreen } from './screens/AuthScreen';
 import { HomeScreen } from './screens/HomeScreen';
 import { SymptomCheckerScreen } from './screens/SymptomCheckerScreen';
@@ -20,7 +21,7 @@ import { getHealthLogs, addHealthLog as saveHealthLog, updateHealthLog, deleteHe
 import { supabase } from './lib/supabase';
 
 
-type AppState = 'splash' | 'onboarding' | 'auth' | 'main';
+type AppState = 'splash' | 'welcome' | 'onboarding' | 'auth' | 'main';
 export type MainTab = 'home' | 'symptom' | 'sos' | 'history' | 'profile';
 
 const SplashScreen: React.FC = () => (
@@ -126,11 +127,14 @@ const AppContent: React.FC = () => {
 
         // Once loading is complete, check authentication state
         const onboardingCompleted = localStorage.getItem('onboardingCompleted');
+        const welcomeCompleted = localStorage.getItem('welcomeCompleted');
         
         // Determine the target state based on authentication
         let targetState: AppState;
         
-        if (!onboardingCompleted) {
+        if (!welcomeCompleted) {
+            targetState = 'welcome';
+        } else if (!onboardingCompleted) {
             targetState = 'onboarding';
         } else if (isAuthenticated) {
             targetState = 'main';
@@ -308,6 +312,23 @@ const AppContent: React.FC = () => {
         // The useEffect will handle the state transition when isAuthenticated changes
     };
 
+    const handleWelcomeComplete = () => {
+        localStorage.setItem('welcomeCompleted', 'true');
+        setAppState('auth');
+    };
+
+    const handleWelcomeSignUp = () => {
+        localStorage.setItem('welcomeCompleted', 'true');
+        setAppState('auth');
+        // The AuthScreen will handle showing signup view
+    };
+
+    const handleWelcomeLogin = () => {
+        localStorage.setItem('welcomeCompleted', 'true');
+        setAppState('auth');
+        // The AuthScreen will handle showing login view
+    };
+
     const handleOnboardingComplete = () => {
         localStorage.setItem('onboardingCompleted', 'true');
         setAppState('auth');
@@ -367,14 +388,38 @@ const AppContent: React.FC = () => {
         }
     };
 
+    const [authInitialMode, setAuthInitialMode] = useState<'login' | 'signup'>('login');
+
     const renderContent = () => {
         switch (appState) {
             case 'splash':
                 return <SplashScreen />;
+            case 'welcome':
+                return (
+                    <WelcomeScreen
+                        onSignUp={() => {
+                            setAuthInitialMode('signup');
+                            handleWelcomeSignUp();
+                        }}
+                        onLogin={() => {
+                            setAuthInitialMode('login');
+                            handleWelcomeLogin();
+                        }}
+                    />
+                );
             case 'onboarding':
                 return <OnboardingScreen onComplete={handleOnboardingComplete} />;
             case 'auth':
-                return <AuthScreen onLoginSuccess={handleLoginSuccess} />;
+                return (
+                    <AuthScreen
+                        onLoginSuccess={handleLoginSuccess}
+                        onBack={() => {
+                            localStorage.removeItem('welcomeCompleted');
+                            setAppState('welcome');
+                        }}
+                        initialMode={authInitialMode}
+                    />
+                );
             case 'main':
                 return (
                     <div className="w-full min-h-screen bg-neutral-100 dark:bg-neutral-900 transition-colors">

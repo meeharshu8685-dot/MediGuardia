@@ -1,99 +1,119 @@
-import React, { useState } from 'react';
-import { GoogleIcon, BackArrowIcon, FacebookIcon, ChevronRightIcon } from '../constants';
+import React, { useState, useEffect } from 'react';
+import { BackArrowIcon, UserIcon, EmailIcon, LockIcon } from '../constants';
 import { useAuth } from '../contexts/AuthContext';
 
 type AuthMode = 'login' | 'signup' | 'forgot';
 
 interface AuthScreenProps {
     onLoginSuccess: () => void;
+    onBack?: () => void;
+    initialMode?: 'login' | 'signup';
 }
 
-const AuthBackground = () => (
-    <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
-        <svg className="absolute w-[160%] h-[160%] -top-[30%] -left-[30%]" preserveAspectRatio="xMidYMid slice" viewBox="0 0 600 800">
+// Plant leaf pattern for top section
+const PlantLeafTopPattern = () => (
+    <div className="absolute top-0 left-0 w-full h-48 overflow-hidden">
+        <svg className="absolute w-full h-full" viewBox="0 0 400 200" preserveAspectRatio="xMidYMid slice">
             <defs>
-                <linearGradient id="authGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" style={{ stopColor: '#4158F7', stopOpacity: 1 }} />
-                    <stop offset="100%" style={{ stopColor: '#9DBBFF', stopOpacity: 1 }} />
-                </linearGradient>
+                <pattern id="topLeafPattern" x="0" y="0" width="200" height="150" patternUnits="userSpaceOnUse">
+                    <path
+                        d="M100,30 Q120,60 140,100 Q150,130 140,160 Q130,180 100,200 Q70,180 60,160 Q50,130 60,100 Q80,60 100,30 Z"
+                        fill="#0d4a2e"
+                        opacity="0.3"
+                    />
+                    <path
+                        d="M100,30 Q120,60 140,100 Q150,130 140,160 Q130,180 100,200"
+                        stroke="#1a5f3f"
+                        strokeWidth="2"
+                        fill="none"
+                        opacity="0.5"
+                    />
+                </pattern>
             </defs>
-            <path fill="url(#authGradient)" opacity="0.6" d="M-12.5,433.5 C99.5,524 213.5,548 381,493 C548.5,438 625,317 625,317 L625,0 L-1,0 L-12.5,433.5 Z" />
-            <path fill="url(#authGradient)" opacity="0.3" d="M-18,482 C116.4,567.2 313.4,582.8 450,517 C586.6,451.2 625,335 625,335 L625,0 L-1,0 L-18,482 Z" />
-            <circle cx="100" cy="650" r="80" fill="#3A59FF" opacity="0.8" />
-            <circle cx="500" cy="150" r="50" fill="white" opacity="0.9" />
-            <circle cx="550" cy="700" r="100" fill="#4158F7" opacity="0.6" />
-            <circle cx="80" cy="120" r="40" fill="white" opacity="0.7" />
+            <rect width="100%" height="100%" fill="#1a5f3f" />
+            <rect width="100%" height="100%" fill="url(#topLeafPattern)" />
+            {/* Large decorative leaves */}
+            <path
+                d="M50,50 Q80,70 100,110 Q110,150 100,190 Q90,210 50,230 Q10,210 0,190 Q-10,150 0,110 Q20,70 50,50 Z"
+                fill="#0d4a2e"
+                opacity="0.4"
+            />
+            <path
+                d="M350,80 Q380,100 400,140 Q410,180 400,220 Q390,240 350,260 Q310,240 300,220 Q290,180 300,140 Q320,100 350,80 Z"
+                fill="#0d4a2e"
+                opacity="0.4"
+            />
+        </svg>
+        {/* Curved bottom edge */}
+        <div className="absolute bottom-0 left-0 w-full h-8 bg-white rounded-t-[3rem]"></div>
+    </div>
+);
+
+// Decorative leaf branch
+const LeafBranch = () => (
+    <div className="absolute right-0 top-32 opacity-30">
+        <svg width="80" height="120" viewBox="0 0 80 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+                d="M60 20 Q70 30 75 45 Q78 55 75 65 Q70 75 60 80 Q50 75 45 65 Q42 55 45 45 Q50 30 60 20 Z"
+                fill="#1a5f3f"
+            />
+            <path
+                d="M50 40 Q55 50 58 60 Q60 68 58 75 Q55 82 50 85 Q45 82 42 75 Q40 68 42 60 Q45 50 50 40 Z"
+                fill="#1a5f3f"
+            />
+            <path
+                d="M40 60 Q45 70 48 80 Q50 88 48 95 Q45 102 40 105 Q35 102 32 95 Q30 88 32 80 Q35 70 40 60 Z"
+                fill="#1a5f3f"
+            />
+            <path
+                d="M30 80 L35 100 L25 100 Z"
+                fill="#1a5f3f"
+            />
         </svg>
     </div>
 );
 
-const BackButton: React.FC<{ onClick: () => void }> = ({ onClick }) => (
-    <button onClick={onClick} className="flex items-center space-x-2 text-sm font-medium text-white bg-[#3A59FF]/80 hover:bg-[#3A59FF] px-3 py-1.5 rounded-full mb-6">
-        <div className="w-4 h-4 transform scale-x-[-1]"><ChevronRightIcon /></div>
-        <span>Back</span>
-    </button>
-);
-
-const SocialIcons: React.FC<{ 
-    onGoogleLogin: () => void; 
-    onFacebookLogin: () => void; 
-    isLoading?: boolean 
-}> = ({ onGoogleLogin, onFacebookLogin, isLoading = false }) => (
-    <div className="flex justify-center space-x-4">
-        <button 
-            onClick={onGoogleLogin}
-            disabled={isLoading}
-            className="w-12 h-12 flex items-center justify-center border border-gray-200 dark:border-neutral-600 rounded-full text-gray-700 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            title="Sign in with Google"
-        >
-            <GoogleIcon />
-        </button>
-        <button 
-            onClick={onFacebookLogin}
-            disabled={isLoading}
-            className="w-12 h-12 flex items-center justify-center border border-gray-200 dark:border-neutral-600 rounded-full text-gray-700 dark:text-neutral-300 hover:bg-gray-100 dark:hover:bg-neutral-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            title="Sign in with Facebook"
-        >
-            <FacebookIcon />
-        </button>
-    </div>
-);
-
-const InputField: React.FC<{ 
-    id: string, 
-    label: string, 
-    type: string, 
-    placeholder: string,
-    value: string,
-    onChange: (value: string) => void,
-    error?: string
-}> = ({ id, label, type, placeholder, value, onChange, error }) => (
+const InputField: React.FC<{
+    id: string;
+    label: string;
+    type: string;
+    placeholder: string;
+    value: string;
+    onChange: (value: string) => void;
+    error?: string;
+    icon: React.ReactNode;
+}> = ({ id, label, type, placeholder, value, onChange, error, icon }) => (
     <div className="mb-4">
-        <label className="block text-gray-500 text-sm font-bold mb-2" htmlFor={id}>
-            {label}
-        </label>
-        <input 
-            className={`w-full px-4 py-3 bg-gray-100 dark:bg-neutral-700 rounded-lg border-2 ${
-                error ? 'border-red-500' : 'border-transparent'
-            } focus:border-[#3A59FF] focus:bg-white dark:focus:bg-neutral-600 outline-none transition-colors text-[#1A1A1A] dark:text-neutral-200`}
-            id={id} 
-            type={type} 
-            placeholder={placeholder}
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-        />
-        {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
+        <div className="relative">
+            <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 flex items-center justify-center">
+                {icon}
+            </div>
+            <input
+                className={`w-full pl-12 pr-4 py-3 bg-white border ${
+                    error ? 'border-red-500' : 'border-gray-300'
+                } rounded-xl focus:border-[#1a5f3f] focus:outline-none transition-colors text-gray-800 placeholder-gray-400`}
+                id={id}
+                type={type}
+                placeholder={placeholder}
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+            />
+        </div>
+        {error && <p className="text-red-500 text-xs mt-1 ml-1">{error}</p>}
     </div>
 );
 
-const LoginView: React.FC<{ setMode: (mode: AuthMode) => void; onLogin: () => void }> = ({ setMode, onLogin }) => {
-    const { login, loginWithGoogle, loginWithFacebook } = useAuth();
+const LoginView: React.FC<{ setMode: (mode: AuthMode) => void; onLogin: () => void; onBack?: () => void }> = ({
+    setMode,
+    onLogin,
+    onBack,
+}) => {
+    const { login } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [rememberMe, setRememberMe] = useState(true);
+    const [rememberMe, setRememberMe] = useState(false);
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const [isSocialLoading, setIsSocialLoading] = useState(false);
     const [emailError, setEmailError] = useState('');
     const [passwordError, setPasswordError] = useState('');
 
@@ -107,13 +127,13 @@ const LoginView: React.FC<{ setMode: (mode: AuthMode) => void; onLogin: () => vo
         setEmailError('');
         setPasswordError('');
 
-        // Validation
-        if (!email) {
+        // Validation - accept email in the Full Name field
+        if (!email.trim()) {
             setEmailError('Email is required');
             return;
         }
         if (!validateEmail(email)) {
-            setEmailError('Please enter a valid email');
+            setEmailError('Please enter a valid email address');
             return;
         }
         if (!password) {
@@ -128,119 +148,122 @@ const LoginView: React.FC<{ setMode: (mode: AuthMode) => void; onLogin: () => vo
         if (result.success) {
             onLogin();
         } else {
-            setError(result.error || 'Login failed');
-        }
-    };
-
-    const handleGoogleLogin = async () => {
-        setError('');
-        setIsSocialLoading(true);
-        const result = await loginWithGoogle();
-        
-        // OAuth redirects to provider, so we don't call onLogin() here
-        // The redirect will happen and the app will handle the callback
-        if (!result.success) {
-            setIsSocialLoading(false);
-            setError(result.error || 'Google sign in failed');
-        }
-        // If success, the redirect will happen - don't set loading to false
-    };
-
-    const handleFacebookLogin = async () => {
-        setError('');
-        setIsSocialLoading(true);
-        const result = await loginWithFacebook();
-        setIsSocialLoading(false);
-        
-        if (result.success) {
-            onLogin();
-        } else {
-            setError(result.error || 'Facebook sign in failed');
+            setError(result.error || 'Login failed. Please check your credentials.');
         }
     };
 
     return (
-        <div className="space-y-6">
-            <BackButton onClick={() => alert("Navigate to previous screen")} />
-            <h2 className="text-3xl font-bold text-[#1A1A1A] dark:text-neutral-100">Welcome back</h2>
-            
-            {error && (
-                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg text-sm">
-                    {error}
-                </div>
-            )}
+        <div className="relative min-h-screen w-screen bg-white">
+            {/* Top curved section with plant pattern */}
+            <div className="relative h-48">
+                <PlantLeafTopPattern />
+                <button
+                    onClick={onBack || (() => setMode('login'))}
+                    className="absolute top-6 left-6 z-20 w-8 h-8 flex items-center justify-center text-white hover:bg-white/20 rounded-full transition-colors"
+                >
+                    <BackArrowIcon />
+                </button>
+            </div>
 
-            <InputField 
-                id="login-email" 
-                label="Email" 
-                type="email" 
-                placeholder="kristin.watson@example.com"
-                value={email}
-                onChange={setEmail}
-                error={emailError}
-            />
-            <InputField 
-                id="login-password" 
-                label="Password" 
-                type="password" 
-                placeholder="••••••••••"
-                value={password}
-                onChange={setPassword}
-                error={passwordError}
-            />
+            {/* Main content */}
+            <div className="relative px-6 pt-8 pb-12">
+                <div className="relative">
+                    <LeafBranch />
+                    <h2 className="text-3xl font-bold text-[#1a5f3f] mb-2">Welcome back</h2>
+                    <p className="text-gray-500 text-sm mb-8">Login to your account.</p>
 
-            <div className="flex justify-between items-center text-sm">
-                <label className="flex items-center text-gray-600 dark:text-neutral-300">
-                    <input 
-                        type="checkbox" 
-                        className="h-4 w-4 rounded border-gray-300 text-[#3A59FF] focus:ring-[#3A59FF]" 
-                        checked={rememberMe}
-                        onChange={(e) => setRememberMe(e.target.checked)}
+                    {error && (
+                        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm mb-4">
+                            {error}
+                        </div>
+                    )}
+
+                    <InputField
+                        id="login-email"
+                        label=""
+                        type="email"
+                        placeholder="Email"
+                        value={email}
+                        onChange={setEmail}
+                        error={emailError}
+                        icon={<EmailIcon />}
                     />
-                    <span className="ml-2">Remember me</span>
-                </label>
-                <a href="#" onClick={(e) => { e.preventDefault(); setMode('forgot'); }} className="font-medium text-[#3A59FF] hover:underline">Forgot password?</a>
-            </div>
+                    <InputField
+                        id="login-password"
+                        label=""
+                        type="password"
+                        placeholder="Password"
+                        value={password}
+                        onChange={setPassword}
+                        error={passwordError}
+                        icon={<LockIcon />}
+                    />
 
-            <button 
-                onClick={handleLogin} 
-                disabled={isLoading}
-                className="w-full bg-[#3A59FF] text-white py-3 rounded-xl text-lg font-semibold shadow-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-                {isLoading ? 'Signing in...' : 'Sign In'}
-            </button>
-            
-            <div className="my-4 flex items-center">
-                <hr className="flex-grow border-gray-200 dark:border-neutral-600" />
-                <span className="mx-4 text-gray-500 dark:text-neutral-400 text-xs">Sign in with</span>
-                <hr className="flex-grow border-gray-200 dark:border-neutral-600" />
+                    <div className="flex justify-between items-center text-sm mb-6">
+                        <label className="flex items-center text-gray-600 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                className="h-4 w-4 rounded border-gray-300 text-[#1a5f3f] focus:ring-[#1a5f3f] mr-2"
+                                checked={rememberMe}
+                                onChange={(e) => setRememberMe(e.target.checked)}
+                            />
+                            <span>Remember me</span>
+                        </label>
+                        <a
+                            href="#"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                setMode('forgot');
+                            }}
+                            className="text-[#1a5f3f] font-medium hover:underline"
+                        >
+                            Forgot Password?
+                        </a>
+                    </div>
+
+                    <button
+                        onClick={handleLogin}
+                        disabled={isLoading}
+                        className="w-full bg-[#1a5f3f] text-white py-4 rounded-xl text-lg font-semibold shadow-lg hover:bg-[#0d4a2e] transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-6"
+                    >
+                        {isLoading ? 'Logging in...' : 'Login'}
+                    </button>
+
+                    <p className="text-center text-sm text-gray-500">
+                        Don't have an account?{' '}
+                        <a
+                            href="#"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                setMode('signup');
+                            }}
+                            className="text-[#1a5f3f] font-semibold hover:underline"
+                        >
+                            Sign up
+                        </a>
+                    </p>
+                </div>
             </div>
-            
-            <SocialIcons 
-                onGoogleLogin={handleGoogleLogin}
-                onFacebookLogin={handleFacebookLogin}
-                isLoading={isSocialLoading || isLoading}
-            />
-            
-            <p className="mt-6 text-center text-sm text-gray-600 dark:text-neutral-400">
-                Don't have an account? <a href="#" onClick={(e) => { e.preventDefault(); setMode('signup'); }} className="font-bold text-[#3A59FF] hover:underline">Sign up</a>
-            </p>
         </div>
     );
 };
 
-const SignupView: React.FC<{ setMode: (mode: AuthMode) => void; onSignup: () => void }> = ({ setMode, onSignup }) => {
-    const { signup, loginWithGoogle, loginWithFacebook } = useAuth();
-    const [name, setName] = useState('');
+const SignupView: React.FC<{ setMode: (mode: AuthMode) => void; onSignup: () => void; onBack?: () => void }> = ({
+    setMode,
+    onSignup,
+    onBack,
+}) => {
+    const { signup } = useAuth();
+    const [fullName, setFullName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [agreeToTerms, setAgreeToTerms] = useState(false);
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-    const [isSocialLoading, setIsSocialLoading] = useState(false);
     const [nameError, setNameError] = useState('');
     const [emailError, setEmailError] = useState('');
     const [passwordError, setPasswordError] = useState('');
+    const [confirmPasswordError, setConfirmPasswordError] = useState('');
 
     const validateEmail = (email: string) => {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -252,10 +275,11 @@ const SignupView: React.FC<{ setMode: (mode: AuthMode) => void; onSignup: () => 
         setNameError('');
         setEmailError('');
         setPasswordError('');
+        setConfirmPasswordError('');
 
         // Validation
-        if (!name.trim()) {
-            setNameError('Name is required');
+        if (!fullName.trim()) {
+            setNameError('Full Name is required');
             return;
         }
         if (!email) {
@@ -274,13 +298,13 @@ const SignupView: React.FC<{ setMode: (mode: AuthMode) => void; onSignup: () => 
             setPasswordError('Password must be at least 6 characters');
             return;
         }
-        if (!agreeToTerms) {
-            setError('Please agree to the terms and conditions');
+        if (password !== confirmPassword) {
+            setConfirmPasswordError('Passwords do not match');
             return;
         }
 
         setIsLoading(true);
-        const result = await signup(name.trim(), email, password);
+        const result = await signup(fullName.trim(), email, password);
         setIsLoading(false);
 
         if (result.success) {
@@ -290,109 +314,116 @@ const SignupView: React.FC<{ setMode: (mode: AuthMode) => void; onSignup: () => 
         }
     };
 
-    const handleGoogleSignup = async () => {
-        setError('');
-        setIsSocialLoading(true);
-        const result = await loginWithGoogle();
-        setIsSocialLoading(false);
-        
-        if (result.success) {
-            onSignup();
-        } else {
-            setError(result.error || 'Google sign up failed');
-        }
-    };
-
-    const handleFacebookSignup = async () => {
-        setError('');
-        setIsSocialLoading(true);
-        const result = await loginWithFacebook();
-        setIsSocialLoading(false);
-        
-        if (result.success) {
-            onSignup();
-        } else {
-            setError(result.error || 'Facebook sign up failed');
-        }
-    };
-
     return (
-        <div className="space-y-6">
-            <BackButton onClick={() => setMode('login')} />
-            <h2 className="text-3xl font-bold text-[#1A1A1A] dark:text-neutral-100">Get Started</h2>
-            
-            {error && (
-                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg text-sm">
-                    {error}
-                </div>
-            )}
-            
-            <InputField 
-                id="signup-name" 
-                label="Full Name" 
-                type="text" 
-                placeholder="Enter Full Name"
-                value={name}
-                onChange={setName}
-                error={nameError}
-            />
-            <InputField 
-                id="signup-email" 
-                label="Email" 
-                type="email" 
-                placeholder="Enter Email"
-                value={email}
-                onChange={setEmail}
-                error={emailError}
-            />
-            <InputField 
-                id="signup-password" 
-                label="Password" 
-                type="password" 
-                placeholder="••••••••••"
-                value={password}
-                onChange={setPassword}
-                error={passwordError}
-            />
-            
-            <label className="flex items-start text-gray-600 dark:text-neutral-300 text-sm">
-                <input 
-                    type="checkbox" 
-                    className="h-4 w-4 rounded border-gray-300 text-[#3A59FF] focus:ring-[#3A59FF] mt-1" 
-                    checked={agreeToTerms}
-                    onChange={(e) => setAgreeToTerms(e.target.checked)}
-                />
-                <span className="ml-2">I agree to the processing of <a href="#" className="font-bold text-[#3A59FF]">Personal data</a></span>
-            </label>
-            
-            <button 
-                onClick={handleSignup} 
-                disabled={isLoading}
-                className="w-full bg-[#3A59FF] text-white py-3 rounded-xl text-lg font-semibold shadow-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-                {isLoading ? 'Creating account...' : 'Sign Up'}
-            </button>
-            
-            <div className="my-4 flex items-center">
-                <hr className="flex-grow border-gray-200 dark:border-neutral-600" />
-                <span className="mx-4 text-gray-500 dark:text-neutral-400 text-xs">Sign up with</span>
-                <hr className="flex-grow border-gray-200 dark:border-neutral-600" />
+        <div className="relative min-h-screen w-screen bg-white">
+            {/* Top curved section with plant pattern */}
+            <div className="relative h-48">
+                <PlantLeafTopPattern />
+                <button
+                    onClick={onBack || (() => setMode('login'))}
+                    className="absolute top-6 left-6 z-20 w-8 h-8 flex items-center justify-center text-white hover:bg-white/20 rounded-full transition-colors"
+                >
+                    <BackArrowIcon />
+                </button>
             </div>
 
-            <SocialIcons 
-                onGoogleLogin={handleGoogleSignup}
-                onFacebookLogin={handleFacebookSignup}
-                isLoading={isSocialLoading || isLoading}
-            />
+            {/* Main content */}
+            <div className="relative px-6 pt-8 pb-12">
+                <div className="relative">
+                    <LeafBranch />
+                    <h2 className="text-3xl font-bold text-[#1a5f3f] mb-2">Register</h2>
+                    <p className="text-gray-500 text-sm mb-8">Create your new account.</p>
 
-            <p className="mt-6 text-center text-sm text-gray-600 dark:text-neutral-400">
-                Already have an account? <a href="#" onClick={(e) => { e.preventDefault(); setMode('login'); }} className="font-bold text-[#3A59FF] hover:underline">Sign in</a>
-            </p>
+                    {error && (
+                        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm mb-4">
+                            {error}
+                        </div>
+                    )}
+
+                    <InputField
+                        id="signup-name"
+                        label=""
+                        type="text"
+                        placeholder="Full Name"
+                        value={fullName}
+                        onChange={setFullName}
+                        error={nameError}
+                        icon={<UserIcon />}
+                    />
+                    <InputField
+                        id="signup-email"
+                        label=""
+                        type="email"
+                        placeholder="Email"
+                        value={email}
+                        onChange={setEmail}
+                        error={emailError}
+                        icon={<EmailIcon />}
+                    />
+                    <InputField
+                        id="signup-password"
+                        label=""
+                        type="password"
+                        placeholder="Password"
+                        value={password}
+                        onChange={setPassword}
+                        error={passwordError}
+                        icon={<LockIcon />}
+                    />
+                    <InputField
+                        id="signup-confirm-password"
+                        label=""
+                        type="password"
+                        placeholder="Confirm Password"
+                        value={confirmPassword}
+                        onChange={setConfirmPassword}
+                        error={confirmPasswordError}
+                        icon={<LockIcon />}
+                    />
+
+                    <p className="text-xs text-gray-500 mb-6">
+                        By signing you agree to our{' '}
+                        <a href="#" className="text-[#1a5f3f] font-semibold hover:underline">
+                            Terms of use
+                        </a>{' '}
+                        and{' '}
+                        <a href="#" className="text-[#1a5f3f] font-semibold hover:underline">
+                            privacy notice
+                        </a>
+                        .
+                    </p>
+
+                    <button
+                        onClick={handleSignup}
+                        disabled={isLoading}
+                        className="w-full bg-[#1a5f3f] text-white py-4 rounded-xl text-lg font-semibold shadow-lg hover:bg-[#0d4a2e] transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-6"
+                    >
+                        {isLoading ? 'Creating account...' : 'Sign Up'}
+                    </button>
+
+                    <p className="text-center text-sm text-gray-500">
+                        Already have an account?{' '}
+                        <a
+                            href="#"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                setMode('login');
+                            }}
+                            className="text-[#1a5f3f] font-semibold hover:underline"
+                        >
+                            Sign in
+                        </a>
+                    </p>
+                </div>
+            </div>
         </div>
     );
 };
 
-const ForgotPasswordView: React.FC<{ setMode: (mode: AuthMode) => void }> = ({ setMode }) => {
+const ForgotPasswordView: React.FC<{ setMode: (mode: AuthMode) => void; onBack?: () => void }> = ({
+    setMode,
+    onBack,
+}) => {
     const [email, setEmail] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [message, setMessage] = useState('');
@@ -405,60 +436,78 @@ const ForgotPasswordView: React.FC<{ setMode: (mode: AuthMode) => void }> = ({ s
 
         setIsLoading(true);
         // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
         setIsLoading(false);
         setMessage('Password reset link has been sent to your email!');
     };
 
     return (
-        <div className="space-y-6">
-            <BackButton onClick={() => setMode('login')} />
-            <h2 className="text-3xl font-bold text-[#1A1A1A] dark:text-neutral-100">Forgot Password</h2>
-            <p className="text-gray-500 dark:text-neutral-400">Enter your email to receive a password reset link.</p>
-            
-            {message && (
-                <div className={`px-4 py-3 rounded-lg text-sm ${
-                    message.includes('sent') 
-                        ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300'
-                        : 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300'
-                }`}>
-                    {message}
-                </div>
-            )}
+        <div className="relative min-h-screen w-screen bg-white">
+            {/* Top curved section with plant pattern */}
+            <div className="relative h-48">
+                <PlantLeafTopPattern />
+                <button
+                    onClick={onBack || (() => setMode('login'))}
+                    className="absolute top-6 left-6 z-20 w-8 h-8 flex items-center justify-center text-white hover:bg-white/20 rounded-full transition-colors"
+                >
+                    <BackArrowIcon />
+                </button>
+            </div>
 
-            <InputField 
-                id="forgot-email" 
-                label="Email" 
-                type="email" 
-                placeholder="Enter your email"
-                value={email}
-                onChange={setEmail}
-            />
-            
-            <button 
-                onClick={handleReset}
-                disabled={isLoading}
-                className="w-full bg-[#3A59FF] text-white py-3 rounded-xl text-lg font-semibold shadow-lg hover:opacity-90 transition-opacity mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-                {isLoading ? 'Sending...' : 'Send Reset Link'}
-            </button>
+            {/* Main content */}
+            <div className="relative px-6 pt-8 pb-12">
+                <div className="relative">
+                    <LeafBranch />
+                    <h2 className="text-3xl font-bold text-[#1a5f3f] mb-2">Forgot Password</h2>
+                    <p className="text-gray-500 text-sm mb-8">Enter your email to receive a password reset link.</p>
+
+                    {message && (
+                        <div
+                            className={`px-4 py-3 rounded-lg text-sm mb-4 ${
+                                message.includes('sent')
+                                    ? 'bg-green-50 border border-green-200 text-green-700'
+                                    : 'bg-red-50 border border-red-200 text-red-700'
+                            }`}
+                        >
+                            {message}
+                        </div>
+                    )}
+
+                    <InputField
+                        id="forgot-email"
+                        label=""
+                        type="email"
+                        placeholder="Email"
+                        value={email}
+                        onChange={setEmail}
+                        icon={<EmailIcon />}
+                    />
+
+                    <button
+                        onClick={handleReset}
+                        disabled={isLoading}
+                        className="w-full bg-[#1a5f3f] text-white py-4 rounded-xl text-lg font-semibold shadow-lg hover:bg-[#0d4a2e] transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-4"
+                    >
+                        {isLoading ? 'Sending...' : 'Send Reset Link'}
+                    </button>
+                </div>
+            </div>
         </div>
     );
 };
 
-export const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
-    const [mode, setMode] = useState<AuthMode>('login');
+export const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess, onBack, initialMode = 'login' }) => {
+    const [mode, setMode] = useState<AuthMode>(initialMode);
+
+    useEffect(() => {
+        setMode(initialMode);
+    }, [initialMode]);
 
     return (
-        <div className="relative min-h-screen w-screen bg-[#ECF3FF] flex flex-col items-center justify-center p-4 overflow-hidden">
-            <AuthBackground />
-            <div className="relative z-10 w-full max-w-sm">
-                <div className="bg-white/90 dark:bg-neutral-800/90 backdrop-blur-lg rounded-3xl shadow-2xl p-8">
-                    {mode === 'login' && <LoginView setMode={setMode} onLogin={onLoginSuccess} />}
-                    {mode === 'signup' && <SignupView setMode={setMode} onSignup={onLoginSuccess} />}
-                    {mode === 'forgot' && <ForgotPasswordView setMode={setMode} />}
-                </div>
-            </div>
-        </div>
+        <>
+            {mode === 'login' && <LoginView setMode={setMode} onLogin={onLoginSuccess} onBack={onBack} />}
+            {mode === 'signup' && <SignupView setMode={setMode} onSignup={onLoginSuccess} onBack={onBack} />}
+            {mode === 'forgot' && <ForgotPasswordView setMode={setMode} onBack={onBack} />}
+        </>
     );
 };
