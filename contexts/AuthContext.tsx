@@ -188,7 +188,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 // Set isLoading to false immediately since we have the user and session
                 // onAuthStateChange will also handle it as a backup, but we don't rely on it
                 setIsLoading(false);
-                console.log('Login successful, user set:', appUser.email);
+                console.log('✅ Login successful, user set:', appUser.email, 'isAuthenticated will be true');
+                // Force a small delay to ensure state propagates
+                await new Promise(resolve => setTimeout(resolve, 50));
                 return { success: true };
             }
 
@@ -208,6 +210,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 return { success: false, error: 'Password must be at least 6 characters' };
             }
 
+            setIsLoading(true);
             const { data, error } = await supabase.auth.signUp({
                 email,
                 password,
@@ -220,18 +223,26 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             });
 
             if (error) {
+                setIsLoading(false);
                 return { success: false, error: error.message };
             }
 
             if (data.user) {
                 const appUser = await convertSupabaseUser(data.user);
                 setUser(appUser);
+                hasUserRef.current = true;
+                setIsLoading(false);
+                console.log('✅ Signup successful, user set:', appUser.email);
+                // Small delay to ensure state propagates
+                await new Promise(resolve => setTimeout(resolve, 50));
                 return { success: true };
             }
 
+            setIsLoading(false);
             return { success: false, error: 'Signup failed' };
         } catch (error: any) {
             console.error('Signup error:', error);
+            setIsLoading(false);
             return { success: false, error: error.message || 'An error occurred during signup' };
         }
     };

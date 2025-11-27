@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { OnboardingScreen } from './screens/OnboardingScreen';
 import { WelcomeScreen } from './screens/WelcomeScreen';
@@ -27,28 +26,29 @@ import { supabase } from './lib/supabase';
 type AppState = 'splash' | 'welcome' | 'onboarding' | 'auth' | 'main';
 export type MainTab = 'home' | 'schedule' | 'history' | 'notifications';
 
-const SplashScreen: React.FC = () => (
-    <div className="flex flex-col items-center justify-center h-screen w-screen bg-gradient-to-br from-[#7B61FF] to-[#9DBBFF]">
-        <div className="flex flex-col items-center justify-center flex-grow">
-            <div className="w-24 h-24 mb-4 text-white">
-                <AppIcon />
+const SplashScreen: React.FC = () => {
+    return (
+        <div className="flex flex-col items-center justify-center h-screen w-screen bg-gradient-to-br from-[#7B61FF] to-[#9DBBFF]">
+            <div className="flex flex-col items-center justify-center flex-grow">
+                <div className="w-24 h-24 mb-4 text-white">
+                    <AppIcon />
+                </div>
+                <h1 className="text-4xl font-bold text-white">MediGuardia</h1>
+                <p className="text-lg text-white/90 mt-2">Your Personal AI Health Companion</p>
             </div>
-            <h1 className="text-4xl font-bold text-white">MediGuardia</h1>
-            <p className="text-lg text-white/90 mt-2">Your Personal AI Health Companion</p>
+            <div className="mb-16">
+                <div className="w-8 h-8 border-4 border-white/50 border-t-white rounded-full animate-spin"></div>
+            </div>
         </div>
-        <div className="mb-16">
-            <div className="w-8 h-8 border-4 border-white/50 border-t-white rounded-full animate-spin"></div>
-        </div>
-    </div>
-);
+    );
+};
 
 const AppContent: React.FC = () => {
     const { isAuthenticated, isLoading, user, logout } = useAuth();
     const [appState, setAppState] = useState<AppState>('splash');
     const [activeTab, setActiveTab] = useState<MainTab>('home');
     const [view, setView] = useState<string>('home');
-    const hasInitialized = useRef(false);
-    const isOAuthCallback = useRef(false);
+    const splashShown = useRef(false);
 
     // Centralized Application State
     const [userProfile, setUserProfile] = useState<UserProfile>(mockUser);
@@ -56,132 +56,84 @@ const AppContent: React.FC = () => {
     const [healthLogs, setHealthLogs] = useState<HealthLog[]>(mockHealthLogs);
     const [medications, setMedications] = useState<Medication[]>(mockMedications);
 
+    // Handle splash screen - show for 1.5 seconds then transition
     useEffect(() => {
-        // Check for Supabase OAuth callback in URL
+        if (!splashShown.current && appState === 'splash') {
+            splashShown.current = true;
+            const timer = setTimeout(() => {
+                // Splash shown, now determine next state
+            }, 1500);
+            return () => clearTimeout(timer);
+        }
+    }, [appState]);
+
+    // Main authentication and state management effect
+    useEffect(() => {
+        // Handle OAuth callback
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        const hasOAuthCallback = hashParams.get('access_token') || hashParams.get('error');
-
+        const hasOAuthCallback = hashParams.get('access_token');
         if (hasOAuthCallback) {
-            console.log('OAuth callback detected, waiting for session...');
-            // Mark that we're in OAuth callback state
-            isOAuthCallback.current = true;
-            // Clear hash from URL
             window.history.replaceState(null, '', window.location.pathname);
-            // OAuth callback detected - wait for auth state to update
-            // The AuthContext will handle the session automatically via onAuthStateChange
-            // Also manually trigger a session check after a short delay
-            setTimeout(async () => {
-                try {
-                    const { data: { session } } = await supabase.auth.getSession();
-                    if (session?.user) {
-                        console.log('OAuth session found after callback');
-                        // The onAuthStateChange will handle setting the user
-                    }
-                } catch (error) {
-                    console.error('Error checking OAuth session:', error);
-                }
-            }, 500);
+            // Wait for auth state to update
             return;
         }
-        
-        // If we're waiting for OAuth callback to complete
-        if (isOAuthCallback.current) {
-            // Wait for authentication to be established, but with a timeout
-            if (isLoading || !isAuthenticated) {
-                console.log('Waiting for OAuth session to be established...', { isLoading, isAuthenticated, hasUser: !!user });
-                // If we have a user but isLoading is still true, it might be stuck
-                // Give it a moment and then proceed
-                if (user && isLoading) {
-                    // User exists but still loading - might be a race condition
-                    // Wait a bit more
-                    return;
-                }
-                // Set a timeout to prevent infinite loading (10 seconds max)
-                setTimeout(() => {
-                    if (isOAuthCallback.current && (!isAuthenticated || isLoading)) {
-                        console.warn('OAuth callback timeout, clearing flag');
-                        isOAuthCallback.current = false;
-                    }
-                }, 10000);
-                return; // Still waiting
-            }
-            // OAuth callback completed, user is authenticated
-            console.log('OAuth callback completed, user authenticated');
-            isOAuthCallback.current = false;
-            // Fall through to set app state to main
+
+        // Wait for auth to finish loading (but allow transition if user is already set)
+        if (isLoading && !user) {
+            return;
         }
 
-        // Wait for auth to finish loading before deciding app state
-        if (isLoading) {
-            // If we have a user and are authenticated, transition to main even if still loading
-            // This is a fallback in case isLoading gets stuck
-            if (isAuthenticated && user && appState !== 'main') {
-                console.log('User authenticated but still loading, transitioning to main as fallback');
+        // If authenticated, always go to main
+        if (isAuthenticated && user) {
+            // Mark onboarding as completed
+            localStorage.setItem('onboardingCompleted', 'true');
+            localStorage.setItem('welcomeCompleted', 'true');
+            
+            if (appState !== 'main') {
+                console.log('✅ User authenticated, transitioning to main from', appState);
                 setAppState('main');
-                hasInitialized.current = true;
-                return;
+                setView('home');
+                setActiveTab('home');
             }
-            // If we have a user but still loading, don't reset to auth
-            if (user && appState === 'main') {
-                return; // Keep main screen if user exists
-            }
-            return; // Still loading, keep current screen
+            return;
         }
 
-        // Once loading is complete, check authentication state
-        const onboardingCompleted = localStorage.getItem('onboardingCompleted');
-        const welcomeCompleted = localStorage.getItem('welcomeCompleted');
-        
-        // Determine the target state based on authentication
-        let targetState: AppState;
-        
-        if (!welcomeCompleted) {
-            targetState = 'welcome';
-        } else if (!onboardingCompleted) {
-            targetState = 'onboarding';
-        } else if (isAuthenticated) {
-            targetState = 'main';
-        } else {
-            targetState = 'auth';
+        // If not authenticated, determine which screen to show
+        if (!isAuthenticated && !isLoading) {
+            const welcomeCompleted = localStorage.getItem('welcomeCompleted');
+            const onboardingCompleted = localStorage.getItem('onboardingCompleted');
+            
+            let targetState: AppState = appState;
+            
+            // Handle splash screen transition
+            if (appState === 'splash') {
+                if (splashShown.current) {
+                    if (!welcomeCompleted) {
+                        targetState = 'welcome';
+                    } else if (!onboardingCompleted) {
+                        targetState = 'onboarding';
+                    } else {
+                        targetState = 'auth';
+                    }
+                }
+            } 
+            // If user logged out from main, go to auth
+            else if (appState === 'main') {
+                targetState = 'auth';
+            }
+            // If already in welcome/onboarding/auth, keep it
+            else if (appState === 'welcome' || appState === 'onboarding' || appState === 'auth') {
+                return; // Keep current state
+            }
+
+            if (targetState !== appState) {
+                console.log('Transitioning to:', targetState);
+                setAppState(targetState);
+            }
         }
-        
-        // Critical: Never reset from main to auth if user is authenticated
-        if (appState === 'main' && isAuthenticated) {
-            // User is in main and authenticated - never reset to auth
-            console.log('User authenticated in main, preventing reset');
-            return;
-        }
-        
-        // If authenticated and not in main, go to main
-        if (isAuthenticated && appState !== 'main') {
-            console.log('User authenticated, transitioning to main');
-            setAppState('main');
-            hasInitialized.current = true;
-            isOAuthCallback.current = false; // Clear OAuth callback flag
-            return;
-        }
-        
-        // If not authenticated and in main, go to auth (user logged out)
-        if (!isAuthenticated && appState === 'main') {
-            console.log('User not authenticated in main, going to auth');
-            setAppState('auth');
-            hasInitialized.current = true;
-            return;
-        }
-        
-        // Only update state if:
-        // 1. We haven't initialized yet, OR
-        // 2. The target state is different from current state, OR
-        // 3. We're in splash screen (initial load)
-        if (!hasInitialized.current || appState !== targetState || appState === 'splash') {
-            console.log('Updating app state:', appState, '->', targetState);
-            setAppState(targetState);
-            hasInitialized.current = true;
-        }
-    }, [isAuthenticated, isLoading]);
+    }, [isAuthenticated, isLoading, user, appState]);
 
     // Load all user data from Firebase when authenticated
-    // This runs in the background and doesn't block the UI
     useEffect(() => {
         const loadUserData = async () => {
             if (isAuthenticated && user && !isLoading) {
@@ -241,7 +193,7 @@ const AppContent: React.FC = () => {
         const profileData: MedicalProfileData = {
             full_name: updatedProfile.name,
             age: updatedProfile.age,
-            gender: undefined, // Add if you have gender field
+            gender: undefined,
             blood_group: updatedProfile.bloodGroup as any,
             allergies: updatedProfile.allergies,
             chronic_conditions: updatedProfile.chronicConditions,
@@ -259,7 +211,6 @@ const AppContent: React.FC = () => {
             setShowEditModal(false);
         } else {
             console.error('Failed to save profile:', result.error);
-            // Still update local state even if save fails
             setUserProfile(updatedProfile);
             setShowEditModal(false);
         }
@@ -310,9 +261,18 @@ const AppContent: React.FC = () => {
     };
 
     const handleLoginSuccess = () => {
-        // Reset initialization flag to allow state update after login
-        hasInitialized.current = false;
-        // The useEffect will handle the state transition when isAuthenticated changes
+        console.log('✅ handleLoginSuccess called');
+        // Mark onboarding and welcome as completed
+        localStorage.setItem('onboardingCompleted', 'true');
+        localStorage.setItem('welcomeCompleted', 'true');
+        // The useEffect will handle the transition when isAuthenticated becomes true
+        // Force a re-check by triggering state update
+        if (isAuthenticated && user) {
+            console.log('✅ User already authenticated in handleLoginSuccess, transitioning immediately');
+            setAppState('main');
+            setView('home');
+            setActiveTab('home');
+        }
     };
 
     const handleWelcomeComplete = () => {
@@ -323,13 +283,11 @@ const AppContent: React.FC = () => {
     const handleWelcomeSignUp = () => {
         localStorage.setItem('welcomeCompleted', 'true');
         setAppState('auth');
-        // The AuthScreen will handle showing signup view
     };
 
     const handleWelcomeLogin = () => {
         localStorage.setItem('welcomeCompleted', 'true');
         setAppState('auth');
-        // The AuthScreen will handle showing login view
     };
 
     const handleOnboardingComplete = () => {
@@ -350,9 +308,8 @@ const AppContent: React.FC = () => {
             return <ComingSoonScreen featureName="Live Doctor Chat" onBack={() => { setActiveTab('home'); setView('home'); }} />;
         }
         if (view === 'subscription_coming_soon') {
-            return <ComingSoonScreen featureName="Subscription Plans" onBack={() => { setActiveTab('profile'); setView('profile'); }} />;
+            return <ComingSoonScreen featureName="Subscription Plans" onBack={() => { setActiveTab('home'); setView('profile'); }} />;
         }
-
         if (view === 'settings') {
             return <SettingsScreen {...screenProps} onBack={() => setView('home')} />;
         }
@@ -437,14 +394,14 @@ const AppContent: React.FC = () => {
                 );
             case 'main':
                 return (
-                    <div className="w-full min-h-screen bg-neutral-100 dark:bg-neutral-900 transition-colors">
+                    <div className="w-full min-h-screen bg-gray-50 transition-colors">
                         <main className="pb-28">{renderMainScreen()}</main>
                         <BottomNavBar activeTab={activeTab} setActiveTab={(tab) => {
                             setActiveTab(tab);
                             if (tab === 'history') {
                                 setView('history/report');
                             } else {
-                            setView(tab);
+                                setView(tab);
                             }
                         }} />
                     </div>
@@ -454,7 +411,7 @@ const AppContent: React.FC = () => {
         }
     };
 
-    if (isLoading) {
+    if (isLoading && !isAuthenticated) {
         return (
             <ThemeProvider>
                 <div className="w-screen h-screen overflow-x-hidden flex items-center justify-center">
