@@ -11,6 +11,7 @@ import { ScheduleScreen } from './screens/ScheduleScreen';
 import { NotificationsScreen } from './screens/NotificationsScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { ComingSoonScreen } from './screens/ComingSoonScreen';
+import { HospitalLocatorMapScreen } from './screens/HospitalLocatorMapScreen';
 import { AppIcon } from './constants';
 import { BottomNavBar } from './components/BottomNavBar';
 import { UserProfile, MedicalDocument, HealthLog, Medication } from './types';
@@ -171,6 +172,17 @@ const AppContent: React.FC = () => {
                     } catch (logError) {
                         console.warn('Error loading health logs:', logError);
                     }
+
+                    // Load documents (don't block if this fails)
+                    try {
+                        const { getDocuments } = await import('./features/documents/documentService');
+                        const userDocuments = await getDocuments();
+                        if (userDocuments.length > 0) {
+                            setDocuments(userDocuments);
+                        }
+                    } catch (docError) {
+                        console.warn('Error loading documents:', docError);
+                    }
                 } catch (error) {
                     console.error('Error loading user data:', error);
                     // Even if profile loading fails, set basic user info
@@ -319,8 +331,40 @@ const AppContent: React.FC = () => {
         if (view === 'symptom' || view === 'symptom-checker') {
             return <SymptomCheckerScreen onBack={() => setView('home')} />;
         }
-        if (view === 'sos') {
+        if (view === 'sos' || view.startsWith('sos/')) {
             return <EmergencyScreen {...screenProps} view={view} user={userProfile} />;
+        }
+        if (view === 'hospitals') {
+            return <HospitalLocatorMapScreen onBack={() => setView('home')} />;
+        }
+        if (view === 'medications') {
+            return (
+                <HistoryScreen 
+                    {...screenProps} 
+                    view="history/medications" 
+                    logs={healthLogs} 
+                    medications={medications} 
+                    user={userProfile}
+                    onAddMedication={handleAddMedication}
+                    onDeleteLog={async (logId: string) => {
+                        const result = await deleteHealthLog(logId);
+                        if (result.success) {
+                            setHealthLogs(prev => prev.filter(log => log.id !== logId));
+                        }
+                    }}
+                    onUpdateLog={async (logId: string, updates: Partial<HealthLog>) => {
+                        const result = await updateHealthLog(logId, updates);
+                        if (result.success) {
+                            setHealthLogs(prev => prev.map(log => 
+                                log.id === logId ? { ...log, ...updates } : log
+                            ));
+                        }
+                    }}
+                />
+            );
+        }
+        if (view === 'documents') {
+            return <ProfileScreen {...screenProps} user={userProfile} docs={documents} onUpdateProfile={handleUpdateProfile} onLogout={() => { logout(); setAppState('auth'); }} />;
         }
 
         switch (activeTab) {
