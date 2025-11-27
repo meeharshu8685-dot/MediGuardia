@@ -1,7 +1,7 @@
 
 import React, { useState, useRef } from 'react';
 import { UserProfile, MedicalDocument } from '../types';
-import { ChevronRightIcon, PdfFileIcon, ImageFileIcon, PencilIcon } from '../constants';
+import { ChevronRightIcon, PdfFileIcon, ImageFileIcon, PencilIcon, PhoneIcon } from '../constants';
 import { MedicalQuizScreen } from './MedicalQuizScreen';
 
 const EditProfileModal: React.FC<{
@@ -134,6 +134,28 @@ const ProfileInfoCard: React.FC<{ user: UserProfile, onEdit: () => void }> = ({ 
             <div className="flex justify-between text-md"><span className="text-neutral-500 dark:text-neutral-400">Blood Group</span><span className="font-semibold text-neutral-700 dark:text-neutral-200">{user.bloodGroup || 'N/A'}</span></div>
             <div className="flex justify-between text-md"><span className="text-neutral-500 dark:text-neutral-400">Allergies</span><span className="font-semibold text-neutral-700 dark:text-neutral-200 text-right truncate">{user.allergies.length > 0 ? user.allergies.join(', ') : 'None'}</span></div>
             <div className="flex justify-between text-md"><span className="text-neutral-500 dark:text-neutral-400">Conditions</span><span className="font-semibold text-neutral-700 dark:text-neutral-200 text-right truncate">{user.chronicConditions.length > 0 ? user.chronicConditions.join(', ') : 'None'}</span></div>
+            {user.emergencyContact && (
+                <div className="pt-3 mt-3 border-t dark:border-neutral-700">
+                    <div className="flex justify-between items-center mb-2">
+                        <span className="text-neutral-500 dark:text-neutral-400">Emergency Contact</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="font-semibold text-neutral-700 dark:text-neutral-200">{user.emergencyContact.name}</p>
+                            <p className="text-sm text-neutral-500 dark:text-neutral-400">{user.emergencyContact.phone}</p>
+                        </div>
+                        <a
+                            href={`tel:${user.emergencyContact.phone.replace(/[^0-9]/g, '')}`}
+                            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-full font-semibold flex items-center space-x-2 text-sm shadow-md hover:shadow-lg transition-all"
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                            </svg>
+                            <span>Call</span>
+                        </a>
+                    </div>
+                </div>
+            )}
         </div>
     </div>
 );

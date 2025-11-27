@@ -68,8 +68,43 @@ export const generateWhatsAppShareLink = (latitude: number, longitude: number, a
 /**
  * Generate SMS share link with location
  */
-export const generateSMSShareLink = (latitude: number, longitude: number, address?: string): string => {
-    const message = `🚨 EMERGENCY SOS 🚨\n\nLocation: ${address || `${latitude}, ${longitude}`}\n\nGoogle Maps: https://www.google.com/maps?q=${latitude},${longitude}`;
+export const generateSMSShareLink = (latitude: number, longitude: number, address?: string, customMessage?: string): string => {
+    const message = customMessage || `🚨 EMERGENCY SOS 🚨\n\nLocation: ${address || `${latitude}, ${longitude}`}\n\nGoogle Maps: https://www.google.com/maps?q=${latitude},${longitude}`;
     return `sms:?body=${encodeURIComponent(message)}`;
+};
+
+/**
+ * Generate Email share link with location
+ */
+export const generateEmailShareLink = (
+    latitude: number, 
+    longitude: number, 
+    address?: string, 
+    customMessage?: string,
+    recipientEmail?: string
+): string => {
+    const subject = encodeURIComponent('🚨 EMERGENCY SOS Alert');
+    const body = encodeURIComponent(
+        customMessage || 
+        `🚨 EMERGENCY SOS 🚨\n\nLocation: ${address || `${latitude}, ${longitude}`}\n\nGoogle Maps: https://www.google.com/maps?q=${latitude},${longitude}\n\nPlease respond immediately.`
+    );
+    const to = recipientEmail ? `&to=${encodeURIComponent(recipientEmail)}` : '';
+    return `mailto:${to}?subject=${subject}&body=${body}`;
+};
+
+/**
+ * Generate enhanced WhatsApp share link
+ */
+export const generateEnhancedWhatsAppShareLink = (
+    latitude: number, 
+    longitude: number, 
+    address?: string, 
+    customMessage?: string,
+    phoneNumber?: string
+): string => {
+    const message = customMessage || `🚨 EMERGENCY SOS 🚨\n\nLocation: ${address || `${latitude}, ${longitude}`}\n\nGoogle Maps: https://www.google.com/maps?q=${latitude},${longitude}`;
+    const phone = phoneNumber ? phoneNumber.replace(/[^0-9]/g, '') : '';
+    const url = phone ? `https://wa.me/${phone}?text=${encodeURIComponent(message)}` : `https://wa.me/?text=${encodeURIComponent(message)}`;
+    return url;
 };
 
