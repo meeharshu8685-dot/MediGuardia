@@ -37,7 +37,12 @@ const OptionButton: React.FC<{ label: string, isSelected: boolean, onClick: () =
 
 export const MedicalQuizScreen: React.FC<MedicalQuizProps> = ({ initialProfile, onComplete, onClose }) => {
     const [step, setStep] = useState(1);
-    const [profileData, setProfileData] = useState<UserProfile>(initialProfile);
+    // Initialize with existing profile data, preserving height and weight
+    const [profileData, setProfileData] = useState<UserProfile>({
+        ...initialProfile,
+        height: initialProfile.height || '',
+        weight: initialProfile.weight || '',
+    });
     const [otherAllergy, setOtherAllergy] = useState('');
     const [otherCondition, setOtherCondition] = useState('');
 
@@ -45,12 +50,17 @@ export const MedicalQuizScreen: React.FC<MedicalQuizProps> = ({ initialProfile, 
     const handleBack = () => setStep(prev => Math.max(prev - 1, 1));
     
     const handleFinish = () => {
-        const finalProfile = { ...profileData };
+        const finalProfile = { 
+            ...profileData,
+            // Ensure height and weight are preserved even if empty strings
+            height: profileData.height || initialProfile.height || '',
+            weight: profileData.weight || initialProfile.weight || '',
+        };
         if (otherAllergy.trim()) {
-            finalProfile.allergies = [...new Set([...finalProfile.allergies, otherAllergy.trim()])];
+            finalProfile.allergies = [...new Set([...(finalProfile.allergies || []), otherAllergy.trim()])];
         }
         if (otherCondition.trim()) {
-            finalProfile.chronicConditions = [...new Set([...finalProfile.chronicConditions, otherCondition.trim()])];
+            finalProfile.chronicConditions = [...new Set([...(finalProfile.chronicConditions || []), otherCondition.trim()])];
         }
         onComplete(finalProfile);
     };

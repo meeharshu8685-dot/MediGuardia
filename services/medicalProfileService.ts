@@ -69,6 +69,24 @@ export const saveMedicalProfile = async (profileData: MedicalProfileData): Promi
             }
             : null;
 
+        // First, get existing profile to preserve height and weight if not provided in update
+        let existingHeight = null;
+        let existingWeight = null;
+        
+        if (profileData.height === undefined || profileData.height === null || profileData.height === '') {
+            // Need to preserve existing value, so fetch current profile
+            const { data: existing } = await supabase
+                .from('medical_profiles')
+                .select('height, weight')
+                .eq('user_id', user.id)
+                .single();
+            
+            if (existing) {
+                existingHeight = existing.height;
+                existingWeight = existing.weight;
+            }
+        }
+        
         const profilePayload = {
             user_id: user.id,
             name: profileData.full_name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'User',
@@ -79,8 +97,13 @@ export const saveMedicalProfile = async (profileData: MedicalProfileData): Promi
             chronic_conditions: profileData.chronic_conditions || [],
             emergency_contact: emergencyContact,
             avatar_url: profileData.avatar_url || null,
-            height: profileData.height || null,
-            weight: profileData.weight || null,
+            // Use new value if provided, otherwise preserve existing
+            height: (profileData.height !== undefined && profileData.height !== null && profileData.height !== '') 
+                ? profileData.height 
+                : existingHeight,
+            weight: (profileData.weight !== undefined && profileData.weight !== null && profileData.weight !== '') 
+                ? profileData.weight 
+                : existingWeight,
             updated_at: new Date().toISOString(),
         };
 

@@ -121,7 +121,7 @@ const AppContent: React.FC = () => {
 
     // Centralized Application State
     const [userProfile, setUserProfile] = useState<UserProfile>(mockUser);
-    const [documents, setDocuments] = useState<MedicalDocument[]>(mockDocs);
+    const [documents, setDocuments] = useState<MedicalDocument[]>([]);
     const [healthLogs, setHealthLogs] = useState<HealthLog[]>(mockHealthLogs);
     const [medications, setMedications] = useState<Medication[]>(mockMedications);
 
@@ -211,14 +211,21 @@ const AppContent: React.FC = () => {
                     // Load medical profile
                     const profile = await getMedicalProfile();
                     if (profile) {
-                        setUserProfile(profile);
-                    } else {
-                        // If no profile exists, use basic user info
+                        // Ensure height and weight are preserved from loaded profile
                         setUserProfile({
-                            ...mockUser,
-                            name: user.name,
-                            email: user.email,
-                            avatarUrl: user.avatarUrl || mockUser.avatarUrl
+                            ...profile,
+                            height: profile.height || undefined,
+                            weight: profile.weight || undefined,
+                        });
+                    } else {
+                        // If no profile exists, use basic user info (without mock data)
+                        setUserProfile({
+                            name: user.name || user.email?.split('@')[0] || 'User',
+                            email: user.email || '',
+                            avatarUrl: user.avatarUrl || `https://i.pravatar.cc/150?u=${user.email}`,
+                            allergies: [],
+                            chronicConditions: [],
+                            emergencyContact: { name: '', phone: '' }
                         });
                     }
 
@@ -270,29 +277,39 @@ const AppContent: React.FC = () => {
 
     // State Handler Functions
     const handleUpdateProfile = async (updatedProfile: UserProfile) => {
-        // Save to Firebase
+        // Merge with existing profile to preserve all fields
+        const mergedProfile = {
+            ...userProfile,
+            ...updatedProfile,
+            // Explicitly preserve height and weight if they exist in updated profile
+            height: updatedProfile.height !== undefined ? updatedProfile.height : userProfile.height,
+            weight: updatedProfile.weight !== undefined ? updatedProfile.weight : userProfile.weight,
+        };
+
+        // Save to Supabase
         const profileData: MedicalProfileData = {
-            full_name: updatedProfile.name,
-            age: updatedProfile.age,
-            gender: undefined,
-            blood_group: updatedProfile.bloodGroup as any,
-            allergies: updatedProfile.allergies,
-            chronic_conditions: updatedProfile.chronicConditions,
-            emergency_contact_name: updatedProfile.emergencyContact?.name,
-            emergency_contact_phone: updatedProfile.emergencyContact?.phone,
-            height: updatedProfile.height,
-            weight: updatedProfile.weight,
-            avatar_url: updatedProfile.avatarUrl,
+            full_name: mergedProfile.name,
+            age: mergedProfile.age,
+            gender: mergedProfile.gender,
+            blood_group: mergedProfile.bloodGroup as any,
+            allergies: mergedProfile.allergies || [],
+            chronic_conditions: mergedProfile.chronicConditions || [],
+            emergency_contact_name: mergedProfile.emergencyContact?.name,
+            emergency_contact_phone: mergedProfile.emergencyContact?.phone,
+            height: mergedProfile.height || null,
+            weight: mergedProfile.weight || null,
+            avatar_url: mergedProfile.avatarUrl,
         };
 
         const result = await saveMedicalProfile(profileData);
         
         if (result.success) {
-            setUserProfile(updatedProfile);
+            setUserProfile(mergedProfile);
             setShowEditModal(false);
         } else {
             console.error('Failed to save profile:', result.error);
-            setUserProfile(updatedProfile);
+            // Still update local state even if save fails
+            setUserProfile(mergedProfile);
             setShowEditModal(false);
         }
     };
