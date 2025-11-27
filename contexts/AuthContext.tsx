@@ -49,6 +49,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const [isLoading, setIsLoading] = useState(true);
     const isInitialCheckRef = useRef(true);
     const hasUserRef = useRef(false);
+    const oauthTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
         // Check for existing session
@@ -70,7 +71,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                     if (hasOAuthCallback) {
                         // OAuth callback detected - wait for onAuthStateChange to handle it
                         console.log('OAuth callback in URL, waiting for onAuthStateChange');
-                        // Don't set isLoading to false yet - let onAuthStateChange handle it
+                        // Set a timeout to prevent infinite loading if OAuth fails
+                        oauthTimeoutRef.current = setTimeout(async () => {
+                            // Check if user is still not set after timeout
+                            const { data: { session } } = await supabase.auth.getSession();
+                            if (session?.user && !hasUserRef.current) {
+                                console.log('OAuth callback timeout: Found session, setting user');
+                                const appUser = await convertSupabaseUser(session.user);
+                                setUser(appUser);
+                                hasUserRef.current = true;
+                                setIsLoading(false);
+                            } else if (!session?.user && !hasUserRef.current) {
+                                console.warn('OAuth callback timeout: No session found');
+                                setIsLoading(false);
+                            }
+                        }, 5000);
                     } else {
                         setIsLoading(false);
                         console.log('No session found on load');
@@ -99,6 +114,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 setUser(null);
                 hasUserRef.current = false;
                 setIsLoading(false);
+                return;
+            }
+            
+            // Handle SIGNED_IN event explicitly
+            if (event === 'SIGNED_IN' && session?.user) {
+                const appUser = await convertSupabaseUser(session.user);
+                setUser(appUser);
+                hasUserRef.current = true;
+                setIsLoading(false);
+                console.log('SIGNED_IN event, user set:', appUser.email);
                 return;
             }
             
@@ -140,8 +165,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                     setIsLoading(false);
                     return;
                 }
-                // If no user was found, it's safe to clear
+                // Check for session one more time before clearing
                 if (!hasUserRef.current) {
+                    // Double-check session before clearing
+                    const { data: { session: doubleCheckSession } } = await supabase.auth.getSession();
+                    if (doubleCheckSession?.user) {
+                        const appUser = await convertSupabaseUser(doubleCheckSession.user);
+                        setUser(appUser);
+                        hasUserRef.current = true;
+                        setIsLoading(false);
+                        console.log('INITIAL_SESSION: Found session on double-check, user set:', appUser.email);
+                        return;
+                    }
                     setUser(null);
                 }
                 setIsLoading(false);
@@ -164,6 +199,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
         return () => {
             subscription.unsubscribe();
+            if (oauthTimeoutRef.current) {
+                clearTimeout(oauthTimeoutRef.current);
+            }
         };
     }, []);
 

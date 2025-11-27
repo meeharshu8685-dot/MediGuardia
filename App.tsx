@@ -70,14 +70,8 @@ const AppContent: React.FC = () => {
 
     // Main authentication and state management effect
     useEffect(() => {
-        // Handle OAuth callback
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        const hasOAuthCallback = hashParams.get('access_token');
-        if (hasOAuthCallback) {
-            window.history.replaceState(null, '', window.location.pathname);
-            // Wait for auth state to update
-            return;
-        }
+        // Note: We removed the manual hash clearing block here. 
+        // Supabase needs the hash to be present to verify the OAuth session.
 
         // Wait for auth to finish loading (but allow transition if user is already set)
         if (isLoading && !user) {
@@ -100,6 +94,7 @@ const AppContent: React.FC = () => {
         }
 
         // If not authenticated, determine which screen to show
+        // Only transition if we're not loading and not authenticated
         if (!isAuthenticated && !isLoading) {
             const welcomeCompleted = localStorage.getItem('welcomeCompleted');
             const onboardingCompleted = localStorage.getItem('onboardingCompleted');
@@ -116,19 +111,25 @@ const AppContent: React.FC = () => {
                     } else {
                         targetState = 'auth';
                     }
+                } else {
+                    // Still showing splash, don't transition yet
+                    return;
                 }
             } 
             // If user logged out from main, go to auth
             else if (appState === 'main') {
                 targetState = 'auth';
             }
-            // If already in welcome/onboarding/auth, keep it
+            // If already in welcome/onboarding/auth, keep it (don't loop)
             else if (appState === 'welcome' || appState === 'onboarding' || appState === 'auth') {
-                return; // Keep current state
+                // Only transition if we're coming from splash
+                if (appState !== 'splash') {
+                    return; // Keep current state
+                }
             }
 
             if (targetState !== appState) {
-                console.log('Transitioning to:', targetState);
+                console.log('Transitioning to:', targetState, 'from', appState);
                 setAppState(targetState);
             }
         }
