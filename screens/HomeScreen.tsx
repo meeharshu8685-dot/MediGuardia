@@ -22,7 +22,7 @@ const Header: React.FC<{ user: UserProfile; onNotificationClick?: () => void; on
     const [hasNotifications, setHasNotifications] = useState(true);
 
     return (
-        <div className="p-6 pt-12 bg-white">
+        <div className="p-6 pt-12 bg-white dark:bg-neutral-800 transition-colors">
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center flex-1">
                     <div className="relative">
@@ -33,23 +33,23 @@ const Header: React.FC<{ user: UserProfile; onNotificationClick?: () => void; on
                             <img 
                                 src={user.avatarUrl} 
                                 alt={user.name} 
-                                className="w-14 h-14 rounded-full object-cover border-2 border-gray-100" 
+                                className="w-14 h-14 rounded-full object-cover border-2 border-gray-100 dark:border-neutral-700" 
                             />
                         </button>
                         {hasNotifications && (
-                            <span className="absolute top-0 right-0 w-4 h-4 bg-blue-500 rounded-full border-2 border-white"></span>
+                            <span className="absolute top-0 right-0 w-4 h-4 bg-blue-500 rounded-full border-2 border-white dark:border-neutral-800"></span>
                         )}
                     </div>
                     <div className="ml-4 flex-1">
-                        <p className="text-sm text-gray-500">Hello!</p>
-                        <h1 className="text-2xl font-bold text-gray-900">{user.name}</h1>
+                        <p className="text-sm text-gray-500 dark:text-neutral-400">Hello!</p>
+                        <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100">{user.name}</h1>
                     </div>
                 </div>
                 <button 
                     onClick={onSettingsClick}
-                    className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+                    className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 dark:bg-neutral-700 hover:bg-gray-200 dark:hover:bg-neutral-600 transition-colors"
                 >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-600 dark:text-neutral-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
@@ -58,7 +58,7 @@ const Header: React.FC<{ user: UserProfile; onNotificationClick?: () => void; on
             
             {/* Search Bar */}
             <div className="relative">
-                <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
+                <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-neutral-500">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                     </svg>
@@ -66,9 +66,9 @@ const Header: React.FC<{ user: UserProfile; onNotificationClick?: () => void; on
                 <input
                     type="text"
                     placeholder="Search medical..."
-                    className="w-full pl-12 pr-12 py-3 bg-gray-100 rounded-2xl border-none focus:outline-none focus:ring-2 focus:ring-blue-200 text-gray-800"
+                    className="w-full pl-12 pr-12 py-3 bg-gray-100 dark:bg-neutral-700 rounded-2xl border-none focus:outline-none focus:ring-2 focus:ring-blue-200 text-gray-800 dark:text-neutral-100 placeholder-gray-500 dark:placeholder-neutral-400"
                 />
-                <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400">
+                <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-neutral-500">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                     </svg>
@@ -87,7 +87,7 @@ const ServiceCard: React.FC<{
 }> = ({ icon, label, onClick, bgColor, iconColor }) => (
     <div 
         onClick={onClick} 
-        className={`${bgColor} rounded-2xl p-4 flex flex-col items-center justify-center h-24 cursor-pointer transition-transform hover:scale-105 shadow-sm border border-gray-200`}
+        className={`${bgColor} dark:bg-neutral-800 rounded-2xl p-4 flex flex-col items-center justify-center h-24 cursor-pointer transition-transform hover:scale-105 shadow-sm border border-gray-200 dark:border-neutral-700`}
     >
         <div className={`${iconColor} mb-2`}>
             {icon}
@@ -126,7 +126,7 @@ interface HomeScreenProps {
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({ navigate, setView, setActiveTab, user, medications, logs }) => {
     return (
-        <div className="min-h-screen bg-gray-50 pb-24">
+        <div className="min-h-screen bg-gray-50 dark:bg-neutral-900 pb-24 transition-colors">
             <Header 
                 user={user} 
                 onSettingsClick={() => setView('settings')} 
@@ -136,7 +136,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigate, setView, setAc
             <div className="px-6 space-y-6">
                 {/* Services Section */}
                 <div>
-                    <h2 className="text-xl font-bold text-gray-900 mb-4">Services</h2>
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-neutral-100 mb-4">Services</h2>
                     <div className="grid grid-cols-4 gap-3">
                         <ServiceCard
                             icon={<StethoscopeIcon />} 
@@ -217,7 +217,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigate, setView, setAc
 
                 {/* Upcoming Appointments */}
                 <div>
-                    <h2 className="text-xl font-bold text-gray-900 mb-4">Upcoming Appointments</h2>
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-neutral-100 mb-4">Upcoming Appointments</h2>
                     <div className="flex overflow-x-auto pb-2 -mx-6 px-6 scrollbar-hide">
                         {mockAppointments.map((appointment) => (
                             <AppointmentCard

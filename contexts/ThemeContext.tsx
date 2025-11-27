@@ -13,18 +13,18 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const [theme, setTheme] = useState<Theme>(() => {
         // Get theme from localStorage or default to 'light'
         const savedTheme = localStorage.getItem('theme') as Theme;
-        return savedTheme || 'light';
-    });
-
-    // Initialize theme on mount
-    useEffect(() => {
+        const initialTheme = savedTheme || 'light';
+        
+        // Apply theme immediately on initialization
         const root = document.documentElement;
-        if (theme === 'dark') {
+        if (initialTheme === 'dark') {
             root.classList.add('dark');
         } else {
             root.classList.remove('dark');
         }
-    }, []);
+        
+        return initialTheme;
+    });
 
     // Apply theme when it changes
     useEffect(() => {
