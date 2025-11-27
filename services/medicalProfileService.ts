@@ -1,5 +1,3 @@
-import { doc, getDoc, setDoc, updateDoc, deleteDoc } from 'firebase/firestore';
-import { db } from '../lib/firebase';
 import { supabase } from '../lib/supabase';
 import { UserProfile } from '../types';
 
@@ -19,7 +17,7 @@ export interface MedicalProfileData {
 }
 
 /**
- * Get medical profile for current user
+ * Get medical profile for current user from Supabase
  */
 export const getMedicalProfile = async (): Promise<UserProfile | null> => {
     try {
@@ -29,14 +27,22 @@ export const getMedicalProfile = async (): Promise<UserProfile | null> => {
             return null;
         }
 
-        const profileRef = doc(db, 'medical_profiles', user.id);
-        const profileSnap = await getDoc(profileRef);
+        // Fetch from Supabase database
+        const { data, error } = await supabase
+            .from('medical_profiles')
+            .select('*')
+            .eq('user_id', user.id)
+            .single();
 
-        if (!profileSnap.exists()) {
+        if (error) {
+            if (error.code === 'PGRST116') {
+                // No profile found - return null
+                return null;
+            }
+            console.error('Error fetching medical profile:', error);
             return null;
         }
 
-        const data = profileSnap.data();
         return convertToUserProfile(data, user);
     } catch (error) {
         console.error('Error fetching medical profile:', error);
@@ -45,7 +51,7 @@ export const getMedicalProfile = async (): Promise<UserProfile | null> => {
 };
 
 /**
- * Create or update medical profile
+ * Create or update medical profile in Supabase
  */
 export const saveMedicalProfile = async (profileData: MedicalProfileData): Promise<{ success: boolean; error?: string }> => {
     try {
@@ -55,37 +61,37 @@ export const saveMedicalProfile = async (profileData: MedicalProfileData): Promi
             return { success: false, error: 'User not authenticated' };
         }
 
-        const profileRef = doc(db, 'medical_profiles', user.id);
-        
+        // Prepare emergency contact as JSONB
+        const emergencyContact = profileData.emergency_contact_name || profileData.emergency_contact_phone
+            ? {
+                name: profileData.emergency_contact_name || '',
+                phone: profileData.emergency_contact_phone || ''
+            }
+            : null;
+
         const profilePayload = {
             user_id: user.id,
-            full_name: profileData.full_name || '',
+            name: profileData.full_name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'User',
             age: profileData.age || null,
             gender: profileData.gender || null,
             blood_group: profileData.blood_group || null,
             allergies: profileData.allergies || [],
             chronic_conditions: profileData.chronic_conditions || [],
-            existing_medications: profileData.existing_medications || [],
-            emergency_contact_name: profileData.emergency_contact_name || '',
-            emergency_contact_phone: profileData.emergency_contact_phone || '',
-            height: profileData.height || '',
-            weight: profileData.weight || '',
-            avatar_url: profileData.avatar_url || '',
+            emergency_contact: emergencyContact,
+            avatar_url: profileData.avatar_url || null,
             updated_at: new Date().toISOString(),
         };
 
-        // Check if profile exists
-        const profileSnap = await getDoc(profileRef);
-        
-        if (profileSnap.exists()) {
-            // Update existing profile
-            await updateDoc(profileRef, profilePayload);
-        } else {
-            // Create new profile
-            await setDoc(profileRef, {
-                ...profilePayload,
-                created_at: new Date().toISOString(),
+        // Use upsert to create or update
+        const { error } = await supabase
+            .from('medical_profiles')
+            .upsert(profilePayload, {
+                onConflict: 'user_id'
             });
+
+        if (error) {
+            console.error('Error saving medical profile:', error);
+            return { success: false, error: error.message || 'Failed to save profile' };
         }
 
         return { success: true };
@@ -96,28 +102,41 @@ export const saveMedicalProfile = async (profileData: MedicalProfileData): Promi
 };
 
 /**
- * Convert Firestore data to UserProfile format
+ * Convert Supabase data to UserProfile format
  */
 const convertToUserProfile = (data: any, user: any): UserProfile => {
+    // Handle emergency contact (can be JSONB object or separate fields)
+    let emergencyContact = { name: '', phone: '' };
+    if (data.emergency_contact) {
+        if (typeof data.emergency_contact === 'object') {
+            emergencyContact = {
+                name: data.emergency_contact.name || '',
+                phone: data.emergency_contact.phone || ''
+            };
+        }
+    } else if (data.emergency_contact_name || data.emergency_contact_phone) {
+        // Fallback for old format
+        emergencyContact = {
+            name: data.emergency_contact_name || '',
+            phone: data.emergency_contact_phone || ''
+        };
+    }
+
     return {
-        name: data.full_name || user.displayName || user.email?.split('@')[0] || 'User',
+        name: data.name || data.full_name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'User',
         email: user.email || '',
-        avatarUrl: data.avatar_url || user.photoURL || `https://i.pravatar.cc/150?u=${user.email}`,
+        avatarUrl: data.avatar_url || user.user_metadata?.avatar_url || user.user_metadata?.picture || `https://i.pravatar.cc/150?u=${user.email}`,
         age: data.age || undefined,
-        height: data.height || undefined,
-        weight: data.weight || undefined,
+        gender: data.gender || undefined,
         bloodGroup: data.blood_group || undefined,
         allergies: data.allergies || [],
         chronicConditions: data.chronic_conditions || [],
-        emergencyContact: {
-            name: data.emergency_contact_name || '',
-            phone: data.emergency_contact_phone || ''
-        }
+        emergencyContact
     };
 };
 
 /**
- * Delete medical profile
+ * Delete medical profile from Supabase
  */
 export const deleteMedicalProfile = async (): Promise<{ success: boolean; error?: string }> => {
     try {
@@ -127,8 +146,15 @@ export const deleteMedicalProfile = async (): Promise<{ success: boolean; error?
             return { success: false, error: 'User not authenticated' };
         }
 
-        const profileRef = doc(db, 'medical_profiles', user.id);
-        await deleteDoc(profileRef);
+        const { error } = await supabase
+            .from('medical_profiles')
+            .delete()
+            .eq('user_id', user.id);
+
+        if (error) {
+            console.error('Error deleting medical profile:', error);
+            return { success: false, error: error.message || 'Failed to delete profile' };
+        }
 
         return { success: true };
     } catch (error: any) {

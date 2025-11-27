@@ -1,15 +1,15 @@
-import { collection, addDoc, query, getDocs, orderBy, limit } from 'firebase/firestore';
-import { db } from '../../lib/firebase';
 import { supabase } from '../../lib/supabase';
 import { SOSLog } from '../../types';
 
 /**
- * Create SOS log
+ * Create SOS log in Supabase
  */
 export const createSOSLog = async (
     latitude: number,
     longitude: number,
-    address?: string
+    address?: string,
+    emergencyCategory?: string,
+    emergencyMessage?: string
 ): Promise<{ success: boolean; id?: string; error?: string }> => {
     try {
         const { data: { user } } = await supabase.auth.getUser();
@@ -17,18 +17,27 @@ export const createSOSLog = async (
             return { success: false, error: 'User not authenticated' };
         }
 
-        const sosRef = collection(db, 'sos_logs', user.id, 'logs');
-        const docRef = await addDoc(sosRef, {
-            userId: user.id,
-            latitude,
-            longitude,
-            address: address || '',
-            timestamp: new Date().toISOString(),
-            status: 'active',
-            emergencyContactNotified: false,
-        });
+        const { data, error } = await supabase
+            .from('sos_logs')
+            .insert({
+                user_id: user.id,
+                latitude,
+                longitude,
+                address: address || null,
+                emergency_category: emergencyCategory || null,
+                emergency_message: emergencyMessage || null,
+                status: 'active',
+                emergency_contact_notified: false,
+            })
+            .select()
+            .single();
 
-        return { success: true, id: docRef.id };
+        if (error) {
+            console.error('Error creating SOS log:', error);
+            return { success: false, error: error.message || 'Failed to create SOS log' };
+        }
+
+        return { success: true, id: data.id };
     } catch (error: any) {
         console.error('Error creating SOS log:', error);
         return { success: false, error: error.message || 'Failed to create SOS log' };
@@ -36,20 +45,37 @@ export const createSOSLog = async (
 };
 
 /**
- * Get SOS logs for current user
+ * Get SOS logs for current user from Supabase
  */
 export const getSOSLogs = async (): Promise<SOSLog[]> => {
     try {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return [];
 
-        const sosRef = collection(db, 'sos_logs', user.id, 'logs');
-        const q = query(sosRef, orderBy('timestamp', 'desc'), limit(50));
-        const querySnapshot = await getDocs(q);
+        const { data, error } = await supabase
+            .from('sos_logs')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('timestamp', { ascending: false })
+            .limit(50);
 
-        return querySnapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data(),
+        if (error) {
+            console.error('Error fetching SOS logs:', error);
+            return [];
+        }
+
+        // Map Supabase column names to SOSLog type
+        return (data || []).map(log => ({
+            id: log.id,
+            userId: log.user_id,
+            latitude: log.latitude,
+            longitude: log.longitude,
+            address: log.address,
+            emergencyCategory: log.emergency_category,
+            emergencyMessage: log.emergency_message,
+            timestamp: log.timestamp,
+            status: log.status,
+            emergencyContactNotified: log.emergency_contact_notified,
         })) as SOSLog[];
     } catch (error) {
         console.error('Error fetching SOS logs:', error);

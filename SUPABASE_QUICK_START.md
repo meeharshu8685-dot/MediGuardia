@@ -60,9 +60,9 @@ CREATE TABLE IF NOT EXISTS medications (
     name TEXT NOT NULL,
     dosage TEXT,
     frequency TEXT,
+    notes TEXT, -- Stores time/notes
     start_date DATE,
     end_date DATE,
-    notes TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );

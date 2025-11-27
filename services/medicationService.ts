@@ -1,10 +1,8 @@
-import { collection, query, where, getDocs, addDoc, updateDoc, deleteDoc, doc, orderBy } from 'firebase/firestore';
-import { db } from '../lib/firebase';
 import { supabase } from '../lib/supabase';
 import { Medication } from '../types';
 
 /**
- * Get all medications for current user
+ * Get all medications for current user from Supabase
  */
 export const getMedications = async (): Promise<Medication[]> => {
     try {
@@ -14,21 +12,23 @@ export const getMedications = async (): Promise<Medication[]> => {
             return [];
         }
 
-        const medicationsRef = collection(db, 'medications');
-        const q = query(
-            medicationsRef,
-            where('user_id', '==', user.id),
-            orderBy('created_at', 'desc')
-        );
+        const { data, error } = await supabase
+            .from('medications')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false });
         
-        const querySnapshot = await getDocs(q);
-        
-        return querySnapshot.docs.map(doc => ({
-            id: doc.id,
-            name: doc.data().name,
-            dosage: doc.data().dosage,
-            frequency: doc.data().frequency,
-            time: doc.data().time,
+        if (error) {
+            console.error('Error fetching medications:', error);
+            return [];
+        }
+
+        return (data || []).map(med => ({
+            id: med.id,
+            name: med.name,
+            dosage: med.dosage || '',
+            frequency: med.frequency || '',
+            time: med.notes || '', // Notes field stores time
         }));
     } catch (error) {
         console.error('Error fetching medications:', error);
@@ -37,7 +37,7 @@ export const getMedications = async (): Promise<Medication[]> => {
 };
 
 /**
- * Add a new medication
+ * Add a new medication to Supabase
  */
 export const addMedication = async (medication: Omit<Medication, 'id'>): Promise<{ success: boolean; id?: string; error?: string }> => {
     try {
@@ -47,18 +47,24 @@ export const addMedication = async (medication: Omit<Medication, 'id'>): Promise
             return { success: false, error: 'User not authenticated' };
         }
 
-        const medicationsRef = collection(db, 'medications');
-        const docRef = await addDoc(medicationsRef, {
-            user_id: user.id,
-            name: medication.name,
-            dosage: medication.dosage,
-            frequency: medication.frequency,
-            time: medication.time,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-        });
+        const { data, error } = await supabase
+            .from('medications')
+            .insert({
+                user_id: user.id,
+                name: medication.name,
+                dosage: medication.dosage || null,
+                frequency: medication.frequency || null,
+                notes: medication.time || null, // Store time in notes field
+            })
+            .select()
+            .single();
 
-        return { success: true, id: docRef.id };
+        if (error) {
+            console.error('Error adding medication:', error);
+            return { success: false, error: error.message || 'Failed to add medication' };
+        }
+
+        return { success: true, id: data.id };
     } catch (error: any) {
         console.error('Error adding medication:', error);
         return { success: false, error: error.message || 'Failed to add medication' };
@@ -66,7 +72,7 @@ export const addMedication = async (medication: Omit<Medication, 'id'>): Promise
 };
 
 /**
- * Update a medication
+ * Update a medication in Supabase
  */
 export const updateMedication = async (id: string, medication: Partial<Medication>): Promise<{ success: boolean; error?: string }> => {
     try {
@@ -76,11 +82,25 @@ export const updateMedication = async (id: string, medication: Partial<Medicatio
             return { success: false, error: 'User not authenticated' };
         }
 
-        const medicationRef = doc(db, 'medications', id);
-        await updateDoc(medicationRef, {
-            ...medication,
+        const updates: any = {
             updated_at: new Date().toISOString(),
-        });
+        };
+
+        if (medication.name) updates.name = medication.name;
+        if (medication.dosage !== undefined) updates.dosage = medication.dosage;
+        if (medication.frequency !== undefined) updates.frequency = medication.frequency;
+        if (medication.time !== undefined) updates.notes = medication.time;
+
+        const { error } = await supabase
+            .from('medications')
+            .update(updates)
+            .eq('id', id)
+            .eq('user_id', user.id);
+
+        if (error) {
+            console.error('Error updating medication:', error);
+            return { success: false, error: error.message || 'Failed to update medication' };
+        }
 
         return { success: true };
     } catch (error: any) {
@@ -90,7 +110,7 @@ export const updateMedication = async (id: string, medication: Partial<Medicatio
 };
 
 /**
- * Delete a medication
+ * Delete a medication from Supabase
  */
 export const deleteMedication = async (id: string): Promise<{ success: boolean; error?: string }> => {
     try {
@@ -100,8 +120,16 @@ export const deleteMedication = async (id: string): Promise<{ success: boolean; 
             return { success: false, error: 'User not authenticated' };
         }
 
-        const medicationRef = doc(db, 'medications', id);
-        await deleteDoc(medicationRef);
+        const { error } = await supabase
+            .from('medications')
+            .delete()
+            .eq('id', id)
+            .eq('user_id', user.id);
+
+        if (error) {
+            console.error('Error deleting medication:', error);
+            return { success: false, error: error.message || 'Failed to delete medication' };
+        }
 
         return { success: true };
     } catch (error: any) {
