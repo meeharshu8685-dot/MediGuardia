@@ -18,7 +18,7 @@ const mockAppointments: Appointment[] = [
     { id: '2', date: '13', day: 'We', time: '10:00 AM', doctorName: 'Dr. John Smith', reason: 'Checkup', color: 'bg-orange-500' },
 ];
 
-const Header: React.FC<{ user: UserProfile; onNotificationClick?: () => void }> = ({ user, onNotificationClick }) => {
+const Header: React.FC<{ user: UserProfile; onNotificationClick?: () => void; onSettingsClick?: () => void }> = ({ user, onNotificationClick, onSettingsClick }) => {
     const [hasNotifications, setHasNotifications] = useState(true);
 
     return (
@@ -41,9 +41,7 @@ const Header: React.FC<{ user: UserProfile; onNotificationClick?: () => void }> 
                     </div>
                 </div>
                 <button 
-                    onClick={() => {
-                        setView('settings');
-                    }}
+                    onClick={onSettingsClick}
                     className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -124,7 +122,7 @@ interface HomeScreenProps {
 export const HomeScreen: React.FC<HomeScreenProps> = ({ navigate, setView, setActiveTab, user, medications, logs }) => {
     return (
         <div className="min-h-screen bg-gray-50 pb-24">
-            <Header user={user} />
+            <Header user={user} onSettingsClick={() => setView('settings')} />
             
             <div className="px-6 space-y-6">
                 {/* Services Section */}
