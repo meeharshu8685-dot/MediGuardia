@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { UserProfile, Medication, HealthLog } from '../types';
-import { StethoscopeIcon, SosIcon, FirstAidIcon, HospitalIcon, UserIcon } from '../constants';
+import { StethoscopeIcon, SosIcon, FirstAidIcon, HospitalIcon, UserIcon, HistoryIcon } from '../constants';
+import { QuoteComponent } from '../features/quotes/QuoteComponent';
 
 interface Appointment {
     id: string;
@@ -131,57 +132,88 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigate, setView, setAc
                     <h2 className="text-xl font-bold text-gray-900 mb-4">Services</h2>
                     <div className="grid grid-cols-4 gap-3">
                         <ServiceCard
-                        icon={<StethoscopeIcon />} 
-                            label="Doctor"
-                        onClick={() => {
-                            setActiveTab?.('symptom');
-                            setView('symptom');
-                        }} 
+                            icon={<StethoscopeIcon />} 
+                            label="Symptom Checker"
+                            onClick={() => {
+                                navigate('symptom-checker');
+                            }} 
                             bgColor="bg-blue-500"
                             iconColor="text-white"
-                    />
+                        />
+                        <ServiceCard
+                            icon={<FirstAidIcon />}
+                            label="First Aid"
+                            onClick={() => {
+                                navigate('sos/first-aid');
+                            }} 
+                            bgColor="bg-red-500"
+                            iconColor="text-white"
+                        />
+                        <ServiceCard
+                            icon={<SosIcon />}
+                            label="SOS"
+                            onClick={() => {
+                                navigate('sos/sos');
+                            }} 
+                            bgColor="bg-orange-500"
+                            iconColor="text-white"
+                        />
+                        <ServiceCard
+                            icon={<HospitalIcon />}
+                            label="Hospitals"
+                            onClick={() => {
+                                navigate('hospitals');
+                            }} 
+                            bgColor="bg-green-500"
+                            iconColor="text-white"
+                        />
+                    </div>
+                    <div className="grid grid-cols-4 gap-3 mt-3">
                         <ServiceCard
                             icon={
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="currentColor" viewBox="0 0 24 24">
                                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
                                 </svg>
                             }
-                            label="Medicine"
-                        onClick={() => {
-                                setActiveTab?.('history');
-                                setView('history/medications');
-                        }} 
+                            label="Medications"
+                            onClick={() => {
+                                navigate('medications');
+                            }} 
                             bgColor="bg-yellow-500"
                             iconColor="text-white"
-                    />
+                        />
+                        <ServiceCard
+                            icon={<HistoryIcon />}
+                            label="History"
+                            onClick={() => {
+                                setActiveTab?.('history');
+                                setView('history');
+                            }} 
+                            bgColor="bg-purple-500"
+                            iconColor="text-white"
+                        />
                         <ServiceCard
                             icon={
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="currentColor" viewBox="0 0 24 24">
                                     <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
                                 </svg>
                             }
-                            label="Report"
-                        onClick={() => {
-                                setActiveTab?.('history');
-                                setView('history/analytics');
-                        }} 
-                            bgColor="bg-cyan-400"
+                            label="Documents"
+                            onClick={() => {
+                                navigate('documents');
+                            }} 
+                            bgColor="bg-cyan-500"
                             iconColor="text-white"
-                    />
+                        />
                         <ServiceCard
-                            icon={
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                                </svg>
-                            }
-                            label="Virus"
-                        onClick={() => {
-                                setActiveTab?.('symptom');
-                                setView('symptom');
-                        }} 
+                            icon={<UserIcon />}
+                            label="Profile"
+                            onClick={() => {
+                                navigate('profile');
+                            }} 
                             bgColor="bg-pink-500"
                             iconColor="text-white"
-                    />
+                        />
                     </div>
                 </div>
                 
@@ -213,7 +245,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigate, setView, setAc
                                 />
                             ))}
                         </div>
-                        </div>
+                </div>
+
+                {/* Rotating Positive Quote Component */}
+                <div className="mt-6">
+                    <QuoteComponent />
+                </div>
             </div>
         </div>
     );

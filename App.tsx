@@ -3,7 +3,7 @@ import { OnboardingScreen } from './screens/OnboardingScreen';
 import { WelcomeScreen } from './screens/WelcomeScreen';
 import { AuthScreen } from './screens/AuthScreen';
 import { HomeScreen } from './screens/HomeScreen';
-import { SymptomCheckerScreen } from './screens/SymptomCheckerScreen';
+import { SymptomCheckerScreen } from './features/symptom-checker/SymptomCheckerScreen';
 import { EmergencyScreen } from './screens/EmergencyScreen';
 import { HistoryScreen } from './screens/HistoryScreen';
 import { ProfileScreen } from './screens/ProfileScreen';
@@ -316,8 +316,8 @@ const AppContent: React.FC = () => {
         if (view === 'profile') {
             return <ProfileScreen {...screenProps} user={userProfile} docs={documents} onUpdateProfile={handleUpdateProfile} onLogout={() => { logout(); setAppState('auth'); }} />;
         }
-        if (view === 'symptom') {
-            return <SymptomCheckerScreen {...screenProps} onSaveLog={handleAddHealthLog} />;
+        if (view === 'symptom' || view === 'symptom-checker') {
+            return <SymptomCheckerScreen onBack={() => setView('home')} />;
         }
         if (view === 'sos') {
             return <EmergencyScreen {...screenProps} view={view} user={userProfile} />;
