@@ -163,35 +163,59 @@ const ProfileInfoCard: React.FC<{ user: UserProfile, onEdit: () => void }> = ({ 
 const DocumentList: React.FC<{ 
     docs: MedicalDocument[], 
     onPreview: (doc: MedicalDocument) => void;
-    onUpload?: () => void;
-}> = ({ docs, onPreview, onUpload }) => {
+    onUpload?: (file: File) => Promise<void>;
+    onDelete?: (docId: string, fileUrl: string) => Promise<void>;
+}> = ({ docs, onPreview, onUpload, onDelete }) => {
     const fileInputRef = React.useRef<HTMLInputElement>(null);
+    const [uploading, setUploading] = React.useState(false);
 
     const handleUploadClick = () => {
-        if (onUpload) {
-            onUpload();
-        } else {
-            fileInputRef.current?.click();
+        fileInputRef.current?.click();
+    };
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file && onUpload) {
+            setUploading(true);
+            try {
+                await onUpload(file);
+            } catch (error) {
+                console.error('Error uploading file:', error);
+                alert('Failed to upload document. Please try again.');
+            } finally {
+                setUploading(false);
+                // Reset input
+                if (fileInputRef.current) {
+                    fileInputRef.current.value = '';
+                }
+            }
         }
     };
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            // In production, upload to Firebase Storage
-            alert(`File selected: ${file.name}\n\nUpload functionality will save to Firebase Storage.\nFile size: ${(file.size / 1024).toFixed(2)} KB`);
+    const handleDelete = async (e: React.MouseEvent, docId: string, fileUrl: string) => {
+        e.stopPropagation();
+        if (confirm('Are you sure you want to delete this document?')) {
+            if (onDelete) {
+                try {
+                    await onDelete(docId, fileUrl);
+                } catch (error) {
+                    console.error('Error deleting document:', error);
+                    alert('Failed to delete document. Please try again.');
+                }
+            }
         }
     };
 
     return (
         <div className="bg-white dark:bg-neutral-800 p-5 rounded-3xl shadow-sm transition-colors">
             <div className="flex justify-between items-center mb-4">
-                <h3 className="font-bold text-lg text-neutral-800 dark:text-neutral-200">Documents</h3>
+                <h3 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Documents</h3>
                 <button 
                     onClick={handleUploadClick}
-                    className="text-sm font-semibold text-primary dark:text-primary-light hover:underline"
+                    disabled={uploading}
+                    className="text-sm font-semibold text-primary dark:text-primary-light hover:underline disabled:opacity-50"
                 >
-                    Upload
+                    {uploading ? 'Uploading...' : 'Upload'}
                 </button>
                 <input
                     ref={fileInputRef}
@@ -201,18 +225,38 @@ const DocumentList: React.FC<{
                     className="hidden"
                 />
             </div>
-        <div className="space-y-3">
-            {docs.map(doc => (
-                <div key={doc.id} onClick={() => onPreview(doc)} className="flex items-center p-3 bg-neutral-100 dark:bg-neutral-700 rounded-xl cursor-pointer hover:bg-neutral-200 dark:hover:bg-neutral-600 transition-colors">
-                    <div className="mr-4 flex-shrink-0"><GetDocIcon type={doc.type} /></div>
-                    <div className="flex-grow">
-                        <p className="font-medium text-neutral-800 dark:text-neutral-200">{doc.name}</p>
-                        <p className="text-xs text-neutral-500 dark:text-neutral-400">{doc.uploadDate}</p>
+            <div className="space-y-3">
+                {docs.length > 0 ? (
+                    docs.map(doc => (
+                        <div key={doc.id} className="flex items-center p-3 bg-neutral-100 dark:bg-neutral-700 rounded-xl hover:bg-neutral-200 dark:hover:bg-neutral-600 transition-colors">
+                            <div onClick={() => onPreview(doc)} className="flex items-center flex-1 cursor-pointer">
+                                <div className="mr-4 flex-shrink-0"><GetDocIcon type={doc.type} /></div>
+                                <div className="flex-grow">
+                                    <p className="font-bold text-gray-900 dark:text-white text-base">{doc.name}</p>
+                                    <p className="text-xs font-medium text-gray-600 dark:text-gray-400">{doc.uploadDate}</p>
+                                </div>
+                                <div className="text-neutral-400 dark:text-neutral-500 mr-2"><ChevronRightIcon /></div>
+                            </div>
+                            {onDelete && (
+                                <button
+                                    onClick={(e) => handleDelete(e, doc.id, doc.downloadUrl || doc.previewUrl)}
+                                    className="ml-2 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 p-2"
+                                    title="Delete document"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
+                            )}
+                        </div>
+                    ))
+                ) : (
+                    <div className="text-center py-8 bg-neutral-100 dark:bg-neutral-700 rounded-xl">
+                        <p className="text-base font-medium text-gray-600 dark:text-gray-400 mb-1">No documents yet</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-500">Click "Upload" to add your first document</p>
                     </div>
-                    <div className="text-neutral-400 dark:text-neutral-500"><ChevronRightIcon /></div>
-                </div>
-            ))}
-        </div>
+                )}
+            </div>
         </div>
     );
 };
@@ -275,7 +319,7 @@ interface ProfileScreenProps {
     onUpdateProfile: (profile: UserProfile) => void;
 }
 
-export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onLogout, navigate, user, docs, onUpdateProfile }) => {
+export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onLogout, navigate, user, docs, onUpdateProfile, onUploadDocument, onDeleteDocument }) => {
     const [previewDoc, setPreviewDoc] = useState<MedicalDocument | null>(null);
     const [showQuiz, setShowQuiz] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
@@ -295,19 +339,12 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onLogout, navigate
             <ProfileHeader user={user} onEdit={() => setShowEditModal(true)} />
             <div className="p-6 space-y-6">
                 <ProfileInfoCard user={user} onEdit={() => setShowQuiz(true)} />
-                <DocumentList docs={docs} onPreview={setPreviewDoc} onUpload={() => {
-                    // You can add custom upload logic here
-                    const input = document.createElement('input');
-                    input.type = 'file';
-                    input.accept = '.pdf,.jpg,.jpeg,.png';
-                    input.onchange = (e: any) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                            alert(`File selected: ${file.name}\n\nUpload functionality will save to Firebase Storage.`);
-                        }
-                    };
-                    input.click();
-                }} />
+                <DocumentList 
+                    docs={docs} 
+                    onPreview={setPreviewDoc}
+                    onUpload={onUploadDocument}
+                    onDelete={onDeleteDocument}
+                />
                 <SettingsMenu onLogout={onLogout} navigate={navigate} />
                 <div className="text-center text-neutral-400 dark:text-neutral-500 text-sm pt-4 space-y-2">
                     <p>Made By Harsh And Abhishek</p>

@@ -15,7 +15,7 @@ import { HospitalLocatorMapScreen } from './screens/HospitalLocatorMapScreen';
 import { AppIcon } from './constants';
 import { BottomNavBar } from './components/BottomNavBar';
 import { UserProfile, MedicalDocument, HealthLog, Medication } from './types';
-import { mockUser, mockDocs, mockHealthLogs, mockMedications } from './data/mock';
+// Mock data removed - all data now comes from Supabase
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { getMedicalProfile, saveMedicalProfile, MedicalProfileData } from './services/medicalProfileService';
@@ -119,11 +119,18 @@ const AppContent: React.FC = () => {
     const [view, setView] = useState<string>('home');
     const splashShown = useRef(false);
 
-    // Centralized Application State
-    const [userProfile, setUserProfile] = useState<UserProfile>(mockUser);
+    // Centralized Application State - All initialized as empty, loaded from Supabase on login
+    const [userProfile, setUserProfile] = useState<UserProfile>({
+        name: '',
+        email: '',
+        avatarUrl: '',
+        allergies: [],
+        chronicConditions: [],
+        emergencyContact: { name: '', phone: '' }
+    });
     const [documents, setDocuments] = useState<MedicalDocument[]>([]);
-    const [healthLogs, setHealthLogs] = useState<HealthLog[]>(mockHealthLogs);
-    const [medications, setMedications] = useState<Medication[]>(mockMedications);
+    const [healthLogs, setHealthLogs] = useState<HealthLog[]>([]);
+    const [medications, setMedications] = useState<Medication[]>([]);
 
     // Handle splash screen - show for 1.5 seconds then transition
     useEffect(() => {
@@ -229,44 +236,43 @@ const AppContent: React.FC = () => {
                         });
                     }
 
-                    // Load medications (don't block if this fails)
+                    // Load medications (always set, even if empty)
                     try {
                         const userMedications = await getMedications();
-                        if (userMedications.length > 0) {
-                            setMedications(userMedications);
-                        }
+                        setMedications(userMedications || []);
                     } catch (medError) {
                         console.warn('Error loading medications:', medError);
+                        setMedications([]);
                     }
 
-                    // Load health logs (don't block if this fails)
+                    // Load health logs (always set, even if empty)
                     try {
                         const userHealthLogs = await getHealthLogs();
-                        if (userHealthLogs.length > 0) {
-                            setHealthLogs(userHealthLogs);
-                        }
+                        setHealthLogs(userHealthLogs || []);
                     } catch (logError) {
                         console.warn('Error loading health logs:', logError);
+                        setHealthLogs([]);
                     }
 
-                    // Load documents (don't block if this fails)
+                    // Load documents (always set, even if empty)
                     try {
                         const { getDocuments } = await import('./features/documents/documentService');
                         const userDocuments = await getDocuments();
-                        if (userDocuments.length > 0) {
-                            setDocuments(userDocuments);
-                        }
+                        setDocuments(userDocuments || []);
                     } catch (docError) {
                         console.warn('Error loading documents:', docError);
+                        setDocuments([]);
                     }
                 } catch (error) {
                     console.error('Error loading user data:', error);
-                    // Even if profile loading fails, set basic user info
+                    // Even if profile loading fails, set basic user info from auth
                     setUserProfile({
-                        ...mockUser,
-                        name: user.name,
-                        email: user.email,
-                        avatarUrl: user.avatarUrl || mockUser.avatarUrl
+                        name: user.name || user.email?.split('@')[0] || 'User',
+                        email: user.email || '',
+                        avatarUrl: user.avatarUrl || `https://i.pravatar.cc/150?u=${user.email}`,
+                        allergies: [],
+                        chronicConditions: [],
+                        emergencyContact: { name: '', phone: '' }
                     });
                 }
             }
@@ -338,7 +344,7 @@ const AppContent: React.FC = () => {
     };
 
     const handleAddMedication = async (med: Omit<Medication, 'id'>) => {
-        // Save to Firebase
+        // Save to Supabase
         const result = await saveMedication(med);
         
         if (result.success && result.id) {
@@ -348,13 +354,35 @@ const AppContent: React.FC = () => {
             };
             setMedications(prev => [...prev, newMed]);
         } else {
-            // Fallback: save locally if Firebase fails
-            console.warn('Failed to save medication to Firebase, saving locally:', result.error);
+            // Fallback: save locally if Supabase fails
+            console.warn('Failed to save medication to Supabase, saving locally:', result.error);
             const newMed: Medication = {
                 ...med,
                 id: `local-${Date.now()}`,
             };
             setMedications(prev => [...prev, newMed]);
+        }
+    };
+
+    const handleUploadDocument = async (file: File) => {
+        const { uploadDocument } = await import('./features/documents/documentService');
+        const result = await uploadDocument(file);
+        
+        if (result.success && result.document) {
+            setDocuments(prev => [result.document!, ...prev]);
+        } else {
+            throw new Error(result.error || 'Failed to upload document');
+        }
+    };
+
+    const handleDeleteDocument = async (docId: string, fileUrl: string) => {
+        const { deleteDocument } = await import('./features/documents/documentService');
+        const result = await deleteDocument(docId, fileUrl);
+        
+        if (result.success) {
+            setDocuments(prev => prev.filter(doc => doc.id !== docId));
+        } else {
+            throw new Error(result.error || 'Failed to delete document');
         }
     };
 
@@ -412,7 +440,7 @@ const AppContent: React.FC = () => {
             return <SettingsScreen {...screenProps} onBack={() => setView('home')} />;
         }
         if (view === 'profile') {
-            return <ProfileScreen {...screenProps} user={userProfile} docs={documents} onUpdateProfile={handleUpdateProfile} onLogout={() => { logout(); setAppState('auth'); }} />;
+            return <ProfileScreen {...screenProps} user={userProfile} docs={documents} onUpdateProfile={handleUpdateProfile} onUploadDocument={handleUploadDocument} onDeleteDocument={handleDeleteDocument} onLogout={() => { logout(); setAppState('auth'); }} />;
         }
         if (view === 'symptom' || view === 'symptom-checker') {
             return <SymptomCheckerScreen onBack={() => setView('home')} />;
@@ -450,7 +478,7 @@ const AppContent: React.FC = () => {
             );
         }
         if (view === 'documents') {
-            return <ProfileScreen {...screenProps} user={userProfile} docs={documents} onUpdateProfile={handleUpdateProfile} onLogout={() => { logout(); setAppState('auth'); }} />;
+            return <ProfileScreen {...screenProps} user={userProfile} docs={documents} onUpdateProfile={handleUpdateProfile} onUploadDocument={handleUploadDocument} onDeleteDocument={handleDeleteDocument} onLogout={() => { logout(); setAppState('auth'); }} />;
         }
 
         switch (activeTab) {

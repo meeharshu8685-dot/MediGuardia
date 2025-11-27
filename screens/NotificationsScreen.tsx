@@ -11,43 +11,7 @@ interface Notification {
     color: string;
 }
 
-const mockNotifications: Notification[] = [
-    {
-        id: '1',
-        type: 'medication',
-        title: 'Medication Reminder',
-        message: 'Time to take your morning medication',
-        time: '2 hours ago',
-        read: false,
-        icon: '💊',
-        color: 'bg-yellow-100'
-    },
-    {
-        id: '2',
-        type: 'appointment',
-        title: 'Appointment Reminder',
-        message: 'You have an appointment with Dr. Mim Akhter tomorrow at 09:30 AM',
-        time: '5 hours ago',
-        read: false,
-        icon: '📅',
-        color: 'bg-blue-100'
-    },
-    {
-        id: '3',
-        type: 'health',
-        title: 'Health Check Reminder',
-        message: 'Don\'t forget to log your daily health status',
-        time: '1 day ago',
-        read: true,
-        icon: '❤️',
-        color: 'bg-red-100'
-    },
-    {
-        id: '4',
-        type: 'reminder',
-        title: 'Weekly Report Available',
-        message: 'Your weekly health report is ready to view',
-        time: '2 days ago',
+// Mock notifications removed - notifications will be managed through Supabase or push notifications
         read: true,
         icon: '📊',
         color: 'bg-green-100'
@@ -85,7 +49,7 @@ interface NotificationsScreenProps {
 }
 
 export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({ navigate, setView }) => {
-    const [notifications, setNotifications] = useState<Notification[]>(mockNotifications);
+    const [notifications, setNotifications] = useState<Notification[]>([]);
     const [filter, setFilter] = useState<'all' | 'unread'>('all');
 
     const unreadCount = notifications.filter(n => !n.read).length;

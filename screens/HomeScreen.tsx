@@ -13,10 +13,7 @@ interface Appointment {
     color: string;
 }
 
-const mockAppointments: Appointment[] = [
-    { id: '1', date: '12', day: 'Tue', time: '09:30 AM', doctorName: 'Dr. Mim Akhter', reason: 'Depression', color: 'bg-blue-500' },
-    { id: '2', date: '13', day: 'We', time: '10:00 AM', doctorName: 'Dr. John Smith', reason: 'Checkup', color: 'bg-orange-500' },
-];
+// Appointments removed - will be managed through ScheduleScreen
 
 const Header: React.FC<{ user: UserProfile; onNotificationClick?: () => void; onSettingsClick?: () => void; onProfileClick?: () => void }> = ({ user, onNotificationClick, onSettingsClick, onProfileClick }) => {
     const [hasNotifications, setHasNotifications] = useState(true);
@@ -219,17 +216,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigate, setView, setAc
                 <div>
                     <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white tracking-tight mb-4">Upcoming Appointments</h2>
                     <div className="flex overflow-x-auto pb-2 -mx-6 px-6 scrollbar-hide">
-                        {mockAppointments.map((appointment) => (
-                            <AppointmentCard
-                                key={appointment.id}
-                                appointment={appointment}
-                                onClick={() => {
-                                    // Navigate to appointment details
-                                    alert(`Appointment with ${appointment.doctorName} on ${appointment.date} ${appointment.day} at ${appointment.time}`);
-                                }}
-                                />
-                            ))}
+                        <div className="bg-white dark:bg-neutral-800 rounded-2xl p-6 shadow-sm min-w-[280px] text-center">
+                            <p className="text-base font-medium text-gray-600 dark:text-gray-400 mb-2">No upcoming appointments</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-500">Schedule your appointments in the Schedule tab</p>
                         </div>
+                    </div>
                 </div>
 
                 {/* Rotating Positive Quote Component */}

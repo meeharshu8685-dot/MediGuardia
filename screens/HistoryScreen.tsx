@@ -9,10 +9,7 @@ interface ReportFile {
     fileCount: number;
 }
 
-const mockReports: ReportFile[] = [
-    { id: '1', name: 'General Health', iconColor: 'bg-cyan-400', fileCount: 8 },
-    { id: '2', name: 'Diabetes', iconColor: 'bg-purple-500', fileCount: 4 },
-];
+// Mock reports removed - reports will be generated from actual health data
 
 const Header: React.FC<{ title: string; onBack?: () => void }> = ({ title, onBack }) => (
     <div className="relative flex items-center justify-center pt-12 pb-6 px-6 bg-white dark:bg-neutral-800 transition-colors">
@@ -135,15 +132,11 @@ const ReportView: React.FC<{ user?: UserProfile }> = ({ user }) => {
             <div>
                 <h2 className="text-xl font-bold text-gray-900 dark:text-neutral-100 mb-4">Latest Report</h2>
                 <div>
-                    {mockReports.map((report) => (
-                        <ReportCard
-                            key={report.id}
-                            report={report}
-                            onClick={() => {
-                                alert(`Opening ${report.name} reports`);
-                            }}
-                        />
-                    ))}
+                    {/* Reports will be generated from actual health data */}
+                    <div className="text-center py-6 bg-white dark:bg-neutral-800 rounded-2xl text-gray-500 dark:text-gray-400">
+                        <p className="text-base font-medium">No reports available yet</p>
+                        <p className="text-sm mt-1">Reports will be generated from your health logs</p>
+                    </div>
                 </div>
             </div>
         </div>

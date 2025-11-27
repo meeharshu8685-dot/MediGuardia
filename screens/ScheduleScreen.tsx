@@ -13,41 +13,7 @@ interface Appointment {
     color: string;
 }
 
-const mockAppointments: Appointment[] = [
-    { 
-        id: '1', 
-        date: '12', 
-        day: 'Tue', 
-        time: '09:30 AM', 
-        doctorName: 'Dr. Mim Akhter', 
-        specialty: 'Psychiatrist',
-        reason: 'Depression', 
-        status: 'upcoming',
-        color: 'bg-blue-500' 
-    },
-    { 
-        id: '2', 
-        date: '13', 
-        day: 'We', 
-        time: '10:00 AM', 
-        doctorName: 'Dr. John Smith', 
-        specialty: 'General Physician',
-        reason: 'Checkup', 
-        status: 'upcoming',
-        color: 'bg-orange-500' 
-    },
-    { 
-        id: '3', 
-        date: '15', 
-        day: 'Fri', 
-        time: '02:00 PM', 
-        doctorName: 'Dr. Sarah Johnson', 
-        specialty: 'Cardiologist',
-        reason: 'Heart Checkup', 
-        status: 'upcoming',
-        color: 'bg-green-500' 
-    },
-];
+// Mock appointments removed - appointments are now managed locally or will be stored in Supabase
 
 const AppointmentCard: React.FC<{ appointment: Appointment; onClick?: () => void }> = ({ appointment, onClick }) => (
     <div 
@@ -160,7 +126,7 @@ interface ScheduleScreenProps {
 }
 
 export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({ navigate, setView }) => {
-    const [appointments, setAppointments] = useState<Appointment[]>(mockAppointments);
+    const [appointments, setAppointments] = useState<Appointment[]>([]);
     const [showAddModal, setShowAddModal] = useState(false);
     const [filter, setFilter] = useState<'all' | 'upcoming' | 'completed'>('all');
 
@@ -224,8 +190,9 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({ navigate, setVie
                         ))}
                     </div>
                 ) : (
-                    <div className="text-center py-10 bg-white rounded-2xl text-gray-500">
-                        No appointments found.
+                    <div className="text-center py-10 bg-white dark:bg-neutral-800 rounded-2xl text-gray-500 dark:text-gray-400">
+                        <p className="text-base font-medium mb-2">No appointments found</p>
+                        <p className="text-sm">Click "Add Appointment" to schedule your first appointment</p>
                     </div>
                 )}
             </div>
