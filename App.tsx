@@ -526,25 +526,23 @@ const AppContent: React.FC = () => {
 
     if (isLoading && !isAuthenticated) {
         return (
-            <ThemeProvider>
-                <div className="w-screen h-screen overflow-x-hidden flex items-center justify-center">
-                    <SplashScreen />
-                </div>
-            </ThemeProvider>
+            <div className="w-screen h-screen overflow-x-hidden flex items-center justify-center">
+                <SplashScreen />
+            </div>
         );
     }
 
     return (
-        <ThemeProvider>
-            <div className="w-screen h-screen overflow-x-hidden">{renderContent()}</div>
-        </ThemeProvider>
+        <div className="w-screen h-screen overflow-x-hidden">{renderContent()}</div>
     );
 };
 
 export default function App() {
     return (
-        <AuthProvider>
-            <AppContent />
-        </AuthProvider>
+        <ThemeProvider>
+            <AuthProvider>
+                <AppContent />
+            </AuthProvider>
+        </ThemeProvider>
     );
 }

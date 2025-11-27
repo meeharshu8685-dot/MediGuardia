@@ -16,12 +16,23 @@ export const ThemeProvider: React.FC<{ children: ReactNode }> = ({ children }) =
         return savedTheme || 'light';
     });
 
+    // Initialize theme on mount
     useEffect(() => {
-        // Apply theme to document
+        const root = document.documentElement;
         if (theme === 'dark') {
-            document.documentElement.classList.add('dark');
+            root.classList.add('dark');
         } else {
-            document.documentElement.classList.remove('dark');
+            root.classList.remove('dark');
+        }
+    }, []);
+
+    // Apply theme when it changes
+    useEffect(() => {
+        const root = document.documentElement;
+        if (theme === 'dark') {
+            root.classList.add('dark');
+        } else {
+            root.classList.remove('dark');
         }
         // Save to localStorage
         localStorage.setItem('theme', theme);
