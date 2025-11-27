@@ -27,18 +27,86 @@ import { supabase } from './lib/supabase';
 type AppState = 'splash' | 'welcome' | 'onboarding' | 'auth' | 'main';
 export type MainTab = 'home' | 'schedule' | 'history' | 'notifications';
 
+// Plant leaf pattern for loading screen (matching login theme)
+const LoadingLeafPattern = () => (
+    <div className="absolute top-0 left-0 w-full h-full overflow-hidden">
+        <svg className="absolute w-full h-full" viewBox="0 0 400 800" preserveAspectRatio="xMidYMid slice">
+            <defs>
+                <pattern id="loadingLeafPattern" x="0" y="0" width="200" height="200" patternUnits="userSpaceOnUse">
+                    <path
+                        d="M100,30 Q120,60 140,100 Q150,130 140,160 Q130,180 100,200 Q70,180 60,160 Q50,130 60,100 Q80,60 100,30 Z"
+                        fill="#0d4a2e"
+                        opacity="0.2"
+                    />
+                </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="#1a5f3f" />
+            <rect width="100%" height="100%" fill="url(#loadingLeafPattern)" />
+            {/* Large decorative leaves */}
+            <path
+                d="M50,50 Q80,70 100,110 Q110,150 100,190 Q90,210 50,230 Q10,210 0,190 Q-10,150 0,110 Q20,70 50,50 Z"
+                fill="#0d4a2e"
+                opacity="0.3"
+            />
+            <path
+                d="M350,80 Q380,100 400,140 Q410,180 400,220 Q390,240 350,260 Q310,240 300,220 Q290,180 300,140 Q320,100 350,80 Z"
+                fill="#0d4a2e"
+                opacity="0.3"
+            />
+            <path
+                d="M150,300 Q180,320 200,360 Q210,400 200,440 Q190,460 150,480 Q110,460 100,440 Q90,400 100,360 Q120,320 150,300 Z"
+                fill="#0d4a2e"
+                opacity="0.25"
+            />
+            <path
+                d="M250,500 Q280,520 300,560 Q310,600 300,640 Q290,660 250,680 Q210,660 200,640 Q190,600 200,560 Q220,520 250,500 Z"
+                fill="#0d4a2e"
+                opacity="0.25"
+            />
+        </svg>
+    </div>
+);
+
 const SplashScreen: React.FC = () => {
     return (
-        <div className="flex flex-col items-center justify-center h-screen w-screen bg-gradient-to-br from-[#7B61FF] to-[#9DBBFF]">
-            <div className="flex flex-col items-center justify-center flex-grow">
-                <div className="w-24 h-24 mb-4 text-white">
+        <div className="relative flex flex-col items-center justify-center h-screen w-screen bg-[#1a5f3f] overflow-hidden">
+            {/* Background pattern */}
+            <LoadingLeafPattern />
+            
+            {/* Content */}
+            <div className="relative z-10 flex flex-col items-center justify-center flex-grow">
+                <div className="w-24 h-24 mb-6 text-white">
                     <AppIcon />
                 </div>
-                <h1 className="text-4xl font-bold text-white">MediGuardia</h1>
-                <p className="text-lg text-white/90 mt-2">Your Personal AI Health Companion</p>
+                <h1 className="text-4xl font-bold text-white mb-2">MediGuardia</h1>
+                <p className="text-lg text-white/90">Your Personal AI Health Companion</p>
             </div>
-            <div className="mb-16">
-                <div className="w-8 h-8 border-4 border-white/50 border-t-white rounded-full animate-spin"></div>
+            
+            {/* Loading spinner */}
+            <div className="relative z-10 mb-16">
+                <div className="w-10 h-10 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
+            </div>
+            
+            {/* Decorative leaf branch (matching login screen) */}
+            <div className="absolute right-0 top-1/3 opacity-20">
+                <svg width="100" height="150" viewBox="0 0 80 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path
+                        d="M60 20 Q70 30 75 45 Q78 55 75 65 Q70 75 60 80 Q50 75 45 65 Q42 55 45 45 Q50 30 60 20 Z"
+                        fill="#ffffff"
+                    />
+                    <path
+                        d="M50 40 Q55 50 58 60 Q60 68 58 75 Q55 82 50 85 Q45 82 42 75 Q40 68 42 60 Q45 50 50 40 Z"
+                        fill="#ffffff"
+                    />
+                    <path
+                        d="M40 60 Q45 70 48 80 Q50 88 48 95 Q45 102 40 105 Q35 102 32 95 Q30 88 32 80 Q35 70 40 60 Z"
+                        fill="#ffffff"
+                    />
+                    <path
+                        d="M30 80 L35 100 L25 100 Z"
+                        fill="#ffffff"
+                    />
+                </svg>
             </div>
         </div>
     );
