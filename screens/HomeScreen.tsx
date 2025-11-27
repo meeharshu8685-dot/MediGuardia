@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { UserProfile, Medication, HealthLog } from '../types';
-import { StethoscopeIcon, SosIcon, FirstAidIcon, HospitalIcon, UserIcon, HistoryIcon } from '../constants';
+import { StethoscopeIcon, SosIcon, FirstAidIcon, HospitalIcon, HistoryIcon } from '../constants';
 import { QuoteComponent } from '../features/quotes/QuoteComponent';
 
 interface Appointment {
@@ -18,7 +18,7 @@ const mockAppointments: Appointment[] = [
     { id: '2', date: '13', day: 'We', time: '10:00 AM', doctorName: 'Dr. John Smith', reason: 'Checkup', color: 'bg-orange-500' },
 ];
 
-const Header: React.FC<{ user: UserProfile; onNotificationClick?: () => void; onSettingsClick?: () => void }> = ({ user, onNotificationClick, onSettingsClick }) => {
+const Header: React.FC<{ user: UserProfile; onNotificationClick?: () => void; onSettingsClick?: () => void; onProfileClick?: () => void }> = ({ user, onNotificationClick, onSettingsClick, onProfileClick }) => {
     const [hasNotifications, setHasNotifications] = useState(true);
 
     return (
@@ -26,11 +26,16 @@ const Header: React.FC<{ user: UserProfile; onNotificationClick?: () => void; on
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center flex-1">
                     <div className="relative">
-                        <img 
-                            src={user.avatarUrl} 
-                            alt={user.name} 
-                            className="w-14 h-14 rounded-full object-cover border-2 border-gray-100" 
-                        />
+                        <button
+                            onClick={onProfileClick}
+                            className="cursor-pointer hover:opacity-80 transition-opacity focus:outline-none focus:ring-2 focus:ring-blue-200 rounded-full"
+                        >
+                            <img 
+                                src={user.avatarUrl} 
+                                alt={user.name} 
+                                className="w-14 h-14 rounded-full object-cover border-2 border-gray-100" 
+                            />
+                        </button>
                         {hasNotifications && (
                             <span className="absolute top-0 right-0 w-4 h-4 bg-blue-500 rounded-full border-2 border-white"></span>
                         )}
@@ -122,7 +127,11 @@ interface HomeScreenProps {
 export const HomeScreen: React.FC<HomeScreenProps> = ({ navigate, setView, setActiveTab, user, medications, logs }) => {
     return (
         <div className="min-h-screen bg-gray-50 pb-24">
-            <Header user={user} onSettingsClick={() => setView('settings')} />
+            <Header 
+                user={user} 
+                onSettingsClick={() => setView('settings')} 
+                onProfileClick={() => navigate('profile')}
+            />
             
             <div className="px-6 space-y-6">
                 {/* Services Section */}
@@ -202,15 +211,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigate, setView, setAc
                             }} 
                             bgColor="bg-cyan-100"
                             iconColor="text-cyan-600"
-                        />
-                        <ServiceCard
-                            icon={<UserIcon />}
-                            label="Profile"
-                            onClick={() => {
-                                navigate('profile');
-                            }} 
-                            bgColor="bg-pink-100"
-                            iconColor="text-pink-600"
                         />
                     </div>
                 </div>
