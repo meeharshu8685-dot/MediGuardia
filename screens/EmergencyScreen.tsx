@@ -119,10 +119,11 @@ const FirstAidCategoriesView: React.FC<{ onSelect: (category: string) => void }>
             {Object.keys(firstAidData).map(cat => {
                 const categoryData = firstAidData[cat as keyof typeof firstAidData];
                 return (
-                    <div 
+                    <button
                         key={cat} 
                         onClick={() => onSelect(cat)} 
-                        className="bg-white dark:bg-neutral-800 p-4 rounded-3xl shadow-sm text-center cursor-pointer hover:shadow-lg transition-shadow flex flex-col items-center"
+                        className="bg-white dark:bg-neutral-800 p-4 rounded-3xl shadow-sm text-center cursor-pointer hover:shadow-lg active:scale-95 transition-all flex flex-col items-center"
+                        type="button"
                     >
                         <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-3 bg-red-100 dark:bg-red-900/30">
                             <div className="w-8 h-8 text-red-600 dark:text-red-400">
@@ -137,7 +138,7 @@ const FirstAidCategoriesView: React.FC<{ onSelect: (category: string) => void }>
                             </div>
                         </div>
                         <p className="font-bold text-neutral-800 dark:text-neutral-200">{cat}</p>
-                    </div>
+                    </button>
                 );
             })}
         </div>
@@ -508,7 +509,8 @@ const EmergencyCategorySelection: React.FC<{
                     <button
                         key={cat.id}
                         onClick={() => onSelect(cat.id)}
-                        className={`${cat.color} text-white p-6 rounded-3xl shadow-lg hover:shadow-xl transition-all flex flex-col items-center space-y-3`}
+                        className={`${cat.color} text-white p-6 rounded-3xl shadow-lg hover:shadow-xl active:scale-95 transition-all flex flex-col items-center space-y-3 cursor-pointer`}
+                        type="button"
                     >
                         <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
                             <div className="w-10 h-10 text-white">{cat.icon}</div>
@@ -534,32 +536,39 @@ const EmergencySOSFlow: React.FC<{
     const [loadingFirstAid, setLoadingFirstAid] = useState(false);
     const [loadingSOSMessage, setLoadingSOSMessage] = useState(false);
 
-    const handleCategorySelect = async (category: EmergencyCategory) => {
+    const handleCategorySelect = (category: EmergencyCategory) => {
+        // Navigate immediately - don't wait for AI
         setSelectedCategory(category);
-        setLoadingFirstAid(true);
-        try {
-            const guide = await generateFirstAidGuide(categoryToFirstAidMap[category]);
-            setFirstAidGuide(guide);
-        } catch (error) {
-            console.error('Error generating first aid guide:', error);
-        } finally {
-            setLoadingFirstAid(false);
-        }
         setStep('notes');
+        // Load first aid guide in background (non-blocking)
+        setLoadingFirstAid(true);
+        generateFirstAidGuide(categoryToFirstAidMap[category])
+            .then(guide => {
+                setFirstAidGuide(guide);
+                setLoadingFirstAid(false);
+            })
+            .catch(error => {
+                console.error('Error generating first aid guide:', error);
+                setLoadingFirstAid(false);
+            });
     };
 
-    const handleSendSOS = async () => {
+    const handleSendSOS = () => {
         if (!selectedCategory || !user) return;
         
+        // Navigate immediately - don't wait for location or AI
+        setStep('sos');
         setLoadingSOSMessage(true);
-        try {
-            navigator.geolocation.getCurrentPosition(
-                async (position) => {
-                    const location = {
-                        lat: position.coords.latitude,
-                        lng: position.coords.longitude,
-                    };
-                    
+        
+        // Get location and generate message in background
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const location = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude,
+                };
+                
+                try {
                     const message = await generateSOSMessage({
                         name: user.name,
                         category: emergencyCategories.find(c => c.id === selectedCategory)?.name || 'Emergency',
@@ -567,27 +576,28 @@ const EmergencySOSFlow: React.FC<{
                         notes: emergencyNotes,
                     });
                     setAiSOSMessage(message);
-                    setStep('sos');
-                },
-                () => {
-                    // Location denied, use default
-                    generateSOSMessage({
-                        name: user.name,
-                        category: emergencyCategories.find(c => c.id === selectedCategory)?.name || 'Emergency',
-                        location: { lat: 0, lng: 0 },
-                        notes: emergencyNotes,
-                    }).then(message => {
-                        setAiSOSMessage(message);
-                        setStep('sos');
-                    });
+                } catch (error) {
+                    console.error('Error generating SOS message:', error);
+                } finally {
+                    setLoadingSOSMessage(false);
                 }
-            );
-        } catch (error) {
-            console.error('Error generating SOS message:', error);
-            setStep('sos');
-        } finally {
-            setLoadingSOSMessage(false);
-        }
+            },
+            () => {
+                // Location denied, use default
+                generateSOSMessage({
+                    name: user.name,
+                    category: emergencyCategories.find(c => c.id === selectedCategory)?.name || 'Emergency',
+                    location: { lat: 0, lng: 0 },
+                    notes: emergencyNotes,
+                }).then(message => {
+                    setAiSOSMessage(message);
+                    setLoadingSOSMessage(false);
+                }).catch(error => {
+                    console.error('Error generating SOS message:', error);
+                    setLoadingSOSMessage(false);
+                });
+            }
+        );
     };
 
     if (step === 'category') {
@@ -662,14 +672,15 @@ const EmergencySOSFlow: React.FC<{
                 <div className="flex gap-4">
                     <button
                         onClick={() => setStep('category')}
-                        className="flex-1 bg-gray-200 dark:bg-neutral-700 text-gray-700 dark:text-neutral-200 py-4 rounded-xl font-semibold"
+                        className="flex-1 bg-gray-200 dark:bg-neutral-700 text-gray-700 dark:text-neutral-200 py-4 rounded-xl font-semibold active:scale-95 transition-transform cursor-pointer"
+                        type="button"
                     >
                         Back
                     </button>
                     <button
                         onClick={handleSendSOS}
-                        disabled={loadingSOSMessage}
-                        className="flex-1 bg-red-500 text-white py-4 rounded-xl font-semibold hover:bg-red-600 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center"
+                        className="flex-1 bg-red-500 text-white py-4 rounded-xl font-semibold hover:bg-red-600 active:scale-95 transition-all flex items-center justify-center cursor-pointer"
+                        type="button"
                     >
                         {loadingSOSMessage ? (
                             <div className="w-5 h-5 border-2 border-white/50 border-t-white rounded-full animate-spin"></div>
