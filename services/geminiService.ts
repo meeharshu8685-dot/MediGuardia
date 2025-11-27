@@ -218,7 +218,6 @@ export const generateSOSMessage = async (data: {
     category: string;
     location: { lat: number; lng: number };
     notes?: string;
-    severity?: string;
 }): Promise<string> => {
     try {
         const aiInstance = getAI();
@@ -227,7 +226,6 @@ export const generateSOSMessage = async (data: {
 - Emergency Category: ${data.category}
 - Location: ${data.location.lat}, ${data.location.lng}
 - Additional Notes: ${data.notes || 'None'}
-- Severity: ${data.severity || 'Unknown'}
 
 Create a clear, concise emergency message.`;
 

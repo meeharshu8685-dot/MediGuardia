@@ -3,7 +3,7 @@ import { BackArrowIcon, CheckCircleIcon, LocationMarkerIcon, PhoneIcon, Breathin
 import { HospitalLocatorMapScreen } from './HospitalLocatorMapScreen';
 import { SOSLocationScreen } from './SOSLocationScreen';
 import { createSOSLog, generateWhatsAppShareLink, generateSMSShareLink, generateEmailShareLink, generateEnhancedWhatsAppShareLink } from '../features/sos/sosService';
-import { analyzeEmergencySeverity, generateFirstAidGuide, generateSOSMessage, EmergencySeverityResult, FirstAidGuide } from '../services/geminiService';
+import { generateFirstAidGuide, generateSOSMessage, FirstAidGuide } from '../services/geminiService';
 import { UserProfile } from '../types';
 
 type EmergencyCategory = 'accident' | 'heart' | 'breathing' | 'bleeding' | 'fire' | 'allergy' | 'unknown';
@@ -251,156 +251,6 @@ const EmergencyMedicalInfoCard: React.FC<{ user: UserProfile; onClose: () => voi
                         </div>
                     )}
                 </div>
-            </div>
-        </div>
-    );
-};
-
-const AISeverityAnalyzer: React.FC<{ 
-    onComplete: (result: EmergencySeverityResult) => void; 
-    onBack: () => void;
-}> = ({ onComplete, onBack }) => {
-    const [answers, setAnswers] = useState({
-        bleeding: false,
-        conscious: true,
-        breathingNormally: true,
-    });
-    const [loading, setLoading] = useState(false);
-    const [currentQuestion, setCurrentQuestion] = useState(0);
-
-    const questions = [
-        { id: 'bleeding', text: 'Are you bleeding?', key: 'bleeding' as keyof typeof answers },
-        { id: 'conscious', text: 'Are you conscious?', key: 'conscious' as keyof typeof answers },
-        { id: 'breathing', text: 'Are you breathing normally?', key: 'breathingNormally' as keyof typeof answers },
-    ];
-
-    const handleAnswer = (value: boolean) => {
-        const key = questions[currentQuestion].key;
-        setAnswers({ ...answers, [key]: value });
-    };
-
-    const handleNext = async () => {
-        if (currentQuestion < questions.length - 1) {
-            setCurrentQuestion(currentQuestion + 1);
-        } else {
-            // All questions answered, analyze
-            setLoading(true);
-            try {
-                const result = await analyzeEmergencySeverity(answers);
-                onComplete(result);
-            } catch (error) {
-                console.error('Error analyzing severity:', error);
-                // Fallback
-                const fallback: EmergencySeverityResult = {
-                    riskLevel: answers.bleeding || !answers.conscious || !answers.breathingNormally ? 'High Risk' : 'Moderate Risk',
-                    message: answers.bleeding || !answers.conscious || !answers.breathingNormally 
-                        ? 'This is high risk - Seek help immediately' 
-                        : 'Low risk but monitor closely',
-                    urgency: 'Seek medical attention',
-                };
-                onComplete(fallback);
-            } finally {
-                setLoading(false);
-            }
-        }
-    };
-
-    const q = questions[currentQuestion];
-
-    return (
-        <div className="p-6">
-            <div className="mb-6">
-                <button onClick={onBack} className="text-gray-700 dark:text-gray-300 bg-white dark:bg-neutral-800 p-3 rounded-full shadow-sm">
-                    <BackArrowIcon />
-                </button>
-            </div>
-            <div className="text-center mb-8">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-neutral-100 mb-2">Emergency Assessment</h2>
-                <p className="text-gray-600 dark:text-gray-400">Question {currentQuestion + 1} of {questions.length}</p>
-            </div>
-            <div className="bg-white dark:bg-neutral-800 rounded-2xl p-6 shadow-sm mb-6">
-                <h3 className="text-xl font-bold text-gray-900 dark:text-neutral-100 mb-6">{q.text}</h3>
-                <div className="space-y-3">
-                    <button
-                        onClick={() => handleAnswer(true)}
-                        className={`w-full p-4 rounded-xl text-left transition-all ${
-                            answers[q.key] === true
-                                ? 'bg-[#1a5f3f] text-white border-2 border-[#1a5f3f]'
-                                : 'bg-gray-50 dark:bg-neutral-700 text-gray-900 dark:text-neutral-100 border-2 border-gray-200 dark:border-neutral-600'
-                        }`}
-                    >
-                        Yes
-                    </button>
-                    <button
-                        onClick={() => handleAnswer(false)}
-                        className={`w-full p-4 rounded-xl text-left transition-all ${
-                            answers[q.key] === false
-                                ? 'bg-[#1a5f3f] text-white border-2 border-[#1a5f3f]'
-                                : 'bg-gray-50 dark:bg-neutral-700 text-gray-900 dark:text-neutral-100 border-2 border-gray-200 dark:border-neutral-600'
-                        }`}
-                    >
-                        No
-                    </button>
-                </div>
-            </div>
-            <button
-                onClick={handleNext}
-                disabled={loading || answers[q.key] === undefined}
-                className={`w-full py-4 rounded-xl font-semibold ${
-                    answers[q.key] !== undefined && !loading
-                        ? 'bg-[#1a5f3f] text-white hover:opacity-90'
-                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                }`}
-            >
-                {loading ? 'Analyzing...' : currentQuestion === questions.length - 1 ? 'Get Assessment' : 'Next'}
-            </button>
-        </div>
-    );
-};
-
-const SeverityResultView: React.FC<{ 
-    result: EmergencySeverityResult; 
-    onBack: () => void;
-    onContinue: () => void;
-}> = ({ result, onBack, onContinue }) => {
-    const riskColors = {
-        'Low Risk': 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
-        'Moderate Risk': 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300',
-        'High Risk': 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300',
-        'Critical': 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300 animate-pulse',
-    };
-
-    return (
-        <div className="p-6">
-            <div className="mb-6">
-                <button onClick={onBack} className="text-gray-700 dark:text-gray-300 bg-white dark:bg-neutral-800 p-3 rounded-full shadow-sm">
-                    <BackArrowIcon />
-                </button>
-            </div>
-            <div className="text-center mb-8">
-                <div className={`inline-block px-6 py-3 rounded-full font-bold text-lg mb-4 ${riskColors[result.riskLevel]}`}>
-                    {result.riskLevel}
-                </div>
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-neutral-100 mb-2">{result.message}</h2>
-                <p className="text-gray-600 dark:text-gray-400">{result.urgency}</p>
-            </div>
-            <div className="bg-white dark:bg-neutral-800 rounded-2xl p-6 shadow-sm mb-6">
-                <h3 className="text-lg font-bold text-gray-900 dark:text-neutral-100 mb-4">Assessment Details</h3>
-                <p className="text-gray-700 dark:text-neutral-300">{result.message}</p>
-            </div>
-            <div className="flex gap-4">
-                <button
-                    onClick={onBack}
-                    className="flex-1 bg-gray-200 dark:bg-neutral-700 text-gray-700 dark:text-neutral-200 py-4 rounded-xl font-semibold"
-                >
-                    Back
-                </button>
-                <button
-                    onClick={onContinue}
-                    className="flex-1 bg-[#1a5f3f] text-white py-4 rounded-xl font-semibold hover:opacity-90"
-                >
-                    Continue to SOS
-                </button>
             </div>
         </div>
     );
@@ -676,9 +526,8 @@ const EmergencySOSFlow: React.FC<{
     onBack: () => void;
     onShareLocation?: () => void;
 }> = ({ user, onBack, onShareLocation }) => {
-    const [step, setStep] = useState<'category' | 'severity' | 'severity-result' | 'notes' | 'sos'>('category');
+    const [step, setStep] = useState<'category' | 'notes' | 'sos'>('category');
     const [selectedCategory, setSelectedCategory] = useState<EmergencyCategory | null>(null);
-    const [severityResult, setSeverityResult] = useState<EmergencySeverityResult | null>(null);
     const [firstAidGuide, setFirstAidGuide] = useState<FirstAidGuide | null>(null);
     const [emergencyNotes, setEmergencyNotes] = useState('');
     const [aiSOSMessage, setAiSOSMessage] = useState('');
@@ -696,15 +545,6 @@ const EmergencySOSFlow: React.FC<{
         } finally {
             setLoadingFirstAid(false);
         }
-        setStep('severity');
-    };
-
-    const handleSeverityComplete = (result: EmergencySeverityResult) => {
-        setSeverityResult(result);
-        setStep('severity-result');
-    };
-
-    const handleContinueToNotes = () => {
         setStep('notes');
     };
 
@@ -725,7 +565,6 @@ const EmergencySOSFlow: React.FC<{
                         category: emergencyCategories.find(c => c.id === selectedCategory)?.name || 'Emergency',
                         location,
                         notes: emergencyNotes,
-                        severity: severityResult?.riskLevel || 'Unknown',
                     });
                     setAiSOSMessage(message);
                     setStep('sos');
@@ -737,7 +576,6 @@ const EmergencySOSFlow: React.FC<{
                         category: emergencyCategories.find(c => c.id === selectedCategory)?.name || 'Emergency',
                         location: { lat: 0, lng: 0 },
                         notes: emergencyNotes,
-                        severity: severityResult?.riskLevel || 'Unknown',
                     }).then(message => {
                         setAiSOSMessage(message);
                         setStep('sos');
@@ -756,20 +594,6 @@ const EmergencySOSFlow: React.FC<{
         return <EmergencyCategorySelection onSelect={handleCategorySelect} onBack={onBack} />;
     }
 
-    if (step === 'severity') {
-        return <AISeverityAnalyzer onComplete={handleSeverityComplete} onBack={() => setStep('category')} />;
-    }
-
-    if (step === 'severity-result') {
-        return (
-            <SeverityResultView 
-                result={severityResult!} 
-                onBack={() => setStep('severity')} 
-                onContinue={handleContinueToNotes}
-            />
-        );
-    }
-
     if (step === 'notes') {
         const categoryName = selectedCategory ? emergencyCategories.find(c => c.id === selectedCategory)?.name : 'Emergency';
         const firstAidCategory = selectedCategory ? categoryToFirstAidMap[selectedCategory] : 'General Emergency';
@@ -777,7 +601,7 @@ const EmergencySOSFlow: React.FC<{
         return (
             <div className="p-6 min-h-screen">
                 <div className="mb-6">
-                    <button onClick={() => setStep('severity-result')} className="text-gray-700 dark:text-gray-300 bg-white dark:bg-neutral-800 p-3 rounded-full shadow-sm">
+                    <button onClick={() => setStep('category')} className="text-gray-700 dark:text-gray-300 bg-white dark:bg-neutral-800 p-3 rounded-full shadow-sm">
                         <BackArrowIcon />
                     </button>
                 </div>
@@ -837,7 +661,7 @@ const EmergencySOSFlow: React.FC<{
 
                 <div className="flex gap-4">
                     <button
-                        onClick={() => setStep('severity-result')}
+                        onClick={() => setStep('category')}
                         className="flex-1 bg-gray-200 dark:bg-neutral-700 text-gray-700 dark:text-neutral-200 py-4 rounded-xl font-semibold"
                     >
                         Back
