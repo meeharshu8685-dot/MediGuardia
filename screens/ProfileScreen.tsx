@@ -1,9 +1,8 @@
 
 import React, { useState, useRef } from 'react';
 import { UserProfile, MedicalDocument } from '../types';
-import { ChevronRightIcon, PdfFileIcon, ImageFileIcon, PencilIcon, SunIcon, MoonIcon } from '../constants';
+import { ChevronRightIcon, PdfFileIcon, ImageFileIcon, PencilIcon } from '../constants';
 import { MedicalQuizScreen } from './MedicalQuizScreen';
-import { useTheme } from '../contexts/ThemeContext';
 
 const EditProfileModal: React.FC<{
     user: UserProfile;
@@ -197,16 +196,7 @@ const DocumentList: React.FC<{
 };
 
 const SettingsMenu: React.FC<{ onLogout: () => void; navigate: (view: string) => void }> = ({ onLogout, navigate }) => {
-    const { theme, toggleTheme } = useTheme();
-    
     const menuItems = [
-        { 
-            id: 'theme', 
-            label: 'Theme', 
-            action: toggleTheme,
-            icon: theme === 'light' ? <SunIcon /> : <MoonIcon />,
-            showIcon: true
-        },
         { 
             id: 'language', 
             label: 'Language', 
@@ -242,15 +232,7 @@ const SettingsMenu: React.FC<{ onLogout: () => void; navigate: (view: string) =>
                         )}
                         <span className="font-medium text-neutral-800 dark:text-neutral-200">{item.label}</span>
                     </div>
-                    {item.id === 'theme' ? (
-                        <div className="flex items-center space-x-2">
-                            <span className="text-sm text-neutral-500 dark:text-neutral-400">
-                                {theme === 'light' ? 'Light' : 'Dark'}
-                            </span>
-                        </div>
-                    ) : (
-                        <div className="text-neutral-400 dark:text-neutral-500"><ChevronRightIcon /></div>
-                    )}
+                    <div className="text-neutral-400 dark:text-neutral-500"><ChevronRightIcon /></div>
                 </div>
             ))}
              <div 
