@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { BackArrowIcon, UserIcon, EmailIcon, LockIcon, GoogleIcon, PhoneIcon } from '../constants';
+import { BackArrowIcon, UserIcon, EmailIcon, LockIcon, GoogleIcon } from '../constants';
 import { useAuth } from '../contexts/AuthContext';
 
-type AuthMode = 'login' | 'signup' | 'forgot' | 'phone';
+type AuthMode = 'login' | 'signup' | 'forgot';
 
 interface AuthScreenProps {
     onLoginSuccess: () => void;
@@ -266,34 +266,19 @@ const LoginView: React.FC<{ setMode: (mode: AuthMode) => void; onLogin: () => vo
                         )}
                     </button>
             
-                    <div className="text-center space-y-2">
-                        <p className="text-sm text-gray-500">
-                            Don't have an account?{' '}
-                            <a
-                                href="#"
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    setMode('signup');
-                                }}
-                                className="text-[#1a5f3f] font-semibold hover:underline"
-                            >
-                                Sign up
-                            </a>
-                        </p>
-                        <p className="text-sm text-gray-500">
-                            Or{' '}
-                            <a
-                                href="#"
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    setMode('phone');
-                                }}
-                                className="text-[#1a5f3f] font-semibold hover:underline"
-                            >
-                                login with phone
-                            </a>
-                        </p>
-                    </div>
+                    <p className="text-center text-sm text-gray-500">
+                        Don't have an account?{' '}
+                        <a
+                            href="#"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                setMode('signup');
+                            }}
+                            className="text-[#1a5f3f] font-semibold hover:underline"
+                        >
+                            Sign up
+                        </a>
+            </p>
                 </div>
             </div>
         </div>
@@ -554,223 +539,6 @@ const SignupView: React.FC<{ setMode: (mode: AuthMode) => void; onSignup: () => 
     );
 };
 
-const PhoneLoginView: React.FC<{ setMode: (mode: AuthMode) => void; onLogin: () => void; onBack?: () => void }> = ({
-    setMode,
-    onLogin,
-    onBack,
-}) => {
-    const { sendOTP, verifyOTP } = useAuth();
-    const [phone, setPhone] = useState('');
-    const [otp, setOtp] = useState('');
-    const [otpSent, setOtpSent] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState('');
-    const [phoneError, setPhoneError] = useState('');
-    const [otpError, setOtpError] = useState('');
-    const [countdown, setCountdown] = useState(0);
-
-    // Countdown timer for resend OTP
-    useEffect(() => {
-        if (countdown > 0) {
-            const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
-            return () => clearTimeout(timer);
-        }
-    }, [countdown]);
-
-    const validatePhone = (phoneNumber: string): boolean => {
-        // Remove all non-digit characters except +
-        const cleaned = phoneNumber.replace(/[^\d+]/g, '');
-        // Check if it's a valid phone format (at least 10 digits)
-        const digits = cleaned.replace(/\+/g, '');
-        return digits.length >= 10;
-    };
-
-    const handleSendOTP = async () => {
-        setError('');
-        setPhoneError('');
-
-        if (!phone.trim()) {
-            setPhoneError('Phone number is required');
-            return;
-        }
-
-        if (!validatePhone(phone)) {
-            setPhoneError('Please enter a valid phone number (include country code, e.g., +1234567890)');
-            return;
-        }
-
-        setIsLoading(true);
-        const result = await sendOTP(phone.trim());
-        setIsLoading(false);
-
-        if (result.success) {
-            setOtpSent(true);
-            setCountdown(60); // 60 second countdown
-            setError('');
-        } else {
-            setError(result.error || 'Failed to send OTP');
-        }
-    };
-
-    const handleVerifyOTP = async () => {
-        setError('');
-        setOtpError('');
-
-        if (!otp.trim()) {
-            setOtpError('OTP is required');
-            return;
-        }
-
-        if (otp.trim().length < 6) {
-            setOtpError('OTP must be 6 digits');
-            return;
-        }
-
-        setIsLoading(true);
-        const result = await verifyOTP(phone.trim(), otp.trim());
-        setIsLoading(false);
-
-        if (result.success) {
-            onLogin();
-        } else {
-            setError(result.error || 'Invalid OTP. Please try again.');
-        }
-    };
-
-    const handleResendOTP = async () => {
-        if (countdown > 0) return;
-        await handleSendOTP();
-    };
-
-    return (
-        <div className="relative min-h-screen w-screen bg-white">
-            {/* Top curved section with plant pattern */}
-            <div className="relative h-48">
-                <PlantLeafTopPattern />
-                <button
-                    onClick={onBack || (() => setMode('login'))}
-                    className="absolute top-6 left-6 z-20 w-8 h-8 flex items-center justify-center text-white hover:bg-white/20 rounded-full transition-colors"
-                >
-                    <BackArrowIcon />
-                </button>
-            </div>
-
-            {/* Main content */}
-            <div className="relative px-6 pt-8 pb-12">
-                <div className="relative">
-                    <LeafBranch />
-                    <h2 className="text-3xl font-bold text-[#1a5f3f] mb-2">Phone Login</h2>
-                    <p className="text-gray-500 text-sm mb-8">
-                        {otpSent ? 'Enter the OTP sent to your phone' : 'Enter your phone number to receive an OTP'}
-                    </p>
-            
-                    {error && (
-                        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm mb-4">
-                            {error}
-                        </div>
-                    )}
-
-                    {!otpSent ? (
-                        <>
-                            <InputField 
-                                id="phone-number" 
-                                label=""
-                                type="tel" 
-                                placeholder="+1234567890"
-                                value={phone}
-                                onChange={(value) => {
-                                    setPhone(value);
-                                    setPhoneError('');
-                                }}
-                                error={phoneError}
-                                icon={<PhoneIcon />}
-                            />
-                            <p className="text-xs text-gray-500 mb-4">
-                                Include country code (e.g., +1 for USA, +91 for India)
-                            </p>
-                            
-                            <button 
-                                onClick={handleSendOTP}
-                                disabled={isLoading}
-                                className="w-full bg-[#1a5f3f] text-white py-4 rounded-xl text-lg font-semibold shadow-lg hover:bg-[#0d4a2e] transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-4"
-                            >
-                                {isLoading ? 'Sending OTP...' : 'Send OTP'}
-                            </button>
-                        </>
-                    ) : (
-                        <>
-                            <div className="mb-4">
-                                <p className="text-sm text-gray-600 mb-2">
-                                    OTP sent to: <span className="font-semibold">{phone}</span>
-                                </p>
-                                <InputField 
-                                    id="otp-code" 
-                                    label=""
-                                    type="text" 
-                                    placeholder="Enter 6-digit OTP"
-                                    value={otp}
-                                    onChange={(value) => {
-                                        // Only allow digits, max 6
-                                        const digits = value.replace(/\D/g, '').slice(0, 6);
-                                        setOtp(digits);
-                                        setOtpError('');
-                                    }}
-                                    error={otpError}
-                                    icon={<LockIcon />}
-                                />
-                            </div>
-
-                            <button 
-                                onClick={handleVerifyOTP}
-                                disabled={isLoading || otp.length < 6}
-                                className="w-full bg-[#1a5f3f] text-white py-4 rounded-xl text-lg font-semibold shadow-lg hover:bg-[#0d4a2e] transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-4"
-                            >
-                                {isLoading ? 'Verifying...' : 'Verify OTP'}
-                            </button>
-
-                            <div className="text-center">
-                                <button
-                                    onClick={handleResendOTP}
-                                    disabled={countdown > 0 || isLoading}
-                                    className="text-[#1a5f3f] font-medium hover:underline disabled:opacity-50 disabled:cursor-not-allowed text-sm"
-                                >
-                                    {countdown > 0 ? `Resend OTP in ${countdown}s` : 'Resend OTP'}
-                                </button>
-                            </div>
-
-                            <button
-                                onClick={() => {
-                                    setOtpSent(false);
-                                    setOtp('');
-                                    setError('');
-                                    setOtpError('');
-                                }}
-                                className="w-full mt-4 text-gray-600 font-medium hover:underline text-sm"
-                            >
-                                Change phone number
-                            </button>
-                        </>
-                    )}
-
-                    <p className="text-center text-sm text-gray-500 mt-6">
-                        Or{' '}
-                        <a
-                            href="#"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                setMode('login');
-                            }}
-                            className="text-[#1a5f3f] font-semibold hover:underline"
-                        >
-                            login with email
-                        </a>
-                    </p>
-                </div>
-            </div>
-        </div>
-    );
-};
-
 const ForgotPasswordView: React.FC<{ setMode: (mode: AuthMode) => void; onBack?: () => void }> = ({
     setMode,
     onBack,
@@ -858,7 +626,6 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess, onBack, 
         <>
             {mode === 'login' && <LoginView setMode={setMode} onLogin={onLoginSuccess} onBack={onBack} />}
             {mode === 'signup' && <SignupView setMode={setMode} onSignup={onLoginSuccess} onBack={onBack} />}
-            {mode === 'phone' && <PhoneLoginView setMode={setMode} onLogin={onLoginSuccess} onBack={onBack} />}
             {mode === 'forgot' && <ForgotPasswordView setMode={setMode} onBack={onBack} />}
         </>
     );

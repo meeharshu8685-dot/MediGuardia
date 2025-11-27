@@ -17,8 +17,6 @@ interface AuthContextType {
     signup: (name: string, email: string, password: string) => Promise<{ success: boolean; error?: string }>;
     loginWithGoogle: () => Promise<{ success: boolean; error?: string }>;
     loginWithFacebook: () => Promise<{ success: boolean; error?: string }>;
-    sendOTP: (phone: string) => Promise<{ success: boolean; error?: string }>;
-    verifyOTP: (phone: string, token: string) => Promise<{ success: boolean; error?: string }>;
     logout: () => Promise<void>;
     updateUser: (userData: Partial<User>) => Promise<void>;
 }
@@ -293,65 +291,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         }
     };
 
-    const sendOTP = async (phone: string): Promise<{ success: boolean; error?: string }> => {
-        try {
-            // Format phone number (ensure it starts with + and country code)
-            const formattedPhone = phone.startsWith('+') ? phone : `+${phone}`;
-            
-            const { data, error } = await supabase.auth.signInWithOtp({
-                phone: formattedPhone,
-                options: {
-                    channel: 'sms'
-                }
-            });
-
-            if (error) {
-                return { success: false, error: error.message };
-            }
-
-            return { success: true };
-        } catch (error: any) {
-            console.error('Send OTP error:', error);
-            return { success: false, error: error.message || 'Failed to send OTP' };
-        }
-    };
-
-    const verifyOTP = async (phone: string, token: string): Promise<{ success: boolean; error?: string }> => {
-        try {
-            setIsLoading(true);
-            // Format phone number (ensure it starts with + and country code)
-            const formattedPhone = phone.startsWith('+') ? phone : `+${phone}`;
-            
-            const { data, error } = await supabase.auth.verifyOtp({
-                phone: formattedPhone,
-                token: token,
-                type: 'sms'
-            });
-
-            if (error) {
-                setIsLoading(false);
-                return { success: false, error: error.message };
-            }
-
-            if (data.user && data.session) {
-                const appUser = await convertSupabaseUser(data.user);
-                setUser(appUser);
-                hasUserRef.current = true;
-                setIsLoading(false);
-                console.log('✅ Phone login successful, user set:', appUser.email || formattedPhone);
-                await new Promise(resolve => setTimeout(resolve, 50));
-                return { success: true };
-            }
-
-            setIsLoading(false);
-            return { success: false, error: 'Verification failed - no session' };
-        } catch (error: any) {
-            console.error('Verify OTP error:', error);
-            setIsLoading(false);
-            return { success: false, error: error.message || 'Failed to verify OTP' };
-        }
-    };
-
     const logout = async () => {
         try {
             await supabase.auth.signOut();
@@ -394,8 +333,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
             signup,
             loginWithGoogle,
             loginWithFacebook,
-            sendOTP,
-            verifyOTP,
             logout,
             updateUser
         }}>
