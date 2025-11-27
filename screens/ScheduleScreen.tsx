@@ -109,7 +109,7 @@ const AddAppointmentModal: React.FC<{ onClose: () => void; onAdd: (appointment: 
     return (
         <div className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4" onClick={onClose}>
             <div className="bg-white rounded-3xl w-full max-w-md p-6 relative" onClick={(e) => e.stopPropagation()}>
-                <h2 className="text-2xl font-bold mb-6 text-center text-gray-900">Add Appointment</h2>
+                <h2 className="text-2xl md:text-3xl font-bold mb-6 text-center text-gray-900 dark:text-white tracking-tight">Add Appointment</h2>
                 <div className="space-y-4">
                     <input 
                         type="text" 
@@ -179,14 +179,14 @@ export const ScheduleScreen: React.FC<ScheduleScreenProps> = ({ navigate, setVie
     return (
         <div className="min-h-screen bg-gray-50 pb-24">
             <div className="bg-white pt-12 pb-6 px-6">
-                <h1 className="text-2xl font-bold text-gray-900 mb-6">Schedule</h1>
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white tracking-tight mb-6">Schedule</h1>
                 
                 {/* Filter Tabs */}
                 <div className="flex space-x-2 mb-4">
                     <button
                         onClick={() => setFilter('all')}
                         className={`px-4 py-2 rounded-full text-sm font-semibold transition-colors ${
-                            filter === 'all' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600'
+                            filter === 'all' ? 'bg-blue-500 text-white' : 'bg-gray-100 dark:bg-neutral-700 text-gray-700 dark:text-gray-300'
                         }`}
                     >
                         All

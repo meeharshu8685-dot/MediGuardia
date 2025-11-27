@@ -362,15 +362,15 @@ const SOSView: React.FC<SOSViewProps> = ({
                 <div className="w-20 h-20 bg-green-100 text-green-500 rounded-full flex items-center justify-center mb-6">
                     <div className="w-12 h-12"><CheckCircleIcon /></div>
                 </div>
-                <h1 className="text-3xl font-bold text-[#1A1A1A] dark:text-neutral-100 mb-4">Alert Sent</h1>
-                <p className="text-gray-600 dark:text-gray-400 max-w-sm mb-8">Help is on the way. Your location and emergency contacts have been notified.</p>
+                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white tracking-tight mb-4">Alert Sent</h1>
+                <p className="text-base font-medium text-gray-700 dark:text-gray-300 max-w-sm mb-8 leading-relaxed">Help is on the way. Your location and emergency contacts have been notified.</p>
 
                 <div className="bg-white dark:bg-neutral-800 p-6 rounded-2xl shadow-lg w-full text-left space-y-4 mb-6">
                     <div className="flex items-start">
                         <div className="w-6 h-6 mr-3 text-gray-400 dark:text-gray-500 mt-1 flex-shrink-0"><LocationMarkerIcon /></div>
                         <div>
-                            <h3 className="font-bold text-gray-500 dark:text-gray-400 text-sm uppercase tracking-wider">Your Location</h3>
-                            <p className="font-mono mt-1 text-md text-gray-800 dark:text-neutral-200">
+                            <h3 className="font-bold text-gray-700 dark:text-gray-300 text-sm uppercase tracking-wider">Your Location</h3>
+                            <p className="font-mono mt-1 text-base font-semibold text-gray-900 dark:text-white">
                                 {location ? `${location.lat.toFixed(4)}, ${location.lng.toFixed(4)}` : "Getting location..."}
                             </p>
                             {location && (
@@ -378,7 +378,7 @@ const SOSView: React.FC<SOSViewProps> = ({
                                     href={`https://www.google.com/maps?q=${location.lat},${location.lng}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="text-blue-600 dark:text-blue-400 text-sm mt-1 underline"
+                                    className="text-blue-600 dark:text-blue-400 text-sm font-medium mt-1 underline hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
                                 >
                                     Open in Google Maps
                                 </a>
@@ -388,15 +388,15 @@ const SOSView: React.FC<SOSViewProps> = ({
                     <div className="border-t dark:border-neutral-700 pt-4 flex items-start">
                         <div className="w-6 h-6 mr-3 text-gray-400 dark:text-gray-500 mt-1 flex-shrink-0"><PhoneIcon /></div>
                         <div className="flex-grow">
-                            <h3 className="font-bold text-gray-500 dark:text-gray-400 text-sm uppercase tracking-wider">Emergency Contact</h3>
+                            <h3 className="font-bold text-gray-700 dark:text-gray-300 text-sm uppercase tracking-wider">Emergency Contact</h3>
                             <div className="flex items-center justify-between mt-2">
                                 <div className="flex items-center">
                                     <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mr-3 font-bold text-blue-600 dark:text-blue-400">
                                         {emergencyContact.name.charAt(0)}
                                     </div>
                                     <div>
-                                        <p className="font-semibold text-gray-800 dark:text-neutral-200">{emergencyContact.name}</p>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400">{emergencyContact.phone}</p>
+                                        <p className="font-bold text-gray-900 dark:text-white text-base">{emergencyContact.name}</p>
+                                        <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{emergencyContact.phone}</p>
                                     </div>
                                 </div>
                                 <a 
@@ -413,7 +413,7 @@ const SOSView: React.FC<SOSViewProps> = ({
 
                 {showShareOptions && location && (
                     <div className="w-full mb-6">
-                        <h3 className="text-lg font-bold text-gray-900 dark:text-neutral-100 mb-4">Share Emergency Alert</h3>
+                        <h3 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white tracking-tight mb-4">Share Emergency Alert</h3>
                         <div className="grid grid-cols-3 gap-3">
                             <button
                                 onClick={() => handleShare('whatsapp')}
@@ -616,24 +616,24 @@ const EmergencySOSFlow: React.FC<{
                     </button>
                 </div>
                 
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-neutral-100 mb-2">Emergency: {categoryName}</h2>
-                <p className="text-gray-600 dark:text-gray-400 mb-6">Describe your emergency (optional)</p>
+                <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white tracking-tight mb-2">Emergency: {categoryName}</h2>
+                <p className="text-base font-medium text-gray-700 dark:text-gray-300 mb-6 leading-relaxed">Describe your emergency (optional)</p>
                 
                 <textarea
                     value={emergencyNotes}
                     onChange={(e) => setEmergencyNotes(e.target.value)}
                     placeholder="e.g., I fell and hit my head, experiencing dizziness..."
-                    className="w-full h-32 p-4 bg-white dark:bg-neutral-800 rounded-2xl border-2 border-gray-200 dark:border-neutral-700 focus:border-[#1a5f3f] focus:ring-2 focus:ring-[#1a5f3f]/20 outline-none transition text-gray-900 dark:text-neutral-100 mb-6"
+                    className="w-full h-32 p-4 bg-white dark:bg-neutral-800 rounded-2xl border-2 border-gray-200 dark:border-neutral-700 focus:border-[#1a5f3f] focus:ring-2 focus:ring-[#1a5f3f]/20 outline-none transition text-base text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 leading-relaxed mb-6"
                 />
 
                 {firstAidGuide && (
                     <div className="bg-white dark:bg-neutral-800 rounded-2xl p-6 shadow-sm mb-6">
-                        <h3 className="text-lg font-bold text-gray-900 dark:text-neutral-100 mb-4">First Aid Steps</h3>
+                        <h3 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white tracking-tight mb-4">First Aid Steps</h3>
                         <div className="space-y-3">
                             {firstAidGuide.steps.map((step, i) => (
                                 <div key={i} className="flex items-start">
                                     <div className="mr-3 flex-shrink-0 bg-[#1a5f3f] text-white w-6 h-6 rounded-full flex items-center justify-center font-bold text-sm">{i + 1}</div>
-                                    <p className="text-gray-800 dark:text-neutral-200">{step}</p>
+                                    <p className="text-base text-gray-700 dark:text-gray-300 leading-relaxed">{step}</p>
                                 </div>
                             ))}
                         </div>

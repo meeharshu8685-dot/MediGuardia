@@ -22,8 +22,8 @@ const SettingItem: React.FC<SettingItemProps> = ({ icon, title, subtitle, rightE
                 {icon}
             </div>
             <div className="flex-1">
-                <p className="font-semibold text-gray-900 dark:text-neutral-100">{title}</p>
-                {subtitle && <p className="text-sm text-gray-500 dark:text-neutral-400 mt-1">{subtitle}</p>}
+                <p className="font-bold text-gray-900 dark:text-white text-base tracking-wide">{title}</p>
+                {subtitle && <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mt-1 leading-relaxed">{subtitle}</p>}
             </div>
         </div>
         {rightElement || (showArrow && (
@@ -86,14 +86,14 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigate, setVie
                             <BackArrowIcon />
                         </button>
                     )}
-                    <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100">Settings</h1>
+                    <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Settings</h1>
                 </div>
             </div>
 
             <div className="px-6 py-4">
                 {/* Account Section */}
                 <div className="mb-6">
-                    <h2 className="text-lg font-bold text-gray-900 dark:text-neutral-100 mb-3">Account</h2>
+                    <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white tracking-tight mb-3">Account</h2>
                     <SettingItem
                         icon={<UserIcon />}
                         title="Profile"
@@ -114,7 +114,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigate, setVie
 
                 {/* Notifications Section */}
                 <div className="mb-6">
-                    <h2 className="text-lg font-bold text-gray-900 dark:text-neutral-100 mb-3">Notifications</h2>
+                    <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white tracking-tight mb-3">Notifications</h2>
                     <SettingItem
                         icon={<NotificationIcon />}
                         title="Push Notifications"
@@ -140,7 +140,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigate, setVie
 
                 {/* Privacy & Security Section */}
                 <div className="mb-6">
-                    <h2 className="text-lg font-bold text-gray-900 dark:text-neutral-100 mb-3">Privacy & Security</h2>
+                    <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white tracking-tight mb-3">Privacy & Security</h2>
                     <SettingItem
                         icon={<LockIcon />}
                         title="Biometric Lock"
@@ -166,7 +166,7 @@ export const SettingsScreen: React.FC<SettingsScreenProps> = ({ navigate, setVie
 
                 {/* App Settings Section */}
                 <div className="mb-6">
-                    <h2 className="text-lg font-bold text-gray-900 dark:text-neutral-100 mb-3">App Settings</h2>
+                    <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white tracking-tight mb-3">App Settings</h2>
                     <SettingItem
                         icon={darkMode ? <MoonIcon /> : <SunIcon />}
                         title="Dark Mode"

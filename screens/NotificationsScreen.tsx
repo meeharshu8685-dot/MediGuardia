@@ -67,13 +67,13 @@ const NotificationCard: React.FC<{ notification: Notification; onClick?: () => v
             </div>
             <div className="flex-1">
                 <div className="flex items-start justify-between mb-1">
-                    <h3 className="font-bold text-gray-900 text-base">{notification.title}</h3>
+                    <h3 className="font-bold text-gray-900 dark:text-white text-base tracking-wide">{notification.title}</h3>
                     {!notification.read && (
                         <span className="w-2 h-2 bg-blue-500 rounded-full ml-2 mt-1"></span>
                     )}
                 </div>
-                <p className="text-sm text-gray-600 mb-2">{notification.message}</p>
-                <p className="text-xs text-gray-400">{notification.time}</p>
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 leading-relaxed">{notification.message}</p>
+                <p className="text-xs font-medium text-gray-500 dark:text-gray-400">{notification.time}</p>
             </div>
         </div>
     </div>
@@ -113,7 +113,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({ naviga
         <div className="min-h-screen bg-gray-50 pb-24">
             <div className="bg-white pt-12 pb-6 px-6">
                 <div className="flex items-center justify-between mb-6">
-                    <h1 className="text-2xl font-bold text-gray-900">Notifications</h1>
+                    <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Notifications</h1>
                     {unreadCount > 0 && (
                         <button
                             onClick={markAllAsRead}
@@ -129,7 +129,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({ naviga
                     <button
                         onClick={() => setFilter('all')}
                         className={`px-4 py-2 rounded-full text-sm font-semibold transition-colors ${
-                            filter === 'all' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600'
+                            filter === 'all' ? 'bg-blue-500 text-white' : 'bg-gray-100 dark:bg-neutral-700 text-gray-700 dark:text-gray-300'
                         }`}
                     >
                         All ({notifications.length})
@@ -169,8 +169,8 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({ naviga
                 ) : (
                     <div className="text-center py-20">
                         <div className="text-6xl mb-4">🔔</div>
-                        <p className="text-gray-500 text-lg">No notifications</p>
-                        <p className="text-gray-400 text-sm mt-2">You're all caught up!</p>
+                        <p className="text-lg font-medium text-gray-700 dark:text-gray-300">No notifications</p>
+                        <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mt-2">You're all caught up!</p>
                     </div>
                 )}
             </div>

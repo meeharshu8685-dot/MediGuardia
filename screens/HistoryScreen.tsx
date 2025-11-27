@@ -15,17 +15,17 @@ const mockReports: ReportFile[] = [
 ];
 
 const Header: React.FC<{ title: string; onBack?: () => void }> = ({ title, onBack }) => (
-    <div className="relative flex items-center justify-center pt-12 pb-6 px-6 bg-white">
+    <div className="relative flex items-center justify-center pt-12 pb-6 px-6 bg-white dark:bg-neutral-800 transition-colors">
         {onBack && (
             <button 
                 onClick={onBack} 
-                className="absolute left-6 text-gray-700 bg-gray-100 p-2 rounded-full"
+                className="absolute left-6 text-gray-700 dark:text-neutral-300 bg-gray-100 dark:bg-neutral-700 p-2 rounded-full"
             >
                 <BackArrowIcon />
             </button>
         )}
-        <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
-        <button className="absolute right-6 text-gray-700">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100">{title}</h1>
+        <button className="absolute right-6 text-gray-700 dark:text-neutral-300">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
             </svg>
@@ -55,7 +55,7 @@ const HealthMetricCard: React.FC<{
 const ReportCard: React.FC<{ report: ReportFile; onClick?: () => void }> = ({ report, onClick }) => (
     <div 
         onClick={onClick}
-        className="bg-white rounded-2xl p-4 flex items-center justify-between shadow-sm cursor-pointer hover:shadow-md transition-shadow mb-3"
+        className="bg-white dark:bg-neutral-800 rounded-2xl p-4 flex items-center justify-between shadow-sm cursor-pointer hover:shadow-md transition-shadow mb-3"
     >
         <div className="flex items-center flex-1">
             <div className={`${report.iconColor} w-12 h-12 rounded-xl flex items-center justify-center mr-4`}>
@@ -64,11 +64,11 @@ const ReportCard: React.FC<{ report: ReportFile; onClick?: () => void }> = ({ re
                 </svg>
             </div>
             <div className="flex-1">
-                <p className="font-semibold text-gray-900">{report.name}</p>
-                <p className="text-sm text-gray-500">{report.fileCount} files</p>
+                <p className="font-semibold text-gray-900 dark:text-neutral-100">{report.name}</p>
+                <p className="text-sm text-gray-500 dark:text-neutral-400">{report.fileCount} files</p>
             </div>
         </div>
-        <button className="text-gray-400 hover:text-gray-600">
+        <button className="text-gray-400 dark:text-neutral-500 hover:text-gray-600 dark:hover:text-neutral-300">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
             </svg>
@@ -133,7 +133,7 @@ const ReportView: React.FC<{ user?: UserProfile }> = ({ user }) => {
 
             {/* Latest Report */}
             <div>
-                <h2 className="text-xl font-bold text-gray-900 mb-4">Latest Report</h2>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-neutral-100 mb-4">Latest Report</h2>
                 <div>
                     {mockReports.map((report) => (
                         <ReportCard
@@ -170,13 +170,13 @@ const AddMedicationModal: React.FC<{
     
     return (
         <div className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4" onClick={onClose}>
-            <div className="bg-white rounded-3xl w-full max-w-md p-6 relative" onClick={(e) => e.stopPropagation()}>
-                <h2 className="text-2xl font-bold mb-6 text-center text-gray-900">Add Medication</h2>
+            <div className="bg-white dark:bg-neutral-800 rounded-3xl w-full max-w-md p-6 relative" onClick={(e) => e.stopPropagation()}>
+                <h2 className="text-2xl font-bold mb-6 text-center text-gray-900 dark:text-neutral-100">Add Medication</h2>
                 <div className="space-y-4">
-                    <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Medication Name" className="w-full p-3 border-2 rounded-xl bg-gray-50 border-gray-200 focus:border-blue-500 outline-none" />
-                    <input type="text" value={dosage} onChange={(e) => setDosage(e.target.value)} placeholder="Dosage (e.g., 1 tablet)" className="w-full p-3 border-2 rounded-xl bg-gray-50 border-gray-200 focus:border-blue-500 outline-none" />
-                    <input type="text" value={frequency} onChange={(e) => setFrequency(e.target.value)} placeholder="Frequency (e.g., Daily)" className="w-full p-3 border-2 rounded-xl bg-gray-50 border-gray-200 focus:border-blue-500 outline-none" />
-                    <select value={time} onChange={(e) => setTime(e.target.value)} className="w-full p-3 border-2 rounded-xl bg-gray-50 border-gray-200 focus:border-blue-500 outline-none">
+                    <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Medication Name" className="w-full p-3 border-2 rounded-xl bg-gray-50 dark:bg-neutral-700 border-gray-200 dark:border-neutral-600 focus:border-blue-500 outline-none text-gray-900 dark:text-neutral-100 placeholder-gray-500 dark:placeholder-neutral-400" />
+                    <input type="text" value={dosage} onChange={(e) => setDosage(e.target.value)} placeholder="Dosage (e.g., 1 tablet)" className="w-full p-3 border-2 rounded-xl bg-gray-50 dark:bg-neutral-700 border-gray-200 dark:border-neutral-600 focus:border-blue-500 outline-none text-gray-900 dark:text-neutral-100 placeholder-gray-500 dark:placeholder-neutral-400" />
+                    <input type="text" value={frequency} onChange={(e) => setFrequency(e.target.value)} placeholder="Frequency (e.g., Daily)" className="w-full p-3 border-2 rounded-xl bg-gray-50 dark:bg-neutral-700 border-gray-200 dark:border-neutral-600 focus:border-blue-500 outline-none text-gray-900 dark:text-neutral-100 placeholder-gray-500 dark:placeholder-neutral-400" />
+                    <select value={time} onChange={(e) => setTime(e.target.value)} className="w-full p-3 border-2 rounded-xl bg-gray-50 dark:bg-neutral-700 border-gray-200 dark:border-neutral-600 focus:border-blue-500 outline-none text-gray-900 dark:text-neutral-100">
                         <option>Morning</option>
                         <option>Afternoon</option>
                         <option>Evening</option>
@@ -185,7 +185,7 @@ const AddMedicationModal: React.FC<{
                     </select>
                 </div>
                 <div className="flex items-center justify-end mt-8 space-x-3">
-                    <button onClick={onClose} className="py-3 px-6 bg-gray-200 text-gray-700 font-semibold rounded-xl">Cancel</button>
+                    <button onClick={onClose} className="py-3 px-6 bg-gray-200 dark:bg-neutral-700 text-gray-700 dark:text-neutral-200 font-semibold rounded-xl">Cancel</button>
                     <button onClick={handleSubmit} className="py-3 px-6 bg-blue-500 text-white font-semibold rounded-xl">Save</button>
                 </div>
             </div>
@@ -198,24 +198,24 @@ const HistoryTimelineView: React.FC<{ logs: HealthLog[], onSelect: (log: HealthL
         {logs.length > 0 ? (
             <div className="space-y-4">
                 {logs.map(log => (
-                    <div key={log.id} onClick={() => onSelect(log)} className="bg-white p-4 rounded-2xl shadow-sm cursor-pointer flex items-center space-x-4 transition-transform hover:scale-[1.02]">
+                    <div key={log.id} onClick={() => onSelect(log)} className="bg-white dark:bg-neutral-800 p-4 rounded-2xl shadow-sm cursor-pointer flex items-center space-x-4 transition-transform hover:scale-[1.02]">
                         <div className="flex-shrink-0">
-                             <div className={`w-14 h-14 rounded-xl flex items-center justify-center text-3xl ${log.severity === 'Minor' ? 'bg-green-100 text-green-700' : log.severity === 'Moderate' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'}`}>
+                             <div className={`w-14 h-14 rounded-xl flex items-center justify-center text-3xl ${log.severity === 'Minor' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300' : log.severity === 'Moderate' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300' : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'}`}>
                                 {log.symptom.includes('Headache') ? '🤕' : log.symptom.includes('Cough') ? '😷' : '🤧'}
                             </div>
                         </div>
                         <div className="flex-grow">
                             <div className="flex justify-between items-center">
-                                <p className="font-bold text-lg text-gray-900">{log.symptom}</p>
-                                <span className="text-sm text-gray-500">{new Date(log.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                                <p className="font-bold text-lg text-gray-900 dark:text-neutral-100">{log.symptom}</p>
+                                <span className="text-sm text-gray-500 dark:text-neutral-400">{new Date(log.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
                             </div>
-                            <p className="text-sm text-gray-600 mt-1 pr-2 line-clamp-1">{log.details}</p>
+                            <p className="text-sm text-gray-600 dark:text-neutral-300 mt-1 pr-2 line-clamp-1">{log.details}</p>
                         </div>
                     </div>
                 ))}
             </div>
         ) : (
-            <div className="text-center py-10 bg-white rounded-2xl text-gray-500">No health logs yet.</div>
+            <div className="text-center py-10 bg-white dark:bg-neutral-800 rounded-2xl text-gray-500 dark:text-neutral-400">No health logs yet.</div>
         )}
     </div>
 );
@@ -247,28 +247,28 @@ const HistoryDetailView: React.FC<{
 
     return (
         <div className="p-6">
-            <div className="bg-white p-6 rounded-3xl shadow-lg">
-                <h2 className="text-2xl font-bold text-gray-900">{log.symptom}</h2>
-                <p className="text-sm text-gray-500 mb-4">{new Date(log.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
-                <p className="text-gray-700 mb-6">{log.details}</p>
+            <div className="bg-white dark:bg-neutral-800 p-6 rounded-3xl shadow-lg">
+                <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white tracking-tight">{log.symptom}</h2>
+                <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-4">{new Date(log.date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                <p className="text-base text-gray-700 dark:text-gray-300 mb-6 leading-relaxed">{log.details}</p>
                 <div className="mb-4">
                     <span className={`px-3 py-1 text-xs font-semibold rounded-full ${
                         log.severity === 'Minor' 
-                            ? 'bg-green-100 text-green-800' 
+                            ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' 
                             : log.severity === 'Moderate' 
-                            ? 'bg-yellow-100 text-yellow-800' 
-                            : 'bg-red-100 text-red-800'
+                            ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300' 
+                            : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
                     }`}>
                         {log.severity}
                     </span>
                 </div>
                 {showDeleteConfirm ? (
                     <div className="space-y-3">
-                        <p className="text-gray-700 mb-4">Are you sure you want to delete this log?</p>
+                        <p className="text-base font-medium text-gray-700 dark:text-gray-300 mb-4 leading-relaxed">Are you sure you want to delete this log?</p>
                         <div className="grid grid-cols-2 gap-4">
                             <button 
                                 onClick={() => setShowDeleteConfirm(false)}
-                                className="py-3 bg-gray-200 text-gray-800 rounded-xl font-semibold hover:bg-gray-300 transition-colors"
+                                className="py-3 bg-gray-200 dark:bg-neutral-700 text-gray-800 dark:text-neutral-200 rounded-xl font-semibold hover:bg-gray-300 dark:hover:bg-neutral-600 transition-colors"
                             >
                                 Cancel
                             </button>
@@ -309,17 +309,17 @@ const MedicationListView: React.FC<{ medications: Medication[]; onAddMedication:
             {medications.length > 0 ? (
                 <div className="space-y-4">
                     {medications.map(med => (
-                         <div key={med.id} className="bg-white p-4 rounded-2xl flex items-center shadow-sm">
-                            <div className="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center mr-4 text-blue-600"><PillIcon/></div>
+                         <div key={med.id} className="bg-white dark:bg-neutral-800 p-4 rounded-2xl flex items-center shadow-sm">
+                            <div className="w-14 h-14 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center mr-4 text-blue-600 dark:text-blue-400"><PillIcon/></div>
                             <div>
-                                <p className="font-bold text-gray-900">{med.name}</p>
-                                <p className="text-sm text-gray-500">{med.dosage} - {med.time}</p>
+                                <p className="font-bold text-gray-900 dark:text-neutral-100">{med.name}</p>
+                                <p className="text-sm text-gray-500 dark:text-neutral-400">{med.dosage} - {med.time}</p>
                             </div>
                         </div>
                     ))}
                 </div>
             ) : (
-                <div className="text-center py-10 bg-white rounded-2xl text-gray-500">No medications added.</div>
+                <div className="text-center py-10 bg-white dark:bg-neutral-800 rounded-2xl text-gray-500 dark:text-neutral-400">No medications added.</div>
             )}
             <button onClick={() => setShowAddModal(true)} className="w-full mt-6 bg-blue-500 text-white py-3 rounded-xl font-semibold shadow-lg">Add Medication</button>
             {showAddModal && <AddMedicationModal onAdd={onAddMedication} onClose={() => setShowAddModal(false)} />}
@@ -396,9 +396,9 @@ export const HistoryScreen: React.FC<HistoryScreenProps> = ({ view, setView, log
             <Header title={title} onBack={page === 'detail' ? handleBack : undefined} />
             {page !== 'report' && page !== 'analytics' && (
              <div className="flex justify-around bg-white p-1 mx-6 mt-2 rounded-full shadow-sm">
-                    <button onClick={() => setView('history/analytics')} className={`flex-1 py-2.5 px-4 font-semibold rounded-full transition-colors ${page === 'analytics' ? 'bg-blue-500 text-white' : 'text-gray-500'}`}>Analytics</button>
-                    <button onClick={() => setView('history/timeline')} className={`flex-1 py-2.5 px-4 font-semibold rounded-full transition-colors ${page === 'timeline' || page === 'detail' ? 'bg-blue-500 text-white' : 'text-gray-500'}`}>Timeline</button>
-                    <button onClick={() => setView('history/medications')} className={`flex-1 py-2.5 px-4 font-semibold rounded-full transition-colors ${page === 'medications' ? 'bg-blue-500 text-white' : 'text-gray-500'}`}>Medications</button>
+                    <button onClick={() => setView('history/analytics')} className={`flex-1 py-2.5 px-4 font-semibold rounded-full transition-colors ${page === 'analytics' ? 'bg-blue-500 text-white' : 'text-gray-500 dark:text-neutral-400'}`}>Analytics</button>
+                    <button onClick={() => setView('history/timeline')} className={`flex-1 py-2.5 px-4 font-semibold rounded-full transition-colors ${page === 'timeline' || page === 'detail' ? 'bg-blue-500 text-white' : 'text-gray-500 dark:text-neutral-400'}`}>Timeline</button>
+                    <button onClick={() => setView('history/medications')} className={`flex-1 py-2.5 px-4 font-semibold rounded-full transition-colors ${page === 'medications' ? 'bg-blue-500 text-white' : 'text-gray-500 dark:text-neutral-400'}`}>Medications</button>
             </div>
             )}
             {renderContent()}

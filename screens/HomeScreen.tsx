@@ -41,8 +41,8 @@ const Header: React.FC<{ user: UserProfile; onNotificationClick?: () => void; on
                         )}
                     </div>
                     <div className="ml-4 flex-1">
-                        <p className="text-sm text-gray-500 dark:text-neutral-400">Hello!</p>
-                        <h1 className="text-2xl font-bold text-gray-900 dark:text-neutral-100">{user.name}</h1>
+                        <p className="text-sm font-medium text-gray-400 dark:text-gray-500 tracking-wide">Hello!</p>
+                        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white tracking-tight leading-tight">{user.name}</h1>
                     </div>
                 </div>
                 <button 
@@ -66,7 +66,7 @@ const Header: React.FC<{ user: UserProfile; onNotificationClick?: () => void; on
                 <input
                     type="text"
                     placeholder="Search medical..."
-                    className="w-full pl-12 pr-12 py-3 bg-gray-100 dark:bg-neutral-700 rounded-2xl border-none focus:outline-none focus:ring-2 focus:ring-blue-200 text-gray-800 dark:text-neutral-100 placeholder-gray-500 dark:placeholder-neutral-400"
+                    className="w-full pl-12 pr-12 py-3 bg-gray-100 dark:bg-neutral-700 rounded-2xl border-none focus:outline-none focus:ring-2 focus:ring-blue-200 text-base text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500 leading-relaxed"
                 />
                 <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-neutral-500">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -92,7 +92,7 @@ const ServiceCard: React.FC<{
         <div className={`${iconColor} mb-2`}>
             {icon}
         </div>
-        <p className={`text-xs font-semibold ${iconColor} text-center`}>{label}</p>
+                        <p className={`text-xs font-bold ${iconColor} text-center tracking-wide`}>{label}</p>
     </div>
 );
 
@@ -136,7 +136,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigate, setView, setAc
             <div className="px-6 space-y-6">
                 {/* Services Section */}
                 <div>
-                    <h2 className="text-xl font-bold text-gray-900 dark:text-neutral-100 mb-4">Services</h2>
+                    <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white tracking-tight mb-4">Services</h2>
                     <div className="grid grid-cols-4 gap-3">
                         <ServiceCard
                             icon={<StethoscopeIcon />} 
@@ -217,7 +217,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigate, setView, setAc
 
                 {/* Upcoming Appointments */}
                 <div>
-                    <h2 className="text-xl font-bold text-gray-900 dark:text-neutral-100 mb-4">Upcoming Appointments</h2>
+                    <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white tracking-tight mb-4">Upcoming Appointments</h2>
                     <div className="flex overflow-x-auto pb-2 -mx-6 px-6 scrollbar-hide">
                         {mockAppointments.map((appointment) => (
                             <AppointmentCard

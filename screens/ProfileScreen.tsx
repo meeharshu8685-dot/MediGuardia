@@ -31,8 +31,8 @@ const EditProfileModal: React.FC<{
 
     return (
         <div className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4 animate-fade-in" onClick={onClose}>
-            <div className="bg-white rounded-3xl w-full max-w-md p-6 relative animate-slide-up" onClick={(e) => e.stopPropagation()}>
-                <h2 className="text-2xl font-bold mb-6 text-center text-neutral-800">Edit Profile</h2>
+            <div className="bg-white dark:bg-neutral-800 rounded-3xl w-full max-w-md p-6 relative animate-slide-up" onClick={(e) => e.stopPropagation()}>
+                <h2 className="text-2xl font-bold mb-6 text-center text-neutral-800 dark:text-neutral-100">Edit Profile</h2>
                 
                 <div className="space-y-4">
                     <div className="flex flex-col items-center space-y-3">
@@ -41,13 +41,13 @@ const EditProfileModal: React.FC<{
                         <button onClick={() => fileInputRef.current?.click()} className="font-semibold text-primary text-sm">Change Photo</button>
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-neutral-600 mb-1">Full Name</label>
+                        <label className="block text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-1">Full Name</label>
                         <input
                             type="text"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             placeholder="Your full name"
-                            className="w-full p-3 border-2 rounded-xl bg-neutral-100 border-neutral-200 focus:border-primary outline-none"
+                            className="w-full p-3 border-2 rounded-xl bg-neutral-100 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 focus:border-primary outline-none text-gray-900 dark:text-neutral-100 placeholder-gray-500 dark:placeholder-neutral-400"
                          />
                     </div>
                 </div>
@@ -79,17 +79,17 @@ const GetDocIcon: React.FC<{ type: MedicalDocument['type'] }> = ({ type }) => {
 const DocumentPreviewModal: React.FC<{ doc: MedicalDocument; onClose: () => void }> = ({ doc, onClose }) => {
     return (
         <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4" onClick={onClose}>
-            <div className="bg-white rounded-3xl shadow-2xl max-w-3xl w-full p-4 relative" onClick={(e) => e.stopPropagation()}>
-                <button onClick={onClose} className="absolute -top-3 -right-3 w-8 h-8 bg-white rounded-full text-neutral-800 flex items-center justify-center shadow-lg">&times;</button>
+            <div className="bg-white dark:bg-neutral-800 rounded-3xl shadow-2xl max-w-3xl w-full p-4 relative" onClick={(e) => e.stopPropagation()}>
+                <button onClick={onClose} className="absolute -top-3 -right-3 w-8 h-8 bg-white dark:bg-neutral-800 rounded-full text-neutral-800 dark:text-neutral-200 flex items-center justify-center shadow-lg">&times;</button>
                 <div className="p-4">
-                    <h3 className="text-xl font-bold text-neutral-900 mb-2">{doc.name}</h3>
-                    <p className="text-sm text-neutral-500 mb-4">Uploaded: {doc.uploadDate}</p>
-                    <div className="bg-neutral-100 rounded-2xl h-[60vh] flex items-center justify-center overflow-hidden">
+                    <h3 className="text-xl font-bold text-neutral-900 dark:text-neutral-100 mb-2">{doc.name}</h3>
+                    <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4">Uploaded: {doc.uploadDate}</p>
+                    <div className="bg-neutral-100 dark:bg-neutral-900 rounded-2xl h-[60vh] flex items-center justify-center overflow-hidden">
                         {(doc.type === 'jpg' || doc.type === 'png') ? (
                             <img src={doc.previewUrl} alt={`Preview of ${doc.name}`} className="object-contain h-full w-full" />
                         ) : (
-                            <div className="text-center text-neutral-500">
-                                <div className="w-24 h-24 mx-auto text-red-400"><PdfFileIcon /></div>
+                            <div className="text-center text-neutral-500 dark:text-neutral-400">
+                                <div className="w-24 h-24 mx-auto text-red-400 dark:text-red-500"><PdfFileIcon /></div>
                                 <p className="mt-4 font-semibold">PDF Preview Unavailable</p>
                                 <p className="text-sm">This document would open in a PDF viewer.</p>
                             </div>
@@ -121,28 +121,28 @@ const ProfileHeader: React.FC<{ user: UserProfile, onEdit: () => void }> = ({ us
 const ProfileInfoCard: React.FC<{ user: UserProfile, onEdit: () => void }> = ({ user, onEdit }) => (
     <div className="bg-white dark:bg-neutral-800 p-5 rounded-3xl shadow-sm transition-colors">
         <div className="flex justify-between items-center mb-4">
-            <h3 className="font-bold text-lg text-neutral-800 dark:text-neutral-200">Medical Info</h3>
+            <h3 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Medical Info</h3>
             <button onClick={onEdit} className="flex items-center space-x-2 text-sm font-semibold text-primary dark:text-primary-light bg-primary-light dark:bg-primary/20 px-3 py-1.5 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors">
                 <div className="w-4 h-4"><PencilIcon /></div>
                 <span>Edit</span>
             </button>
         </div>
         <div className="space-y-3">
-            <div className="flex justify-between text-md"><span className="text-neutral-500 dark:text-neutral-400">Age</span><span className="font-semibold text-neutral-700 dark:text-neutral-200">{user.age ? `${user.age} years` : 'N/A'}</span></div>
-            <div className="flex justify-between text-md"><span className="text-neutral-500 dark:text-neutral-400">Height</span><span className="font-semibold text-neutral-700 dark:text-neutral-200">{user.height || 'N/A'}</span></div>
-            <div className="flex justify-between text-md"><span className="text-neutral-500 dark:text-neutral-400">Weight</span><span className="font-semibold text-neutral-700 dark:text-neutral-200">{user.weight || 'N/A'}</span></div>
-            <div className="flex justify-between text-md"><span className="text-neutral-500 dark:text-neutral-400">Blood Group</span><span className="font-semibold text-neutral-700 dark:text-neutral-200">{user.bloodGroup || 'N/A'}</span></div>
-            <div className="flex justify-between text-md"><span className="text-neutral-500 dark:text-neutral-400">Allergies</span><span className="font-semibold text-neutral-700 dark:text-neutral-200 text-right truncate">{user.allergies.length > 0 ? user.allergies.join(', ') : 'None'}</span></div>
-            <div className="flex justify-between text-md"><span className="text-neutral-500 dark:text-neutral-400">Conditions</span><span className="font-semibold text-neutral-700 dark:text-neutral-200 text-right truncate">{user.chronicConditions.length > 0 ? user.chronicConditions.join(', ') : 'None'}</span></div>
+            <div className="flex justify-between text-base"><span className="text-sm font-medium text-gray-600 dark:text-gray-400">Age</span><span className="font-bold text-gray-900 dark:text-white">{user.age ? `${user.age} years` : 'N/A'}</span></div>
+            <div className="flex justify-between text-base"><span className="text-sm font-medium text-gray-600 dark:text-gray-400">Height</span><span className="font-bold text-gray-900 dark:text-white">{user.height || 'N/A'}</span></div>
+            <div className="flex justify-between text-base"><span className="text-sm font-medium text-gray-600 dark:text-gray-400">Weight</span><span className="font-bold text-gray-900 dark:text-white">{user.weight || 'N/A'}</span></div>
+            <div className="flex justify-between text-base"><span className="text-sm font-medium text-gray-600 dark:text-gray-400">Blood Group</span><span className="font-bold text-gray-900 dark:text-white">{user.bloodGroup || 'N/A'}</span></div>
+            <div className="flex justify-between text-base"><span className="text-sm font-medium text-gray-600 dark:text-gray-400">Allergies</span><span className="font-bold text-gray-900 dark:text-white text-right truncate">{user.allergies.length > 0 ? user.allergies.join(', ') : 'None'}</span></div>
+            <div className="flex justify-between text-base"><span className="text-sm font-medium text-gray-600 dark:text-gray-400">Conditions</span><span className="font-bold text-gray-900 dark:text-white text-right truncate">{user.chronicConditions.length > 0 ? user.chronicConditions.join(', ') : 'None'}</span></div>
             {user.emergencyContact && (
                 <div className="pt-3 mt-3 border-t dark:border-neutral-700">
                     <div className="flex justify-between items-center mb-2">
-                        <span className="text-neutral-500 dark:text-neutral-400">Emergency Contact</span>
+                        <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Emergency Contact</span>
                     </div>
                     <div className="flex items-center justify-between">
                         <div>
-                            <p className="font-semibold text-neutral-700 dark:text-neutral-200">{user.emergencyContact.name}</p>
-                            <p className="text-sm text-neutral-500 dark:text-neutral-400">{user.emergencyContact.phone}</p>
+                            <p className="font-bold text-gray-900 dark:text-white text-base">{user.emergencyContact.name}</p>
+                            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{user.emergencyContact.phone}</p>
                         </div>
                         <a
                             href={`tel:${user.emergencyContact.phone.replace(/[^0-9]/g, '')}`}

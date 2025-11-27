@@ -132,8 +132,8 @@ const ModeSelectionView: React.FC<{ onSelectMode: (mode: 'quick' | 'type') => vo
                 <div className="w-24 h-24 bg-[#1a5f3f] rounded-3xl flex items-center justify-center text-white mb-6">
                     <div className="w-14 h-14"><StethoscopeIcon /></div>
                 </div>
-                <h1 className="text-3xl font-bold text-gray-900">Symptom Checker</h1>
-                <p className="text-gray-600 mt-2 max-w-sm">Choose how you'd like to check your symptoms</p>
+                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white tracking-tight">Symptom Checker</h1>
+                <p className="text-base font-medium text-gray-700 dark:text-gray-300 mt-2 max-w-sm leading-relaxed">Choose how you'd like to check your symptoms</p>
             </div>
 
             <div className="space-y-4">
@@ -143,9 +143,9 @@ const ModeSelectionView: React.FC<{ onSelectMode: (mode: 'quick' | 'type') => vo
                 >
                     <div className="flex items-center justify-between">
                         <div>
-                            <h3 className="text-xl font-bold text-gray-900 mb-2">Quick Check</h3>
-                            <p className="text-gray-600 text-sm mb-3">Answer structured questions for accurate analysis</p>
-                            <ul className="text-xs text-gray-500 space-y-1">
+                            <h3 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white tracking-tight mb-2">Quick Check</h3>
+                            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 leading-relaxed">Answer structured questions for accurate analysis</p>
+                            <ul className="text-xs font-medium text-gray-600 dark:text-gray-400 space-y-1 leading-relaxed">
                                 <li>✓ Structured data for better AI accuracy</li>
                                 <li>✓ Decision tree approach</li>
                                 <li>✓ More reliable severity calculation</li>
@@ -161,9 +161,9 @@ const ModeSelectionView: React.FC<{ onSelectMode: (mode: 'quick' | 'type') => vo
                 >
                     <div className="flex items-center justify-between">
                         <div>
-                            <h3 className="text-xl font-bold text-gray-900 mb-2">Type Symptoms</h3>
-                            <p className="text-gray-600 text-sm mb-3">Describe your symptoms in your own words</p>
-                            <ul className="text-xs text-gray-500 space-y-1">
+                            <h3 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white tracking-tight mb-2">Type Symptoms</h3>
+                            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 leading-relaxed">Describe your symptoms in your own words</p>
+                            <ul className="text-xs font-medium text-gray-600 dark:text-gray-400 space-y-1 leading-relaxed">
                                 <li>✓ Free-form text input</li>
                                 <li>✓ Natural language description</li>
                                 <li>✓ Quick and simple</li>
@@ -244,8 +244,8 @@ const QuickCheckView: React.FC<{
 
             <div className="mb-6">
                 <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm text-gray-600">Question {currentQuestionIndex + 1} of {symptomQuestions.length}</span>
-                    <span className="text-sm text-gray-600">{Math.round(((currentQuestionIndex + 1) / symptomQuestions.length) * 100)}%</span>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Question {currentQuestionIndex + 1} of {symptomQuestions.length}</span>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{Math.round(((currentQuestionIndex + 1) / symptomQuestions.length) * 100)}%</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
                     <div 
@@ -256,7 +256,7 @@ const QuickCheckView: React.FC<{
             </div>
 
             <div className="bg-white rounded-2xl p-6 shadow-sm mb-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-6">{currentQuestion.question}</h2>
+                <h2 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white tracking-tight mb-6">{currentQuestion.question}</h2>
                 <div className="space-y-3">
                     {currentQuestion.options.map((option) => {
                         const isSelected = getSelectedValues().includes(option.value);
@@ -339,8 +339,8 @@ const TypeInputView: React.FC<{ onAnalyze: (symptoms: string) => void; loading: 
                 <div className="w-24 h-24 bg-[#1a5f3f] rounded-3xl flex items-center justify-center text-white mb-6">
                     <div className="w-14 h-14"><StethoscopeIcon /></div>
                 </div>
-                <h1 className="text-3xl font-bold text-gray-900">Describe Your Symptoms</h1>
-                <p className="text-gray-600 mt-2 max-w-sm">Type your symptoms in your own words</p>
+                <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white tracking-tight">Describe Your Symptoms</h1>
+                <p className="text-base font-medium text-gray-700 dark:text-gray-300 mt-2 max-w-sm leading-relaxed">Type your symptoms in your own words</p>
             </div>
             
             <textarea
@@ -382,7 +382,7 @@ const SymptomResultView: React.FC<{
                 <button onClick={onReset} className="text-gray-700 bg-white p-3 rounded-full shadow-sm">
                     <BackArrowIcon />
                 </button>
-                <h1 className="text-2xl font-bold text-gray-900">Analysis Result</h1>
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Analysis Result</h1>
                 <div className="w-12"></div>
             </div>
             
@@ -392,18 +392,18 @@ const SymptomResultView: React.FC<{
                     <div className="flex justify-center mb-4">
                         <SeverityBadge severity={result.severity} />
                     </div>
-                    <h2 className="text-3xl font-bold text-gray-900">{topCondition?.name || "Analysis Complete"}</h2>
-                    {topCondition && <p className="text-gray-600 font-semibold mt-1">Likelihood: {topCondition.likelihood}</p>}
+                    <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white tracking-tight">{topCondition?.name || "Analysis Complete"}</h2>
+                    {topCondition && <p className="text-base font-bold text-gray-700 dark:text-gray-300 mt-1">Likelihood: {topCondition.likelihood}</p>}
                 </div>
 
                 {/* Recommendations */}
                 <div className="bg-white rounded-3xl shadow-sm p-6">
-                    <h3 className="text-xl font-bold text-gray-800 mb-4">Recommended Actions</h3>
+                    <h3 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white tracking-tight mb-4">Recommended Actions</h3>
                     <ul className="space-y-3">
                         {result.recommendations.map((rec, index) => (
-                            <li key={index} className="flex items-start p-4 bg-gray-50 rounded-xl">
-                                <div className="w-6 h-6 text-[#1a5f3f] mr-3 mt-0.5 flex-shrink-0"><CheckCircleIcon /></div>
-                                <span className="text-gray-800">{rec}</span>
+                            <li key={index} className="flex items-start p-4 bg-gray-50 dark:bg-neutral-800 rounded-xl">
+                                <div className="w-6 h-6 text-[#1a5f3f] dark:text-emerald-500 mr-3 mt-0.5 flex-shrink-0"><CheckCircleIcon /></div>
+                                <span className="text-base text-gray-700 dark:text-gray-300 leading-relaxed">{rec}</span>
                             </li>
                         ))}
                     </ul>
@@ -412,12 +412,12 @@ const SymptomResultView: React.FC<{
                 {/* Other Conditions */}
                 {otherConditions.length > 0 && (
                     <div className="bg-white rounded-3xl shadow-sm p-6">
-                        <h3 className="text-xl font-bold text-gray-800 mb-4">Other Possible Conditions</h3>
+                        <h3 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white tracking-tight mb-4">Other Possible Conditions</h3>
                         <ul className="space-y-2">
                             {otherConditions.map((cond, index) => (
-                                <li key={index} className="flex justify-between p-4 bg-gray-50 rounded-xl">
-                                    <span className="font-medium text-gray-800">{cond.name}</span>
-                                    <span className="text-gray-600 font-medium">{cond.likelihood}</span>
+                                <li key={index} className="flex justify-between p-4 bg-gray-50 dark:bg-neutral-800 rounded-xl">
+                                    <span className="font-bold text-gray-900 dark:text-white text-base">{cond.name}</span>
+                                    <span className="text-gray-700 dark:text-gray-300 font-semibold">{cond.likelihood}</span>
                                 </li>
                             ))}
                         </ul>
@@ -425,9 +425,9 @@ const SymptomResultView: React.FC<{
                 )}
                 
                 {/* Disclaimer */}
-                <div className="pt-4 text-center text-sm text-gray-600 bg-gray-100 p-4 rounded-xl">
-                    <p className="font-bold text-gray-700 mb-2">⚠️ Medical Disclaimer</p>
-                    <p>{result.disclaimer}</p>
+                <div className="pt-4 text-center text-sm font-medium text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-neutral-800 p-4 rounded-xl leading-relaxed">
+                    <p className="font-bold text-gray-900 dark:text-white mb-2">⚠️ Medical Disclaimer</p>
+                    <p className="text-gray-700 dark:text-gray-300">{result.disclaimer}</p>
                 </div>
             </div>
 

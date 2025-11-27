@@ -85,13 +85,13 @@ const InputField: React.FC<{
 }> = ({ id, label, type, placeholder, value, onChange, error, icon }) => (
     <div className="mb-4">
         <div className="relative">
-            <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 flex items-center justify-center">
+            <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-neutral-500 w-5 h-5 flex items-center justify-center">
                 {icon}
             </div>
         <input 
-                className={`w-full pl-12 pr-4 py-3 bg-white border ${
-                    error ? 'border-red-500' : 'border-gray-300'
-                } rounded-xl focus:border-[#1a5f3f] focus:outline-none transition-colors text-gray-800 placeholder-gray-400`}
+                className={`w-full pl-12 pr-4 py-3 bg-white dark:bg-neutral-800 border ${
+                    error ? 'border-red-500' : 'border-gray-300 dark:border-neutral-700'
+                } rounded-xl focus:border-[#1a5f3f] focus:outline-none transition-colors text-gray-800 dark:text-neutral-100 placeholder-gray-400 dark:placeholder-neutral-500`}
             id={id} 
             type={type} 
             placeholder={placeholder}
@@ -183,8 +183,8 @@ const LoginView: React.FC<{ setMode: (mode: AuthMode) => void; onLogin: () => vo
             <div className="relative px-6 pt-8 pb-12">
                 <div className="relative">
                     <LeafBranch />
-                    <h2 className="text-3xl font-bold text-[#1a5f3f] mb-2">Welcome back</h2>
-                    <p className="text-gray-500 text-sm mb-8">Login to your account.</p>
+                    <h2 className="text-3xl md:text-4xl font-bold text-[#1a5f3f] mb-2 tracking-tight">Welcome back</h2>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-8 leading-relaxed">Login to your account.</p>
             
             {error && (
                         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm mb-4">
@@ -214,7 +214,7 @@ const LoginView: React.FC<{ setMode: (mode: AuthMode) => void; onLogin: () => vo
             />
 
                     <div className="flex justify-between items-center text-sm mb-6">
-                        <label className="flex items-center text-gray-600 cursor-pointer">
+                        <label className="flex items-center text-base font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
                     <input 
                         type="checkbox" 
                                 className="h-4 w-4 rounded border-gray-300 text-[#1a5f3f] focus:ring-[#1a5f3f] mr-2"
@@ -246,7 +246,7 @@ const LoginView: React.FC<{ setMode: (mode: AuthMode) => void; onLogin: () => vo
                     {/* Divider */}
                     <div className="flex items-center my-6">
                         <div className="flex-1 border-t border-gray-300"></div>
-                        <span className="px-4 text-sm text-gray-500">or</span>
+                        <span className="px-4 text-sm font-medium text-gray-500 dark:text-gray-400">or</span>
                         <div className="flex-1 border-t border-gray-300"></div>
             </div>
             
@@ -266,7 +266,7 @@ const LoginView: React.FC<{ setMode: (mode: AuthMode) => void; onLogin: () => vo
                         )}
                     </button>
             
-                    <p className="text-center text-sm text-gray-500">
+                    <p className="text-center text-sm font-medium text-gray-600 dark:text-gray-400">
                         Don't have an account?{' '}
                         <a
                             href="#"
@@ -274,11 +274,11 @@ const LoginView: React.FC<{ setMode: (mode: AuthMode) => void; onLogin: () => vo
                                 e.preventDefault();
                                 setMode('signup');
                             }}
-                            className="text-[#1a5f3f] font-semibold hover:underline"
+                            className="text-[#1a5f3f] dark:text-emerald-400 font-semibold hover:underline"
                         >
                             Sign up
                         </a>
-            </p>
+                    </p>
                 </div>
             </div>
         </div>
@@ -395,8 +395,8 @@ const SignupView: React.FC<{ setMode: (mode: AuthMode) => void; onSignup: () => 
             <div className="relative px-6 pt-8 pb-12">
                 <div className="relative">
                     <LeafBranch />
-                    <h2 className="text-3xl font-bold text-[#1a5f3f] mb-2">Register</h2>
-                    <p className="text-gray-500 text-sm mb-8">Create your new account.</p>
+                    <h2 className="text-3xl md:text-4xl font-bold text-[#1a5f3f] mb-2 tracking-tight">Register</h2>
+                    <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-8 leading-relaxed">Create your new account.</p>
             
             {error && (
                         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm mb-4">
@@ -500,7 +500,7 @@ const SignupView: React.FC<{ setMode: (mode: AuthMode) => void; onSignup: () => 
                     {/* Divider */}
                     <div className="flex items-center my-6">
                         <div className="flex-1 border-t border-gray-300"></div>
-                        <span className="px-4 text-sm text-gray-500">or</span>
+                        <span className="px-4 text-sm font-medium text-gray-500 dark:text-gray-400">or</span>
                         <div className="flex-1 border-t border-gray-300"></div>
                     </div>
 
@@ -520,7 +520,7 @@ const SignupView: React.FC<{ setMode: (mode: AuthMode) => void; onSignup: () => 
                         )}
                     </button>
 
-                    <p className="text-center text-sm text-gray-500">
+                    <p className="text-center text-sm font-medium text-gray-600 dark:text-gray-400">
                         Already have an account?{' '}
                         <a
                             href="#"
@@ -528,7 +528,7 @@ const SignupView: React.FC<{ setMode: (mode: AuthMode) => void; onSignup: () => 
                                 e.preventDefault();
                                 setMode('login');
                             }}
-                            className="text-[#1a5f3f] font-semibold hover:underline"
+                            className="text-[#1a5f3f] dark:text-emerald-400 font-semibold hover:underline"
                         >
                             Sign in
                         </a>

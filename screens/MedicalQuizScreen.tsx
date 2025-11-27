@@ -86,21 +86,21 @@ export const MedicalQuizScreen: React.FC<MedicalQuizProps> = ({ initialProfile, 
                                 value={profileData.age || ''}
                                 onChange={(e) => setProfileData({...profileData, age: parseInt(e.target.value, 10) || undefined})}
                                 placeholder="Age (years)"
-                                className="w-full p-3 border-2 rounded-xl bg-neutral-100 border-neutral-200 focus:border-primary outline-none"
+                                className="w-full p-3 border-2 rounded-xl bg-neutral-100 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 focus:border-primary outline-none text-gray-900 dark:text-neutral-100 placeholder-gray-500 dark:placeholder-neutral-400"
                              />
                               <input
                                 type="text"
                                 value={profileData.height || ''}
                                 onChange={(e) => setProfileData({...profileData, height: e.target.value})}
                                 placeholder="Height (e.g., 180 cm or 5 feet 11 inches)"
-                                className="w-full p-3 border-2 rounded-xl bg-neutral-100 border-neutral-200 focus:border-primary outline-none"
+                                className="w-full p-3 border-2 rounded-xl bg-neutral-100 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 focus:border-primary outline-none text-gray-900 dark:text-neutral-100 placeholder-gray-500 dark:placeholder-neutral-400"
                              />
                              <input
                                 type="text"
                                 value={profileData.weight || ''}
                                 onChange={(e) => setProfileData({...profileData, weight: e.target.value})}
                                 placeholder="Weight (e.g., 75 kg / 165 lbs)"
-                                className="w-full p-3 border-2 rounded-xl bg-neutral-100 border-neutral-200 focus:border-primary outline-none"
+                                className="w-full p-3 border-2 rounded-xl bg-neutral-100 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 focus:border-primary outline-none text-gray-900 dark:text-neutral-100 placeholder-gray-500 dark:placeholder-neutral-400"
                              />
                         </div>
                     </div>
@@ -124,7 +124,7 @@ export const MedicalQuizScreen: React.FC<MedicalQuizProps> = ({ initialProfile, 
                             value={otherAllergy}
                             onChange={(e) => setOtherAllergy(e.target.value)}
                             placeholder="Other (e.g., Aspirin)"
-                            className="w-full p-3 border-2 rounded-xl bg-neutral-100 border-neutral-200 focus:border-primary outline-none"
+                            className="w-full p-3 border-2 rounded-xl bg-neutral-100 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 focus:border-primary outline-none text-gray-900 dark:text-neutral-100 placeholder-gray-500 dark:placeholder-neutral-400"
                          />
                     </div>
                 );
@@ -147,7 +147,7 @@ export const MedicalQuizScreen: React.FC<MedicalQuizProps> = ({ initialProfile, 
                              value={otherCondition}
                             onChange={(e) => setOtherCondition(e.target.value)}
                             placeholder="Other (e.g., Hypothyroidism)"
-                            className="w-full p-3 border-2 rounded-xl bg-neutral-100 border-neutral-200 focus:border-primary outline-none"
+                            className="w-full p-3 border-2 rounded-xl bg-neutral-100 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 focus:border-primary outline-none text-gray-900 dark:text-neutral-100 placeholder-gray-500 dark:placeholder-neutral-400"
                          />
                     </div>
                 );
@@ -161,14 +161,14 @@ export const MedicalQuizScreen: React.FC<MedicalQuizProps> = ({ initialProfile, 
                                 value={profileData.emergencyContact.name}
                                 onChange={(e) => setProfileData({...profileData, emergencyContact: {...profileData.emergencyContact, name: e.target.value}})}
                                 placeholder="Contact Name"
-                                className="w-full p-3 border-2 rounded-xl bg-neutral-100 border-neutral-200 focus:border-primary outline-none"
+                                className="w-full p-3 border-2 rounded-xl bg-neutral-100 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 focus:border-primary outline-none text-gray-900 dark:text-neutral-100 placeholder-gray-500 dark:placeholder-neutral-400"
                              />
                               <input
                                 type="tel"
                                 value={profileData.emergencyContact.phone}
                                 onChange={(e) => setProfileData({...profileData, emergencyContact: {...profileData.emergencyContact, phone: e.target.value}})}
                                 placeholder="Contact Phone"
-                                className="w-full p-3 border-2 rounded-xl bg-neutral-100 border-neutral-200 focus:border-primary outline-none"
+                                className="w-full p-3 border-2 rounded-xl bg-neutral-100 dark:bg-neutral-800 border-neutral-200 dark:border-neutral-700 focus:border-primary outline-none text-gray-900 dark:text-neutral-100 placeholder-gray-500 dark:placeholder-neutral-400"
                              />
                         </div>
                     </div>
