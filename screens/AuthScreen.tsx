@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BackArrowIcon, UserIcon, EmailIcon, LockIcon } from '../constants';
+import { BackArrowIcon, UserIcon, EmailIcon, LockIcon, GoogleIcon } from '../constants';
 import { useAuth } from '../contexts/AuthContext';
 
 type AuthMode = 'login' | 'signup' | 'forgot';
@@ -108,12 +108,13 @@ const LoginView: React.FC<{ setMode: (mode: AuthMode) => void; onLogin: () => vo
     onLogin,
     onBack,
 }) => {
-    const { login } = useAuth();
+    const { login, loginWithGoogle } = useAuth();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [rememberMe, setRememberMe] = useState(false);
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [isGoogleLoading, setIsGoogleLoading] = useState(false);
     const [emailError, setEmailError] = useState('');
     const [passwordError, setPasswordError] = useState('');
 
@@ -150,6 +151,19 @@ const LoginView: React.FC<{ setMode: (mode: AuthMode) => void; onLogin: () => vo
         } else {
             setError(result.error || 'Login failed. Please check your credentials.');
         }
+    };
+
+    const handleGoogleLogin = async () => {
+        setError('');
+        setIsGoogleLoading(true);
+        const result = await loginWithGoogle();
+        
+        if (!result.success) {
+            setIsGoogleLoading(false);
+            setError(result.error || 'Google sign in failed');
+        }
+        // If success, OAuth will redirect - don't set loading to false
+        // The redirect will happen and the app will handle the callback
     };
 
     return (
@@ -223,10 +237,33 @@ const LoginView: React.FC<{ setMode: (mode: AuthMode) => void; onLogin: () => vo
 
                     <button
                         onClick={handleLogin}
-                        disabled={isLoading}
-                        className="w-full bg-[#1a5f3f] text-white py-4 rounded-xl text-lg font-semibold shadow-lg hover:bg-[#0d4a2e] transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-6"
+                        disabled={isLoading || isGoogleLoading}
+                        className="w-full bg-[#1a5f3f] text-white py-4 rounded-xl text-lg font-semibold shadow-lg hover:bg-[#0d4a2e] transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-4"
                     >
                         {isLoading ? 'Logging in...' : 'Login'}
+                    </button>
+
+                    {/* Divider */}
+                    <div className="flex items-center my-6">
+                        <div className="flex-1 border-t border-gray-300"></div>
+                        <span className="px-4 text-sm text-gray-500">or</span>
+                        <div className="flex-1 border-t border-gray-300"></div>
+                    </div>
+
+                    {/* Google Login Button */}
+                    <button
+                        onClick={handleGoogleLogin}
+                        disabled={isLoading || isGoogleLoading}
+                        className="w-full bg-white border-2 border-gray-300 text-gray-700 py-3 rounded-xl text-base font-medium shadow-sm hover:bg-gray-50 hover:border-gray-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 mb-6"
+                    >
+                        {isGoogleLoading ? (
+                            <span>Connecting...</span>
+                        ) : (
+                            <>
+                                <GoogleIcon />
+                                <span>Continue with Google</span>
+                            </>
+                        )}
                     </button>
 
                     <p className="text-center text-sm text-gray-500">
@@ -253,13 +290,14 @@ const SignupView: React.FC<{ setMode: (mode: AuthMode) => void; onSignup: () => 
     onSignup,
     onBack,
 }) => {
-    const { signup } = useAuth();
+    const { signup, loginWithGoogle } = useAuth();
     const [fullName, setFullName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [isGoogleLoading, setIsGoogleLoading] = useState(false);
     const [nameError, setNameError] = useState('');
     const [emailError, setEmailError] = useState('');
     const [passwordError, setPasswordError] = useState('');
@@ -312,6 +350,19 @@ const SignupView: React.FC<{ setMode: (mode: AuthMode) => void; onSignup: () => 
         } else {
             setError(result.error || 'Signup failed');
         }
+    };
+
+    const handleGoogleSignup = async () => {
+        setError('');
+        setIsGoogleLoading(true);
+        const result = await loginWithGoogle();
+        
+        if (!result.success) {
+            setIsGoogleLoading(false);
+            setError(result.error || 'Google sign up failed');
+        }
+        // If success, OAuth will redirect - don't set loading to false
+        // The redirect will happen and the app will handle the callback
     };
 
     return (
@@ -395,10 +446,33 @@ const SignupView: React.FC<{ setMode: (mode: AuthMode) => void; onSignup: () => 
 
                     <button
                         onClick={handleSignup}
-                        disabled={isLoading}
-                        className="w-full bg-[#1a5f3f] text-white py-4 rounded-xl text-lg font-semibold shadow-lg hover:bg-[#0d4a2e] transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-6"
+                        disabled={isLoading || isGoogleLoading}
+                        className="w-full bg-[#1a5f3f] text-white py-4 rounded-xl text-lg font-semibold shadow-lg hover:bg-[#0d4a2e] transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-4"
                     >
                         {isLoading ? 'Creating account...' : 'Sign Up'}
+                    </button>
+
+                    {/* Divider */}
+                    <div className="flex items-center my-6">
+                        <div className="flex-1 border-t border-gray-300"></div>
+                        <span className="px-4 text-sm text-gray-500">or</span>
+                        <div className="flex-1 border-t border-gray-300"></div>
+                    </div>
+
+                    {/* Google Signup Button */}
+                    <button
+                        onClick={handleGoogleSignup}
+                        disabled={isLoading || isGoogleLoading}
+                        className="w-full bg-white border-2 border-gray-300 text-gray-700 py-3 rounded-xl text-base font-medium shadow-sm hover:bg-gray-50 hover:border-gray-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 mb-6"
+                    >
+                        {isGoogleLoading ? (
+                            <span>Connecting...</span>
+                        ) : (
+                            <>
+                                <GoogleIcon />
+                                <span>Continue with Google</span>
+                            </>
+                        )}
                     </button>
 
                     <p className="text-center text-sm text-gray-500">
