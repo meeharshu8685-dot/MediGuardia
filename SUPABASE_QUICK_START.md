@@ -33,6 +33,8 @@ CREATE TABLE IF NOT EXISTS medical_profiles (
     age INTEGER,
     gender TEXT,
     blood_group TEXT,
+    height TEXT,
+    weight TEXT,
     allergies TEXT[],
     chronic_conditions TEXT[],
     emergency_contact JSONB,

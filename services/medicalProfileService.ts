@@ -79,6 +79,8 @@ export const saveMedicalProfile = async (profileData: MedicalProfileData): Promi
             chronic_conditions: profileData.chronic_conditions || [],
             emergency_contact: emergencyContact,
             avatar_url: profileData.avatar_url || null,
+            height: profileData.height || null,
+            weight: profileData.weight || null,
             updated_at: new Date().toISOString(),
         };
 
@@ -129,6 +131,8 @@ const convertToUserProfile = (data: any, user: any): UserProfile => {
         age: data.age || undefined,
         gender: data.gender || undefined,
         bloodGroup: data.blood_group || undefined,
+        height: data.height || undefined,
+        weight: data.weight || undefined,
         allergies: data.allergies || [],
         chronicConditions: data.chronic_conditions || [],
         emergencyContact
