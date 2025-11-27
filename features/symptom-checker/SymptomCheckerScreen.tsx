@@ -346,7 +346,7 @@ const TypeInputView: React.FC<{ onAnalyze: (symptoms: string) => void; loading: 
             <textarea
                 value={symptoms}
                 onChange={(e) => setSymptoms(e.target.value)}
-                className="w-full h-48 p-4 bg-white rounded-2xl border-2 border-gray-200 focus:border-[#1a5f3f] focus:ring-2 focus:ring-[#1a5f3f]/20 outline-none transition text-lg shadow-sm"
+                className="w-full h-48 p-4 bg-white dark:bg-neutral-800 rounded-2xl border-2 border-gray-200 dark:border-neutral-700 focus:border-[#1a5f3f] focus:ring-2 focus:ring-[#1a5f3f]/20 outline-none transition text-lg shadow-sm text-gray-900 dark:text-neutral-100 placeholder-gray-500 dark:placeholder-neutral-400"
                 placeholder="e.g., I have a throbbing headache, slight fever, and a runny nose..."
             />
             
