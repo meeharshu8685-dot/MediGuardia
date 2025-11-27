@@ -185,8 +185,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 const appUser = await convertSupabaseUser(data.user);
                 setUser(appUser);
                 hasUserRef.current = true;
-                // Keep isLoading true - onAuthStateChange will set it to false
-                // This ensures the session is fully established
+                // Set isLoading to false immediately since we have the user and session
+                // onAuthStateChange will also handle it as a backup, but we don't rely on it
+                setIsLoading(false);
                 console.log('Login successful, user set:', appUser.email);
                 return { success: true };
             }

@@ -109,6 +109,14 @@ const AppContent: React.FC = () => {
 
         // Wait for auth to finish loading before deciding app state
         if (isLoading) {
+            // If we have a user and are authenticated, transition to main even if still loading
+            // This is a fallback in case isLoading gets stuck
+            if (isAuthenticated && user && appState !== 'main') {
+                console.log('User authenticated but still loading, transitioning to main as fallback');
+                setAppState('main');
+                hasInitialized.current = true;
+                return;
+            }
             // If we have a user but still loading, don't reset to auth
             if (user && appState === 'main') {
                 return; // Keep main screen if user exists
