@@ -302,6 +302,8 @@ const SignupView: React.FC<{ setMode: (mode: AuthMode) => void; onSignup: () => 
     const [emailError, setEmailError] = useState('');
     const [passwordError, setPasswordError] = useState('');
     const [confirmPasswordError, setConfirmPasswordError] = useState('');
+    const [termsAccepted, setTermsAccepted] = useState(false);
+    const [termsError, setTermsError] = useState('');
 
     const validateEmail = (email: string) => {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -340,6 +342,10 @@ const SignupView: React.FC<{ setMode: (mode: AuthMode) => void; onSignup: () => 
             setConfirmPasswordError('Passwords do not match');
             return;
         }
+        if (!termsAccepted) {
+            setTermsError('You must accept the Terms and Conditions to sign up');
+            return;
+        }
 
         setIsLoading(true);
         const result = await signup(fullName.trim(), email, password);
@@ -354,6 +360,13 @@ const SignupView: React.FC<{ setMode: (mode: AuthMode) => void; onSignup: () => 
 
     const handleGoogleSignup = async () => {
         setError('');
+        setTermsError('');
+        
+        if (!termsAccepted) {
+            setTermsError('You must accept the Terms and Conditions to sign up');
+            return;
+        }
+        
         setIsGoogleLoading(true);
         const result = await loginWithGoogle();
         
@@ -432,21 +445,53 @@ const SignupView: React.FC<{ setMode: (mode: AuthMode) => void; onSignup: () => 
                         icon={<LockIcon />}
                 />
 
-                    <p className="text-xs text-gray-500 mb-6">
-                        By signing you agree to our{' '}
-                        <a href="#" className="text-[#1a5f3f] font-semibold hover:underline">
-                            Terms of use
-                        </a>{' '}
-                        and{' '}
-                        <a href="#" className="text-[#1a5f3f] font-semibold hover:underline">
-                            privacy notice
-                        </a>
-                        .
-                    </p>
+                    {/* Terms and Conditions Checkbox */}
+                    <div className="mb-6">
+                        <label className="flex items-start text-sm cursor-pointer">
+                            <input 
+                                type="checkbox" 
+                                className="h-4 w-4 rounded border-gray-300 text-[#1a5f3f] focus:ring-[#1a5f3f] mr-3 mt-0.5 flex-shrink-0"
+                                checked={termsAccepted}
+                                onChange={(e) => {
+                                    setTermsAccepted(e.target.checked);
+                                    setTermsError('');
+                                }}
+                            />
+                            <span className="text-gray-600">
+                                I agree to the{' '}
+                                <a 
+                                    href="#" 
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        // Navigate to terms screen or open modal
+                                        alert('Terms and Conditions\n\nThis app is not a medical diagnosis tool. Please consult a healthcare professional for medical advice.\n\nBy using this app, you agree to use it responsibly and understand that it is for informational purposes only.');
+                                    }}
+                                    className="text-[#1a5f3f] font-semibold hover:underline"
+                                >
+                                    Terms and Conditions
+                                </a>
+                                {' '}and{' '}
+                                <a 
+                                    href="#" 
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        // Navigate to privacy policy screen or open modal
+                                        alert('Privacy Policy\n\nWe respect your privacy. Your medical data is stored securely and will only be used to provide you with health-related services.\n\nWe do not share your personal information with third parties without your consent.');
+                                    }}
+                                    className="text-[#1a5f3f] font-semibold hover:underline"
+                                >
+                                    Privacy Policy
+                                </a>
+                            </span>
+                        </label>
+                        {termsError && (
+                            <p className="text-red-500 text-xs mt-1 ml-7">{termsError}</p>
+                        )}
+                    </div>
             
             <button 
                 onClick={handleSignup} 
-                        disabled={isLoading || isGoogleLoading}
+                        disabled={isLoading || isGoogleLoading || !termsAccepted}
                         className="w-full bg-[#1a5f3f] text-white py-4 rounded-xl text-lg font-semibold shadow-lg hover:bg-[#0d4a2e] transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-4"
             >
                 {isLoading ? 'Creating account...' : 'Sign Up'}
@@ -462,7 +507,7 @@ const SignupView: React.FC<{ setMode: (mode: AuthMode) => void; onSignup: () => 
                     {/* Google Signup Button */}
                     <button
                         onClick={handleGoogleSignup}
-                        disabled={isLoading || isGoogleLoading}
+                        disabled={isLoading || isGoogleLoading || !termsAccepted}
                         className="w-full bg-white border-2 border-gray-300 text-gray-700 py-3 rounded-xl text-base font-medium shadow-sm hover:bg-gray-50 hover:border-gray-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 mb-6"
                     >
                         {isGoogleLoading ? (
