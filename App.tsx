@@ -8,6 +8,9 @@ import { SymptomCheckerScreen } from './screens/SymptomCheckerScreen';
 import { EmergencyScreen } from './screens/EmergencyScreen';
 import { HistoryScreen } from './screens/HistoryScreen';
 import { ProfileScreen } from './screens/ProfileScreen';
+import { ScheduleScreen } from './screens/ScheduleScreen';
+import { NotificationsScreen } from './screens/NotificationsScreen';
+import { SettingsScreen } from './screens/SettingsScreen';
 import { ComingSoonScreen } from './screens/ComingSoonScreen';
 import { AppIcon } from './constants';
 import { BottomNavBar } from './components/BottomNavBar';
@@ -22,7 +25,7 @@ import { supabase } from './lib/supabase';
 
 
 type AppState = 'splash' | 'welcome' | 'onboarding' | 'auth' | 'main';
-export type MainTab = 'home' | 'symptom' | 'sos' | 'history' | 'profile';
+export type MainTab = 'home' | 'schedule' | 'history' | 'notifications';
 
 const SplashScreen: React.FC = () => (
     <div className="flex flex-col items-center justify-center h-screen w-screen bg-gradient-to-br from-[#7B61FF] to-[#9DBBFF]">
@@ -350,13 +353,24 @@ const AppContent: React.FC = () => {
             return <ComingSoonScreen featureName="Subscription Plans" onBack={() => { setActiveTab('profile'); setView('profile'); }} />;
         }
 
+        if (view === 'settings') {
+            return <SettingsScreen {...screenProps} onBack={() => setView('home')} />;
+        }
+        if (view === 'profile') {
+            return <ProfileScreen {...screenProps} user={userProfile} docs={documents} onUpdateProfile={handleUpdateProfile} onLogout={() => { logout(); setAppState('auth'); }} />;
+        }
+        if (view === 'symptom') {
+            return <SymptomCheckerScreen {...screenProps} onSaveLog={handleAddHealthLog} />;
+        }
+        if (view === 'sos') {
+            return <EmergencyScreen {...screenProps} view={view} user={userProfile} />;
+        }
+
         switch (activeTab) {
             case 'home':
                 return <HomeScreen {...screenProps} setActiveTab={setActiveTab} user={userProfile} medications={medications} logs={healthLogs} />;
-            case 'symptom':
-                return <SymptomCheckerScreen {...screenProps} onSaveLog={handleAddHealthLog} />;
-            case 'sos':
-                return <EmergencyScreen {...screenProps} view={view} user={userProfile} />;
+            case 'schedule':
+                return <ScheduleScreen {...screenProps} />;
             case 'history':
                 return (
                     <HistoryScreen 
@@ -364,6 +378,7 @@ const AppContent: React.FC = () => {
                         view={view} 
                         logs={healthLogs} 
                         medications={medications} 
+                        user={userProfile}
                         onAddMedication={handleAddMedication}
                         onDeleteLog={async (logId: string) => {
                             const result = await deleteHealthLog(logId);
@@ -381,8 +396,8 @@ const AppContent: React.FC = () => {
                         }}
                     />
                 );
-            case 'profile':
-                return <ProfileScreen {...screenProps} user={userProfile} docs={documents} onUpdateProfile={handleUpdateProfile} onLogout={() => { logout(); setAppState('auth'); }} />;
+            case 'notifications':
+                return <NotificationsScreen {...screenProps} />;
             default:
                 return <HomeScreen {...screenProps} user={userProfile} medications={medications} logs={healthLogs} />;
         }
@@ -426,7 +441,11 @@ const AppContent: React.FC = () => {
                         <main className="pb-28">{renderMainScreen()}</main>
                         <BottomNavBar activeTab={activeTab} setActiveTab={(tab) => {
                             setActiveTab(tab);
+                            if (tab === 'history') {
+                                setView('history/report');
+                            } else {
                             setView(tab);
+                            }
                         }} />
                     </div>
                 );

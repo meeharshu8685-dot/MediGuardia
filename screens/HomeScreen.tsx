@@ -1,79 +1,112 @@
-
 import React, { useState } from 'react';
 import { UserProfile, Medication, HealthLog } from '../types';
-import { StethoscopeIcon, SosIcon, FirstAidIcon, HospitalIcon, ChatIcon, ChevronRightIcon, PillIcon } from '../constants';
+import { StethoscopeIcon, SosIcon, FirstAidIcon, HospitalIcon, UserIcon } from '../constants';
+
+interface Appointment {
+    id: string;
+    date: string;
+    day: string;
+    time: string;
+    doctorName: string;
+    reason: string;
+    color: string;
+}
+
+const mockAppointments: Appointment[] = [
+    { id: '1', date: '12', day: 'Tue', time: '09:30 AM', doctorName: 'Dr. Mim Akhter', reason: 'Depression', color: 'bg-blue-500' },
+    { id: '2', date: '13', day: 'We', time: '10:00 AM', doctorName: 'Dr. John Smith', reason: 'Checkup', color: 'bg-orange-500' },
+];
 
 const Header: React.FC<{ user: UserProfile; onNotificationClick?: () => void }> = ({ user, onNotificationClick }) => {
-    const [hasNotifications, setHasNotifications] = useState(false);
-    
-    // Check for notifications (medications due, health reminders, etc.)
-    React.useEffect(() => {
-        // Mock: You can implement real notification logic here
-        const checkNotifications = () => {
-            // Example: Check if there are medications due today
-            setHasNotifications(false); // Set to true if there are notifications
-        };
-        checkNotifications();
-    }, []);
+    const [hasNotifications, setHasNotifications] = useState(true);
 
     return (
-        <div className="p-6 pt-12 bg-neutral-100 dark:bg-neutral-800 transition-colors">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                    <img src={user.avatarUrl} alt={user.name} className="w-14 h-14 rounded-full object-cover" />
-                    <div className="ml-4">
-                        <p className="text-lg text-neutral-500 dark:text-neutral-400">Welcome back,</p>
-                        <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100">{user.name}</h1>
+        <div className="p-6 pt-12 bg-white">
+            <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center flex-1">
+                    <div className="relative">
+                        <img 
+                            src={user.avatarUrl} 
+                            alt={user.name} 
+                            className="w-14 h-14 rounded-full object-cover border-2 border-gray-100" 
+                        />
+                        {hasNotifications && (
+                            <span className="absolute top-0 right-0 w-4 h-4 bg-blue-500 rounded-full border-2 border-white"></span>
+                        )}
+                    </div>
+                    <div className="ml-4 flex-1">
+                        <p className="text-sm text-gray-500">Hello!</p>
+                        <h1 className="text-2xl font-bold text-gray-900">{user.name}</h1>
                     </div>
                 </div>
                 <button 
-                    onClick={onNotificationClick || (() => alert('No new notifications'))}
-                    className="w-10 h-10 flex items-center justify-center rounded-full bg-white dark:bg-neutral-700 shadow-sm transition-transform hover:scale-110 relative"
+                    onClick={() => {
+                        setView('settings');
+                    }}
+                    className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
                 >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-neutral-500 dark:text-neutral-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
-                    {hasNotifications && (
-                        <span className="absolute top-1 right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white dark:border-neutral-700"></span>
-                    )}
                 </button>
+            </div>
+            
+            {/* Search Bar */}
+            <div className="relative">
+                <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </div>
+                <input
+                    type="text"
+                    placeholder="Search medical..."
+                    className="w-full pl-12 pr-12 py-3 bg-gray-100 rounded-2xl border-none focus:outline-none focus:ring-2 focus:ring-blue-200 text-gray-800"
+                />
+                <div className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </div>
             </div>
         </div>
     );
 };
 
-const QuickTile: React.FC<{ icon: React.ReactNode; label: string; onClick: () => void; color: string }> = ({ icon, label, onClick, color }) => (
-    <div onClick={onClick} className={`rounded-3xl p-4 flex flex-col justify-between h-32 shadow-md cursor-pointer transition-transform hover:scale-105 ${color}`}>
-        <div className="w-10 h-10 text-white">{icon}</div>
-        <p className="font-bold text-white text-lg">{label}</p>
+const ServiceCard: React.FC<{ 
+    icon: React.ReactNode; 
+    label: string; 
+    onClick: () => void; 
+    bgColor: string;
+    iconColor: string;
+}> = ({ icon, label, onClick, bgColor, iconColor }) => (
+    <div 
+        onClick={onClick} 
+        className={`${bgColor} rounded-2xl p-4 flex flex-col items-center justify-center h-24 cursor-pointer transition-transform hover:scale-105 shadow-sm`}
+    >
+        <div className={`${iconColor} mb-2`}>
+            {icon}
+    </div>
+        <p className="text-xs font-semibold text-white text-center">{label}</p>
     </div>
 );
 
-const SectionHeader: React.FC<{ title: string; onSeeAll?: () => void }> = ({ title, onSeeAll }) => (
-    <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-bold text-neutral-800 dark:text-neutral-200">{title}</h2>
-        {onSeeAll && (
-            <button 
-                onClick={onSeeAll} 
-                className="text-sm font-semibold text-primary dark:text-primary-light hover:underline"
-            >
-                See All
-            </button>
-        )}
-    </div>
-);
-
-const MedicationCard: React.FC<{ medication: Medication; onClick?: () => void }> = ({ medication, onClick }) => (
+const AppointmentCard: React.FC<{ appointment: Appointment; onClick?: () => void }> = ({ appointment, onClick }) => (
     <div 
         onClick={onClick}
-        className={`bg-white dark:bg-neutral-800 p-4 rounded-2xl flex items-center shadow-sm transition-colors ${onClick ? 'cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-700' : ''}`}
+        className={`${appointment.color} rounded-2xl p-4 min-w-[160px] mr-4 cursor-pointer shadow-sm hover:shadow-md transition-shadow`}
     >
-        <div className="w-12 h-12 bg-primary-light dark:bg-primary/20 rounded-xl flex items-center justify-center mr-4 text-primary">
-            <PillIcon />
+        <div className="flex items-start justify-between mb-2">
+            <div>
+                <p className="text-white font-bold text-lg">{appointment.date}</p>
+                <p className="text-white/90 text-sm">{appointment.day}</p>
+            </div>
         </div>
-        <div>
-            <p className="font-bold text-neutral-800 dark:text-neutral-200">{medication.name}</p>
-            <p className="text-sm text-neutral-500 dark:text-neutral-400">{medication.dosage} - {medication.time}</p>
+        <div className="mt-3">
+            <p className="text-white/90 text-xs mb-1">{appointment.time}</p>
+            <p className="text-white font-semibold text-sm">{appointment.doctorName}</p>
+            <p className="text-white/80 text-xs mt-1">{appointment.reason}</p>
         </div>
     </div>
 );
@@ -88,130 +121,99 @@ interface HomeScreenProps {
 }
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({ navigate, setView, setActiveTab, user, medications, logs }) => {
-    const handleNotificationClick = () => {
-        // Navigate to notifications or show notification list
-        alert('Notifications feature coming soon!\n\nYou can check:\n- Medication reminders\n- Health log reminders\n- Appointment alerts');
-    };
-
-    const handleMedicationClick = (medication: Medication) => {
-        // Navigate to medication detail or edit
-        setView('history/medications');
-    };
-
-    const handleLogClick = (log: HealthLog) => {
-        // Navigate to log detail
-        setView('history/timeline');
-        // The HistoryScreen will handle showing the detail
-    };
-
     return (
-        <div className="min-h-screen bg-neutral-100 dark:bg-neutral-900 transition-colors">
-            <Header user={user} onNotificationClick={handleNotificationClick} />
+        <div className="min-h-screen bg-gray-50 pb-24">
+            <Header user={user} />
             
-            <div className="p-6 space-y-8">
-                {/* Quick Tiles Section */}
-                <div className="grid grid-cols-2 gap-4">
-                    <QuickTile 
+            <div className="px-6 space-y-6">
+                {/* Services Section */}
+                <div>
+                    <h2 className="text-xl font-bold text-gray-900 mb-4">Services</h2>
+                    <div className="grid grid-cols-4 gap-3">
+                        <ServiceCard
                         icon={<StethoscopeIcon />} 
-                        label="Symptom Check" 
+                            label="Doctor"
                         onClick={() => {
                             setActiveTab?.('symptom');
                             setView('symptom');
                         }} 
-                        color="bg-gradient-to-br from-purple-500 to-primary" 
+                            bgColor="bg-blue-500"
+                            iconColor="text-white"
                     />
-                    <QuickTile 
-                        icon={<FirstAidIcon />} 
-                        label="First Aid" 
+                        <ServiceCard
+                            icon={
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                                </svg>
+                            }
+                            label="Medicine"
                         onClick={() => {
-                            setActiveTab?.('sos');
-                            setView('sos/first-aid');
+                                setActiveTab?.('history');
+                                setView('history/medications');
                         }} 
-                        color="bg-gradient-to-br from-green-500 to-accent-green" 
+                            bgColor="bg-yellow-500"
+                            iconColor="text-white"
                     />
-                    <QuickTile 
-                        icon={<SosIcon />} 
-                        label="SOS" 
+                        <ServiceCard
+                            icon={
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                                </svg>
+                            }
+                            label="Report"
                         onClick={() => {
-                            setActiveTab?.('sos');
-                            setView('sos/sos');
+                                setActiveTab?.('history');
+                                setView('history/analytics');
                         }} 
-                        color="bg-gradient-to-br from-red-500 to-accent-red" 
+                            bgColor="bg-cyan-400"
+                            iconColor="text-white"
                     />
-                    <QuickTile 
-                        icon={<HospitalIcon />} 
-                        label="Hospitals" 
+                        <ServiceCard
+                            icon={
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                                </svg>
+                            }
+                            label="Virus"
                         onClick={() => {
-                            setActiveTab?.('sos');
-                            setView('sos/hospitals');
+                                setActiveTab?.('symptom');
+                                setView('symptom');
                         }} 
-                        color="bg-gradient-to-br from-blue-500 to-accent-blue" 
+                            bgColor="bg-pink-500"
+                            iconColor="text-white"
                     />
+                    </div>
                 </div>
                 
-                 {/* Premium Chat Card */}
-                 <div 
-                    className="bg-white dark:bg-neutral-800 p-5 rounded-3xl shadow-sm flex items-center justify-between cursor-pointer hover:shadow-md transition-shadow" 
-                    onClick={() => navigate('chat_coming_soon')}
-                >
-                    <div className="flex items-center">
-                        <div className="w-12 h-12 bg-primary-light dark:bg-primary/20 rounded-xl flex items-center justify-center mr-4 text-primary"><ChatIcon /></div>
-                        <div>
-                            <h3 className="font-bold text-lg text-neutral-800 dark:text-neutral-200">Chat with a Doctor</h3>
-                            <p className="text-sm text-neutral-500 dark:text-neutral-400">Get expert advice, instantly.</p>
-                        </div>
+                {/* Promotional Banner */}
+                <div className="bg-gradient-to-r from-cyan-400 to-green-400 rounded-3xl p-6 relative overflow-hidden">
+                    <div className="relative z-10">
+                        <h3 className="text-2xl font-bold text-white mb-2">Get the Best Medical Services</h3>
+                        <p className="text-white/90 text-sm">We provide best quality medical service without further cost.</p>
                     </div>
-                    <div className="text-neutral-400 dark:text-neutral-500">
-                        <ChevronRightIcon />
+                    <div className="absolute right-0 bottom-0 w-32 h-32 opacity-20">
+                        <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="100" cy="100" r="80" fill="white"/>
+                        </svg>
                     </div>
                 </div>
 
-                {/* Your Medications Today */}
-                <section>
-                    <SectionHeader title="Your Medications Today" onSeeAll={() => setView('history/medications')} />
-                     {medications.length > 0 ? (
-                        <div className="space-y-3">
-                            {medications.slice(0, 2).map(med => (
-                                <MedicationCard 
-                                    key={med.id} 
-                                    medication={med} 
-                                    onClick={() => handleMedicationClick(med)}
+                {/* Upcoming Appointments */}
+                <div>
+                    <h2 className="text-xl font-bold text-gray-900 mb-4">Upcoming Appointments</h2>
+                    <div className="flex overflow-x-auto pb-2 -mx-6 px-6 scrollbar-hide">
+                        {mockAppointments.map((appointment) => (
+                            <AppointmentCard
+                                key={appointment.id}
+                                appointment={appointment}
+                                onClick={() => {
+                                    // Navigate to appointment details
+                                    alert(`Appointment with ${appointment.doctorName} on ${appointment.date} ${appointment.day} at ${appointment.time}`);
+                                }}
                                 />
                             ))}
                         </div>
-                     ) : (
-                        <div className="text-center py-4 bg-white dark:bg-neutral-800 rounded-2xl text-neutral-500 dark:text-neutral-400">No medications for today.</div>
-                     )}
-                </section>
-                
-                {/* Recent Health Logs */}
-                <section>
-                    <SectionHeader title="Recent Health Logs" onSeeAll={() => setView('history/timeline')} />
-                     {logs.length > 0 ? (
-                        <div className="bg-white dark:bg-neutral-800 p-4 rounded-2xl space-y-1 shadow-sm">
-                            {logs.slice(0, 2).map(log => (
-                                <div 
-                                    key={log.id} 
-                                    onClick={() => handleLogClick(log)}
-                                    className="flex justify-between items-center py-2 cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-700 rounded-lg px-2 transition-colors"
-                                >
-                                    <div className="flex items-center">
-                                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center mr-3 text-xl ${log.severity === 'Minor' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : log.severity === 'Moderate' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'}`}>
-                                            {log.symptom.includes('Headache') ? '🤕' : log.symptom.includes('Cough') ? '😷' : '🤧'}
-                                        </div>
-                                        <div>
-                                            <p className="font-bold text-neutral-800 dark:text-neutral-200">{log.symptom}</p>
-                                            <p className="text-sm text-neutral-500 dark:text-neutral-400">{log.date}</p>
-                                        </div>
-                                    </div>
-                                    <span className={`px-3 py-1 text-xs font-semibold rounded-full ${log.severity === 'Minor' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' : log.severity === 'Moderate' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300' : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'}`}>{log.severity}</span>
-                                </div>
-                            ))}
                         </div>
-                     ) : (
-                        <div className="text-center py-4 bg-white dark:bg-neutral-800 rounded-2xl text-neutral-500 dark:text-neutral-400">No recent health logs.</div>
-                     )}
-                </section>
             </div>
         </div>
     );

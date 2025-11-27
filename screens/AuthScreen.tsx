@@ -73,7 +73,7 @@ const LeafBranch = () => (
     </div>
 );
 
-const InputField: React.FC<{
+const InputField: React.FC<{ 
     id: string;
     label: string;
     type: string;
@@ -88,16 +88,16 @@ const InputField: React.FC<{
             <div className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 flex items-center justify-center">
                 {icon}
             </div>
-            <input
+        <input 
                 className={`w-full pl-12 pr-4 py-3 bg-white border ${
                     error ? 'border-red-500' : 'border-gray-300'
                 } rounded-xl focus:border-[#1a5f3f] focus:outline-none transition-colors text-gray-800 placeholder-gray-400`}
-                id={id}
-                type={type}
-                placeholder={placeholder}
-                value={value}
-                onChange={(e) => onChange(e.target.value)}
-            />
+            id={id} 
+            type={type} 
+            placeholder={placeholder}
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+        />
         </div>
         {error && <p className="text-red-500 text-xs mt-1 ml-1">{error}</p>}
     </div>
@@ -185,44 +185,44 @@ const LoginView: React.FC<{ setMode: (mode: AuthMode) => void; onLogin: () => vo
                     <LeafBranch />
                     <h2 className="text-3xl font-bold text-[#1a5f3f] mb-2">Welcome back</h2>
                     <p className="text-gray-500 text-sm mb-8">Login to your account.</p>
-
-                    {error && (
+            
+            {error && (
                         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm mb-4">
-                            {error}
-                        </div>
-                    )}
+                    {error}
+                </div>
+            )}
 
-                    <InputField
-                        id="login-email"
+            <InputField 
+                id="login-email" 
                         label=""
-                        type="email"
+                type="email" 
                         placeholder="Email"
-                        value={email}
-                        onChange={setEmail}
-                        error={emailError}
+                value={email}
+                onChange={setEmail}
+                error={emailError}
                         icon={<EmailIcon />}
-                    />
-                    <InputField
-                        id="login-password"
+            />
+            <InputField 
+                id="login-password" 
                         label=""
-                        type="password"
+                type="password" 
                         placeholder="Password"
-                        value={password}
-                        onChange={setPassword}
-                        error={passwordError}
+                value={password}
+                onChange={setPassword}
+                error={passwordError}
                         icon={<LockIcon />}
-                    />
+            />
 
                     <div className="flex justify-between items-center text-sm mb-6">
                         <label className="flex items-center text-gray-600 cursor-pointer">
-                            <input
-                                type="checkbox"
+                    <input 
+                        type="checkbox" 
                                 className="h-4 w-4 rounded border-gray-300 text-[#1a5f3f] focus:ring-[#1a5f3f] mr-2"
-                                checked={rememberMe}
-                                onChange={(e) => setRememberMe(e.target.checked)}
-                            />
+                        checked={rememberMe}
+                        onChange={(e) => setRememberMe(e.target.checked)}
+                    />
                             <span>Remember me</span>
-                        </label>
+                </label>
                         <a
                             href="#"
                             onClick={(e) => {
@@ -233,23 +233,23 @@ const LoginView: React.FC<{ setMode: (mode: AuthMode) => void; onLogin: () => vo
                         >
                             Forgot Password?
                         </a>
-                    </div>
+            </div>
 
-                    <button
-                        onClick={handleLogin}
+            <button 
+                onClick={handleLogin} 
                         disabled={isLoading || isGoogleLoading}
                         className="w-full bg-[#1a5f3f] text-white py-4 rounded-xl text-lg font-semibold shadow-lg hover:bg-[#0d4a2e] transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-4"
-                    >
+            >
                         {isLoading ? 'Logging in...' : 'Login'}
-                    </button>
-
+            </button>
+            
                     {/* Divider */}
                     <div className="flex items-center my-6">
                         <div className="flex-1 border-t border-gray-300"></div>
                         <span className="px-4 text-sm text-gray-500">or</span>
                         <div className="flex-1 border-t border-gray-300"></div>
-                    </div>
-
+            </div>
+            
                     {/* Google Login Button */}
                     <button
                         onClick={handleGoogleLogin}
@@ -265,7 +265,7 @@ const LoginView: React.FC<{ setMode: (mode: AuthMode) => void; onLogin: () => vo
                             </>
                         )}
                     </button>
-
+            
                     <p className="text-center text-sm text-gray-500">
                         Don't have an account?{' '}
                         <a
@@ -278,7 +278,7 @@ const LoginView: React.FC<{ setMode: (mode: AuthMode) => void; onLogin: () => vo
                         >
                             Sign up
                         </a>
-                    </p>
+            </p>
                 </div>
             </div>
         </div>
@@ -384,41 +384,41 @@ const SignupView: React.FC<{ setMode: (mode: AuthMode) => void; onSignup: () => 
                     <LeafBranch />
                     <h2 className="text-3xl font-bold text-[#1a5f3f] mb-2">Register</h2>
                     <p className="text-gray-500 text-sm mb-8">Create your new account.</p>
-
-                    {error && (
+            
+            {error && (
                         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm mb-4">
-                            {error}
-                        </div>
-                    )}
-
-                    <InputField
-                        id="signup-name"
+                    {error}
+                </div>
+            )}
+            
+            <InputField 
+                id="signup-name" 
                         label=""
-                        type="text"
+                type="text" 
                         placeholder="Full Name"
                         value={fullName}
                         onChange={setFullName}
-                        error={nameError}
+                error={nameError}
                         icon={<UserIcon />}
-                    />
-                    <InputField
-                        id="signup-email"
+            />
+            <InputField 
+                id="signup-email" 
                         label=""
-                        type="email"
+                type="email" 
                         placeholder="Email"
-                        value={email}
-                        onChange={setEmail}
-                        error={emailError}
+                value={email}
+                onChange={setEmail}
+                error={emailError}
                         icon={<EmailIcon />}
-                    />
-                    <InputField
-                        id="signup-password"
+            />
+            <InputField 
+                id="signup-password" 
                         label=""
-                        type="password"
+                type="password" 
                         placeholder="Password"
-                        value={password}
-                        onChange={setPassword}
-                        error={passwordError}
+                value={password}
+                onChange={setPassword}
+                error={passwordError}
                         icon={<LockIcon />}
                     />
                     <InputField
@@ -430,7 +430,7 @@ const SignupView: React.FC<{ setMode: (mode: AuthMode) => void; onSignup: () => 
                         onChange={setConfirmPassword}
                         error={confirmPasswordError}
                         icon={<LockIcon />}
-                    />
+                />
 
                     <p className="text-xs text-gray-500 mb-6">
                         By signing you agree to our{' '}
@@ -443,15 +443,15 @@ const SignupView: React.FC<{ setMode: (mode: AuthMode) => void; onSignup: () => 
                         </a>
                         .
                     </p>
-
-                    <button
-                        onClick={handleSignup}
+            
+            <button 
+                onClick={handleSignup} 
                         disabled={isLoading || isGoogleLoading}
                         className="w-full bg-[#1a5f3f] text-white py-4 rounded-xl text-lg font-semibold shadow-lg hover:bg-[#0d4a2e] transition-colors disabled:opacity-50 disabled:cursor-not-allowed mb-4"
-                    >
-                        {isLoading ? 'Creating account...' : 'Sign Up'}
-                    </button>
-
+            >
+                {isLoading ? 'Creating account...' : 'Sign Up'}
+            </button>
+            
                     {/* Divider */}
                     <div className="flex items-center my-6">
                         <div className="flex-1 border-t border-gray-300"></div>
@@ -534,36 +534,36 @@ const ForgotPasswordView: React.FC<{ setMode: (mode: AuthMode) => void; onBack?:
                     <LeafBranch />
                     <h2 className="text-3xl font-bold text-[#1a5f3f] mb-2">Forgot Password</h2>
                     <p className="text-gray-500 text-sm mb-8">Enter your email to receive a password reset link.</p>
-
-                    {message && (
+            
+            {message && (
                         <div
                             className={`px-4 py-3 rounded-lg text-sm mb-4 ${
-                                message.includes('sent')
+                    message.includes('sent') 
                                     ? 'bg-green-50 border border-green-200 text-green-700'
                                     : 'bg-red-50 border border-red-200 text-red-700'
                             }`}
                         >
-                            {message}
-                        </div>
-                    )}
+                    {message}
+                </div>
+            )}
 
-                    <InputField
-                        id="forgot-email"
+            <InputField 
+                id="forgot-email" 
                         label=""
-                        type="email"
+                type="email" 
                         placeholder="Email"
-                        value={email}
-                        onChange={setEmail}
+                value={email}
+                onChange={setEmail}
                         icon={<EmailIcon />}
-                    />
-
-                    <button
-                        onClick={handleReset}
-                        disabled={isLoading}
+            />
+            
+            <button 
+                onClick={handleReset}
+                disabled={isLoading}
                         className="w-full bg-[#1a5f3f] text-white py-4 rounded-xl text-lg font-semibold shadow-lg hover:bg-[#0d4a2e] transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-4"
-                    >
-                        {isLoading ? 'Sending...' : 'Send Reset Link'}
-                    </button>
+            >
+                {isLoading ? 'Sending...' : 'Send Reset Link'}
+            </button>
                 </div>
             </div>
         </div>
