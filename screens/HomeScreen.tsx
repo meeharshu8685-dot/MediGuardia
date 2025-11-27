@@ -82,12 +82,12 @@ const ServiceCard: React.FC<{
 }> = ({ icon, label, onClick, bgColor, iconColor }) => (
     <div 
         onClick={onClick} 
-        className={`${bgColor} rounded-2xl p-4 flex flex-col items-center justify-center h-24 cursor-pointer transition-transform hover:scale-105 shadow-sm`}
+        className={`${bgColor} rounded-2xl p-4 flex flex-col items-center justify-center h-24 cursor-pointer transition-transform hover:scale-105 shadow-sm border border-gray-200`}
     >
         <div className={`${iconColor} mb-2`}>
             {icon}
-    </div>
-        <p className="text-xs font-semibold text-white text-center">{label}</p>
+        </div>
+        <p className={`text-xs font-semibold ${iconColor} text-center`}>{label}</p>
     </div>
 );
 
@@ -135,8 +135,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigate, setView, setAc
                             onClick={() => {
                                 navigate('symptom-checker');
                             }} 
-                            bgColor="bg-blue-500"
-                            iconColor="text-white"
+                            bgColor="bg-blue-100"
+                            iconColor="text-blue-600"
                         />
                         <ServiceCard
                             icon={<FirstAidIcon />}
@@ -144,8 +144,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigate, setView, setAc
                             onClick={() => {
                                 navigate('sos/first-aid');
                             }} 
-                            bgColor="bg-red-500"
-                            iconColor="text-white"
+                            bgColor="bg-red-100"
+                            iconColor="text-red-600"
                         />
                         <ServiceCard
                             icon={<SosIcon />}
@@ -153,8 +153,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigate, setView, setAc
                             onClick={() => {
                                 navigate('sos/sos');
                             }} 
-                            bgColor="bg-orange-500"
-                            iconColor="text-white"
+                            bgColor="bg-orange-100"
+                            iconColor="text-orange-600"
                         />
                         <ServiceCard
                             icon={<HospitalIcon />}
@@ -162,8 +162,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigate, setView, setAc
                             onClick={() => {
                                 navigate('hospitals');
                             }} 
-                            bgColor="bg-green-500"
-                            iconColor="text-white"
+                            bgColor="bg-green-100"
+                            iconColor="text-green-600"
                         />
                     </div>
                     <div className="grid grid-cols-4 gap-3 mt-3">
@@ -177,8 +177,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigate, setView, setAc
                             onClick={() => {
                                 navigate('medications');
                             }} 
-                            bgColor="bg-yellow-500"
-                            iconColor="text-white"
+                            bgColor="bg-yellow-100"
+                            iconColor="text-yellow-600"
                         />
                         <ServiceCard
                             icon={<HistoryIcon />}
@@ -187,8 +187,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigate, setView, setAc
                                 setActiveTab?.('history');
                                 setView('history');
                             }} 
-                            bgColor="bg-purple-500"
-                            iconColor="text-white"
+                            bgColor="bg-purple-100"
+                            iconColor="text-purple-600"
                         />
                         <ServiceCard
                             icon={
@@ -200,8 +200,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigate, setView, setAc
                             onClick={() => {
                                 navigate('documents');
                             }} 
-                            bgColor="bg-cyan-500"
-                            iconColor="text-white"
+                            bgColor="bg-cyan-100"
+                            iconColor="text-cyan-600"
                         />
                         <ServiceCard
                             icon={<UserIcon />}
@@ -209,8 +209,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigate, setView, setAc
                             onClick={() => {
                                 navigate('profile');
                             }} 
-                            bgColor="bg-pink-500"
-                            iconColor="text-white"
+                            bgColor="bg-pink-100"
+                            iconColor="text-pink-600"
                         />
                     </div>
                 </div>

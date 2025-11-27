@@ -28,6 +28,7 @@ export const QuoteComponent: React.FC<QuoteComponentProps> = ({ className = '' }
     };
 
     useEffect(() => {
+        // Load a new quote every time the component mounts (when app opens)
         loadQuote();
     }, []);
 
