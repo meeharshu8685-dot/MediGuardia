@@ -214,19 +214,6 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ navigate, setView, setAc
                         />
                     </div>
                 </div>
-                
-                {/* Promotional Banner */}
-                <div className="bg-gradient-to-r from-cyan-400 to-green-400 rounded-3xl p-6 relative overflow-hidden">
-                    <div className="relative z-10">
-                        <h3 className="text-2xl font-bold text-white mb-2">Get the Best Medical Services</h3>
-                        <p className="text-white/90 text-sm">We provide best quality medical service without further cost.</p>
-                    </div>
-                    <div className="absolute right-0 bottom-0 w-32 h-32 opacity-20">
-                        <svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <circle cx="100" cy="100" r="80" fill="white"/>
-                        </svg>
-                    </div>
-                </div>
 
                 {/* Upcoming Appointments */}
                 <div>
