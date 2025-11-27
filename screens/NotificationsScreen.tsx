@@ -12,11 +12,6 @@ interface Notification {
 }
 
 // Mock notifications removed - notifications will be managed through Supabase or push notifications
-        read: true,
-        icon: '📊',
-        color: 'bg-green-100'
-    },
-];
 
 const NotificationCard: React.FC<{ notification: Notification; onClick?: () => void }> = ({ notification, onClick }) => (
     <div
