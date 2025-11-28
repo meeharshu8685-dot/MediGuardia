@@ -678,10 +678,17 @@ export const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({
         try {
             // Convert profileData to UserProfile format
             const updatedProfile: UserProfile = {
-                ...initialProfile!,
+                ...(initialProfile || {
+                    name: '',
+                    email: '',
+                    avatarUrl: '',
+                    allergies: [],
+                    chronicConditions: [],
+                    emergencyContact: { name: '', phone: '' }
+                }),
                 age: profileData.age,
-                height: profileData.height,
-                weight: profileData.weight,
+                height: profileData.height || undefined,
+                weight: profileData.weight || undefined,
                 chronicConditions: profileData.conditions,
                 emergencyContact: profileData.emergencyContact,
             };
@@ -689,12 +696,12 @@ export const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({
             // Save to Supabase
             const profilePayload = {
                 full_name: initialProfile?.name || 'User',
-                age: profileData.age,
-                height: profileData.height,
-                weight: profileData.weight,
-                chronic_conditions: profileData.conditions,
-                emergency_contact_name: profileData.emergencyContact.name,
-                emergency_contact_phone: profileData.emergencyContact.phone,
+                age: profileData.age || null,
+                height: profileData.height || null,
+                weight: profileData.weight || null,
+                chronic_conditions: profileData.conditions || [],
+                emergency_contact_name: profileData.emergencyContact?.name || null,
+                emergency_contact_phone: profileData.emergencyContact?.phone || null,
             };
 
             const result = await saveMedicalProfile(profilePayload);
@@ -706,11 +713,13 @@ export const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({
                 onComplete(updatedProfile);
             } else {
                 console.error('Failed to save profile:', result.error);
-                alert('Failed to save profile. Please try again.');
+                const errorMessage = result.error || 'Failed to save profile. Please try again.';
+                alert(`Failed to save profile: ${errorMessage}\n\nPlease check:\n1. Your internet connection\n2. Database permissions\n3. Try again in a moment`);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Error saving profile:', error);
-            alert('An error occurred while saving your profile.');
+            const errorMessage = error?.message || 'An unexpected error occurred while saving your profile.';
+            alert(`Error: ${errorMessage}\n\nPlease try again or contact support if the issue persists.`);
         } finally {
             setIsSaving(false);
         }

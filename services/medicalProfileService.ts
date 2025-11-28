@@ -69,25 +69,38 @@ export const saveMedicalProfile = async (profileData: MedicalProfileData): Promi
             }
             : null;
 
-        // First, get existing profile to preserve height and weight if not provided in update
+        // Get existing profile to preserve height and weight if not provided in update
         let existingHeight = null;
         let existingWeight = null;
         
-        if (profileData.height === undefined || profileData.height === null || profileData.height === '') {
-            // Need to preserve existing value, so fetch current profile
-            const { data: existing } = await supabase
+        // Check if we need to preserve existing values
+        const needToPreserveHeight = !profileData.height || profileData.height === '';
+        const needToPreserveWeight = !profileData.weight || profileData.weight === '';
+        
+        if (needToPreserveHeight || needToPreserveWeight) {
+            // Fetch current profile to preserve existing values
+            const { data: existing, error: fetchError } = await supabase
                 .from('medical_profiles')
                 .select('height, weight')
                 .eq('user_id', user.id)
                 .single();
             
+            if (fetchError && fetchError.code !== 'PGRST116') {
+                // PGRST116 means no rows found, which is fine for new profiles
+                console.warn('Error fetching existing profile:', fetchError);
+            }
+            
             if (existing) {
-                existingHeight = existing.height;
-                existingWeight = existing.weight;
+                if (needToPreserveHeight) {
+                    existingHeight = existing.height;
+                }
+                if (needToPreserveWeight) {
+                    existingWeight = existing.weight;
+                }
             }
         }
         
-        const profilePayload = {
+        const profilePayload: any = {
             user_id: user.id,
             name: profileData.full_name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'User',
             age: profileData.age || null,
@@ -97,32 +110,57 @@ export const saveMedicalProfile = async (profileData: MedicalProfileData): Promi
             chronic_conditions: profileData.chronic_conditions || [],
             emergency_contact: emergencyContact,
             avatar_url: profileData.avatar_url || null,
-            // Use new value if provided, otherwise preserve existing
-            height: (profileData.height !== undefined && profileData.height !== null && profileData.height !== '') 
-                ? profileData.height 
-                : existingHeight,
-            weight: (profileData.weight !== undefined && profileData.weight !== null && profileData.weight !== '') 
-                ? profileData.weight 
-                : existingWeight,
             updated_at: new Date().toISOString(),
         };
+        
+        // Handle height: use new value if provided, otherwise preserve existing, or set to null
+        if (profileData.height && profileData.height !== '') {
+            profilePayload.height = profileData.height;
+        } else if (existingHeight !== null) {
+            profilePayload.height = existingHeight;
+        } else {
+            profilePayload.height = null;
+        }
+        
+        // Handle weight: use new value if provided, otherwise preserve existing, or set to null
+        if (profileData.weight && profileData.weight !== '') {
+            profilePayload.weight = profileData.weight;
+        } else if (existingWeight !== null) {
+            profilePayload.weight = existingWeight;
+        } else {
+            profilePayload.weight = null;
+        }
 
         // Use upsert to create or update
-        const { error } = await supabase
+        const { error, data } = await supabase
             .from('medical_profiles')
             .upsert(profilePayload, {
                 onConflict: 'user_id'
-            });
+            })
+            .select();
 
         if (error) {
             console.error('Error saving medical profile:', error);
-            return { success: false, error: error.message || 'Failed to save profile' };
+            console.error('Error details:', {
+                code: error.code,
+                message: error.message,
+                details: error.details,
+                hint: error.hint
+            });
+            return { 
+                success: false, 
+                error: error.message || error.details || 'Failed to save profile. Please check your database connection.' 
+            };
         }
 
+        console.log('Profile saved successfully:', data);
         return { success: true };
     } catch (error: any) {
         console.error('Error saving medical profile:', error);
-        return { success: false, error: error.message || 'Failed to save profile' };
+        return { 
+            success: false, 
+            error: error.message || 'An unexpected error occurred while saving your profile.' 
+        };
     }
 };
 
