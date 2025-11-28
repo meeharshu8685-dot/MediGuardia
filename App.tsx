@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { OnboardingScreen } from './screens/OnboardingScreen';
-import { WelcomeScreen } from './screens/WelcomeScreen';
-import { AuthScreen } from './screens/AuthScreen';
-import { HomeScreen } from './screens/HomeScreen';
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import { OnboardingScreen } from "./screens/OnboardingScreen";
+import { WelcomeScreen } from "./screens/WelcomeScreen";
+import { AuthScreen } from "./screens/AuthScreen";
+import { HomeScreen } from "./screens/HomeScreen";
 import { SymptomCheckerScreen } from './features/symptom-checker/SymptomCheckerScreen';
 import { EmergencyScreen } from './screens/EmergencyScreen';
 import { HistoryScreen } from './screens/HistoryScreen';
@@ -12,6 +12,7 @@ import { NotificationsScreen } from './screens/NotificationsScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { ComingSoonScreen } from './screens/ComingSoonScreen';
 import { HospitalLocatorMapScreen } from './screens/HospitalLocatorMapScreen';
+import { ProfileSetupScreen } from './screens/ProfileSetupScreen';
 import { AppIcon } from './constants';
 import { BottomNavBar } from './components/BottomNavBar';
 import { UserProfile, MedicalDocument, HealthLog, Medication } from './types';
@@ -131,6 +132,7 @@ const AppContent: React.FC = () => {
     const [documents, setDocuments] = useState<MedicalDocument[]>([]);
     const [healthLogs, setHealthLogs] = useState<HealthLog[]>([]);
     const [medications, setMedications] = useState<Medication[]>([]);
+    const [showProfileSetup, setShowProfileSetup] = useState(false);
 
     // Handle splash screen - show for 1.5 seconds then transition
     useEffect(() => {
@@ -224,6 +226,11 @@ const AppContent: React.FC = () => {
                             height: profile.height || undefined,
                             weight: profile.weight || undefined,
                         });
+                        // Check if profile setup is needed (missing critical fields)
+                        const needsSetup = !profile.age || !profile.emergencyContact?.name || !profile.emergencyContact?.phone;
+                        if (needsSetup && !localStorage.getItem('profileSetupSkipped')) {
+                            setShowProfileSetup(true);
+                        }
                     } else {
                         // If no profile exists, use basic user info (without mock data)
                         setUserProfile({
@@ -234,6 +241,10 @@ const AppContent: React.FC = () => {
                             chronicConditions: [],
                             emergencyContact: { name: '', phone: '' }
                         });
+                        // Show profile setup for new users
+                        if (!localStorage.getItem('profileSetupSkipped')) {
+                            setShowProfileSetup(true);
+                        }
                     }
 
                     // Load medications (always set, even if empty)
@@ -312,6 +323,7 @@ const AppContent: React.FC = () => {
         if (result.success) {
             setUserProfile(mergedProfile);
             setShowEditModal(false);
+            setShowProfileSetup(false); // Close profile setup if open
         } else {
             console.error('Failed to save profile:', result.error);
             // Still update local state even if save fails
@@ -440,7 +452,7 @@ const AppContent: React.FC = () => {
             return <SettingsScreen {...screenProps} onBack={() => setView('home')} />;
         }
         if (view === 'profile') {
-            return <ProfileScreen {...screenProps} user={userProfile} docs={documents} onUpdateProfile={handleUpdateProfile} onUploadDocument={handleUploadDocument} onDeleteDocument={handleDeleteDocument} onLogout={() => { logout(); setAppState('auth'); }} />;
+            return <ProfileScreen {...screenProps} user={userProfile} docs={documents} onUpdateProfile={handleUpdateProfile} onUploadDocument={handleUploadDocument} onDeleteDocument={handleDeleteDocument} onLogout={() => { logout(); setAppState('auth'); }} onEditProfile={() => setShowProfileSetup(true)} />;
         }
         if (view === 'symptom' || view === 'symptom-checker') {
             return <SymptomCheckerScreen onBack={() => setView('home')} />;
@@ -553,6 +565,20 @@ const AppContent: React.FC = () => {
             case 'main':
                 return (
                     <div className="w-full min-h-screen bg-gray-50 transition-colors">
+                        {showProfileSetup && (
+                            <ProfileSetupScreen
+                                initialProfile={userProfile}
+                                onComplete={(updatedProfile) => {
+                                    handleUpdateProfile(updatedProfile);
+                                    setShowProfileSetup(false);
+                                }}
+                                onClose={() => {
+                                    setShowProfileSetup(false);
+                                    localStorage.setItem('profileSetupSkipped', 'true');
+                                }}
+                                isEditMode={!!userProfile.age}
+                            />
+                        )}
                         <main className="pb-28">{renderMainScreen()}</main>
                         <BottomNavBar activeTab={activeTab} setActiveTab={(tab) => {
                             setActiveTab(tab);

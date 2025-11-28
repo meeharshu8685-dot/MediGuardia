@@ -118,14 +118,22 @@ const ProfileHeader: React.FC<{ user: UserProfile, onEdit: () => void }> = ({ us
     </div>
 );
 
-const ProfileInfoCard: React.FC<{ user: UserProfile, onEdit: () => void }> = ({ user, onEdit }) => (
+const ProfileInfoCard: React.FC<{ user: UserProfile, onEdit: () => void, onEditProfile?: () => void }> = ({ user, onEdit, onEditProfile }) => (
     <div className="bg-white dark:bg-neutral-800 p-5 rounded-3xl shadow-sm transition-colors">
         <div className="flex justify-between items-center mb-4">
             <h3 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Medical Info</h3>
-            <button onClick={onEdit} className="flex items-center space-x-2 text-sm font-semibold text-primary dark:text-primary-light bg-primary-light dark:bg-primary/20 px-3 py-1.5 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors">
-                <div className="w-4 h-4"><PencilIcon /></div>
-                <span>Edit</span>
-            </button>
+            <div className="flex items-center space-x-2">
+                {onEditProfile && (
+                    <button onClick={onEditProfile} className="flex items-center space-x-2 text-sm font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors">
+                        <div className="w-4 h-4"><PencilIcon /></div>
+                        <span>Setup Profile</span>
+                    </button>
+                )}
+                <button onClick={onEdit} className="flex items-center space-x-2 text-sm font-semibold text-primary dark:text-primary-light bg-primary-light dark:bg-primary/20 px-3 py-1.5 rounded-full hover:bg-primary/20 dark:hover:bg-primary/30 transition-colors">
+                    <div className="w-4 h-4"><PencilIcon /></div>
+                    <span>Edit</span>
+                </button>
+            </div>
         </div>
         <div className="space-y-3">
             <div className="flex justify-between text-base"><span className="text-sm font-medium text-gray-600 dark:text-gray-400">Age</span><span className="font-bold text-gray-900 dark:text-white">{user.age ? `${user.age} years` : 'N/A'}</span></div>
@@ -317,9 +325,10 @@ interface ProfileScreenProps {
     user: UserProfile;
     docs: MedicalDocument[];
     onUpdateProfile: (profile: UserProfile) => void;
+    onEditProfile?: () => void;
 }
 
-export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onLogout, navigate, user, docs, onUpdateProfile, onUploadDocument, onDeleteDocument }) => {
+export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onLogout, navigate, user, docs, onUpdateProfile, onUploadDocument, onDeleteDocument, onEditProfile }) => {
     const [previewDoc, setPreviewDoc] = useState<MedicalDocument | null>(null);
     const [showQuiz, setShowQuiz] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
@@ -338,7 +347,7 @@ export const ProfileScreen: React.FC<ProfileScreenProps> = ({ onLogout, navigate
         <div className="min-h-screen bg-neutral-100 dark:bg-neutral-900 transition-colors">
             <ProfileHeader user={user} onEdit={() => setShowEditModal(true)} />
             <div className="p-6 space-y-6">
-                <ProfileInfoCard user={user} onEdit={() => setShowQuiz(true)} />
+                <ProfileInfoCard user={user} onEdit={() => setShowQuiz(true)} onEditProfile={onEditProfile} />
                 <DocumentList 
                     docs={docs} 
                     onPreview={setPreviewDoc}
