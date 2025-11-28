@@ -256,7 +256,262 @@ const StepConditions: React.FC<{
     );
 };
 
-// Step 5: Emergency Contact
+// Step 5: Height Selection
+const StepHeight: React.FC<{
+    height: string | undefined;
+    onHeightChange: (height: string) => void;
+}> = ({ height, onHeightChange }) => {
+    const [selectedHeight, setSelectedHeight] = useState(height || '');
+    const [unit, setUnit] = useState<'cm' | 'ft'>('cm');
+    
+    // Height options: 120-220 cm or 4'0" - 7'2"
+    const heightsCm = Array.from({ length: 101 }, (_, i) => i + 120); // 120-220 cm
+    const heightsFt = Array.from({ length: 39 }, (_, i) => {
+        const feet = Math.floor((i + 48) / 12); // 4-7 feet
+        const inches = (i + 48) % 12;
+        return { feet, inches, display: `${feet}'${inches}"` };
+    });
+
+    useEffect(() => {
+        if (height) {
+            setSelectedHeight(height);
+            // Detect unit from height string
+            if (height.includes("'") || height.includes('"')) {
+                setUnit('ft');
+            } else {
+                setUnit('cm');
+            }
+        }
+    }, [height]);
+
+    const handleHeightChange = (newHeight: string) => {
+        setSelectedHeight(newHeight);
+        onHeightChange(newHeight);
+    };
+
+    const handleUnitToggle = (newUnit: 'cm' | 'ft') => {
+        setUnit(newUnit);
+        setSelectedHeight(''); // Reset when switching units
+        onHeightChange('');
+    };
+
+    return (
+        <div className="flex flex-col items-center justify-center min-h-[60vh] px-6">
+            <h2 className="text-[28px] font-bold text-gray-900 mb-8 text-center">What is your height?</h2>
+            
+            {/* Unit Toggle */}
+            <div className="flex items-center space-x-4 mb-6">
+                <button
+                    onClick={() => handleUnitToggle('cm')}
+                    className={`px-6 py-2 rounded-full font-medium transition-all ${
+                        unit === 'cm'
+                            ? 'bg-gradient-to-r from-[#4F9CF9] to-[#6B7AE5] text-white shadow-md'
+                            : 'bg-white text-gray-700 border-2 border-gray-200'
+                    }`}
+                >
+                    cm
+                </button>
+                <button
+                    onClick={() => handleUnitToggle('ft')}
+                    className={`px-6 py-2 rounded-full font-medium transition-all ${
+                        unit === 'ft'
+                            ? 'bg-gradient-to-r from-[#4F9CF9] to-[#6B7AE5] text-white shadow-md'
+                            : 'bg-white text-gray-700 border-2 border-gray-200'
+                    }`}
+                >
+                    ft/in
+                </button>
+            </div>
+
+            {unit === 'cm' ? (
+                <div className="w-full max-w-sm">
+                    <div className="relative h-64 overflow-y-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                        <style>{`
+                            div::-webkit-scrollbar { display: none; }
+                        `}</style>
+                        {heightsCm.map((h) => (
+                            <div
+                                key={h}
+                                onClick={() => handleHeightChange(`${h} cm`)}
+                                className={`text-center py-4 cursor-pointer transition-all duration-200 ${
+                                    selectedHeight === `${h} cm`
+                                        ? 'text-[#4F9CF9] text-5xl font-bold scale-110'
+                                        : selectedHeight === `${h - 1} cm` || selectedHeight === `${h + 1} cm`
+                                        ? 'text-gray-400 text-2xl'
+                                        : 'text-gray-300 text-lg'
+                                }`}
+                            >
+                                {h}
+                            </div>
+                        ))}
+                    </div>
+                    <div className="mt-6 text-center">
+                        <div className="inline-block bg-gradient-to-r from-[#E9FDF8] to-[#E0F2FE] rounded-[30px] px-8 py-4">
+                            <div className="text-6xl font-bold text-[#4F9CF9]">{selectedHeight || '--'}</div>
+                        </div>
+                    </div>
+                </div>
+            ) : (
+                <div className="w-full max-w-sm">
+                    <div className="relative h-64 overflow-y-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                        <style>{`
+                            div::-webkit-scrollbar { display: none; }
+                        `}</style>
+                        {heightsFt.map((h, idx) => {
+                            const heightStr = h.display;
+                            return (
+                                <div
+                                    key={idx}
+                                    onClick={() => handleHeightChange(heightStr)}
+                                    className={`text-center py-4 cursor-pointer transition-all duration-200 ${
+                                        selectedHeight === heightStr
+                                            ? 'text-[#4F9CF9] text-5xl font-bold scale-110'
+                                            : selectedHeight === heightsFt[idx - 1]?.display || selectedHeight === heightsFt[idx + 1]?.display
+                                            ? 'text-gray-400 text-2xl'
+                                            : 'text-gray-300 text-lg'
+                                    }`}
+                                >
+                                    {heightStr}
+                                </div>
+                            );
+                        })}
+                    </div>
+                    <div className="mt-6 text-center">
+                        <div className="inline-block bg-gradient-to-r from-[#E9FDF8] to-[#E0F2FE] rounded-[30px] px-8 py-4">
+                            <div className="text-6xl font-bold text-[#4F9CF9]">{selectedHeight || '--'}</div>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+// Step 6: Weight Selection
+const StepWeight: React.FC<{
+    weight: string | undefined;
+    onWeightChange: (weight: string) => void;
+}> = ({ weight, onWeightChange }) => {
+    const [selectedWeight, setSelectedWeight] = useState(weight || '');
+    const [unit, setUnit] = useState<'kg' | 'lbs'>('kg');
+    
+    // Weight options: 30-150 kg or 66-330 lbs
+    const weightsKg = Array.from({ length: 121 }, (_, i) => i + 30); // 30-150 kg
+    const weightsLbs = Array.from({ length: 265 }, (_, i) => i + 66); // 66-330 lbs
+
+    useEffect(() => {
+        if (weight) {
+            setSelectedWeight(weight);
+            // Detect unit from weight string
+            if (weight.includes('lbs') || weight.includes('lb')) {
+                setUnit('lbs');
+            } else {
+                setUnit('kg');
+            }
+        }
+    }, [weight]);
+
+    const handleWeightChange = (newWeight: string) => {
+        setSelectedWeight(newWeight);
+        onWeightChange(newWeight);
+    };
+
+    const handleUnitToggle = (newUnit: 'kg' | 'lbs') => {
+        setUnit(newUnit);
+        setSelectedWeight(''); // Reset when switching units
+        onWeightChange('');
+    };
+
+    return (
+        <div className="flex flex-col items-center justify-center min-h-[60vh] px-6">
+            <h2 className="text-[28px] font-bold text-gray-900 mb-8 text-center">What is your weight?</h2>
+            
+            {/* Unit Toggle */}
+            <div className="flex items-center space-x-4 mb-6">
+                <button
+                    onClick={() => handleUnitToggle('kg')}
+                    className={`px-6 py-2 rounded-full font-medium transition-all ${
+                        unit === 'kg'
+                            ? 'bg-gradient-to-r from-[#4F9CF9] to-[#6B7AE5] text-white shadow-md'
+                            : 'bg-white text-gray-700 border-2 border-gray-200'
+                    }`}
+                >
+                    kg
+                </button>
+                <button
+                    onClick={() => handleUnitToggle('lbs')}
+                    className={`px-6 py-2 rounded-full font-medium transition-all ${
+                        unit === 'lbs'
+                            ? 'bg-gradient-to-r from-[#4F9CF9] to-[#6B7AE5] text-white shadow-md'
+                            : 'bg-white text-gray-700 border-2 border-gray-200'
+                    }`}
+                >
+                    lbs
+                </button>
+            </div>
+
+            {unit === 'kg' ? (
+                <div className="w-full max-w-sm">
+                    <div className="relative h-64 overflow-y-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                        <style>{`
+                            div::-webkit-scrollbar { display: none; }
+                        `}</style>
+                        {weightsKg.map((w) => (
+                            <div
+                                key={w}
+                                onClick={() => handleWeightChange(`${w} kg`)}
+                                className={`text-center py-4 cursor-pointer transition-all duration-200 ${
+                                    selectedWeight === `${w} kg`
+                                        ? 'text-[#4F9CF9] text-5xl font-bold scale-110'
+                                        : selectedWeight === `${w - 1} kg` || selectedWeight === `${w + 1} kg`
+                                        ? 'text-gray-400 text-2xl'
+                                        : 'text-gray-300 text-lg'
+                                }`}
+                            >
+                                {w}
+                            </div>
+                        ))}
+                    </div>
+                    <div className="mt-6 text-center">
+                        <div className="inline-block bg-gradient-to-r from-[#E9FDF8] to-[#E0F2FE] rounded-[30px] px-8 py-4">
+                            <div className="text-6xl font-bold text-[#4F9CF9]">{selectedWeight || '--'}</div>
+                        </div>
+                    </div>
+                </div>
+            ) : (
+                <div className="w-full max-w-sm">
+                    <div className="relative h-64 overflow-y-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                        <style>{`
+                            div::-webkit-scrollbar { display: none; }
+                        `}</style>
+                        {weightsLbs.map((w) => (
+                            <div
+                                key={w}
+                                onClick={() => handleWeightChange(`${w} lbs`)}
+                                className={`text-center py-4 cursor-pointer transition-all duration-200 ${
+                                    selectedWeight === `${w} lbs`
+                                        ? 'text-[#4F9CF9] text-5xl font-bold scale-110'
+                                        : selectedWeight === `${w - 1} lbs` || selectedWeight === `${w + 1} lbs`
+                                        ? 'text-gray-400 text-2xl'
+                                        : 'text-gray-300 text-lg'
+                                }`}
+                            >
+                                {w}
+                            </div>
+                        ))}
+                    </div>
+                    <div className="mt-6 text-center">
+                        <div className="inline-block bg-gradient-to-r from-[#E9FDF8] to-[#E0F2FE] rounded-[30px] px-8 py-4">
+                            <div className="text-6xl font-bold text-[#4F9CF9]">{selectedWeight || '--'}</div>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+// Step 7: Emergency Contact
 const StepEmergencyContact: React.FC<{
     emergencyContact: { name: string; phone: string };
     onContactChange: (contact: { name: string; phone: string }) => void;
@@ -298,7 +553,7 @@ const StepEmergencyContact: React.FC<{
     );
 };
 
-// Step 6: Summary
+// Step 8: Summary
 const StepSummary: React.FC<{
     profileData: ProfileSetupData;
 }> = ({ profileData }) => {
@@ -316,6 +571,14 @@ const StepSummary: React.FC<{
                     <div className="pb-4 border-b border-gray-200">
                         <p className="text-sm text-gray-600 mb-1">Age</p>
                         <p className="text-lg font-semibold text-gray-900">{profileData.age} years</p>
+                    </div>
+                    <div className="pb-4 border-b border-gray-200">
+                        <p className="text-sm text-gray-600 mb-1">Height</p>
+                        <p className="text-lg font-semibold text-gray-900">{profileData.height || 'Not set'}</p>
+                    </div>
+                    <div className="pb-4 border-b border-gray-200">
+                        <p className="text-sm text-gray-600 mb-1">Weight</p>
+                        <p className="text-lg font-semibold text-gray-900">{profileData.weight || 'Not set'}</p>
                     </div>
                     <div className="pb-4 border-b border-gray-200">
                         <p className="text-sm text-gray-600 mb-1">Role</p>
@@ -345,6 +608,8 @@ const StepSummary: React.FC<{
 // Profile Setup Data Interface
 export interface ProfileSetupData {
     age: number;
+    height: string;
+    weight: string;
     role: string;
     healthRating: number;
     conditions: string[];
@@ -368,7 +633,7 @@ export const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({
     isEditMode = false,
 }) => {
     const [currentStep, setCurrentStep] = useState(1);
-    const TOTAL_STEPS = 6;
+    const TOTAL_STEPS = 8;
 
     // Load role and healthRating from localStorage if available
     const loadStoredData = () => {
@@ -384,6 +649,8 @@ export const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({
 
     const [profileData, setProfileData] = useState<ProfileSetupData>({
         age: initialProfile?.age || 25,
+        height: initialProfile?.height || '',
+        weight: initialProfile?.weight || '',
         role: storedData.role,
         healthRating: storedData.healthRating,
         conditions: initialProfile?.chronicConditions || [],
@@ -413,6 +680,8 @@ export const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({
             const updatedProfile: UserProfile = {
                 ...initialProfile!,
                 age: profileData.age,
+                height: profileData.height,
+                weight: profileData.weight,
                 chronicConditions: profileData.conditions,
                 emergencyContact: profileData.emergencyContact,
             };
@@ -421,6 +690,8 @@ export const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({
             const profilePayload = {
                 full_name: initialProfile?.name || 'User',
                 age: profileData.age,
+                height: profileData.height,
+                weight: profileData.weight,
                 chronic_conditions: profileData.conditions,
                 emergency_contact_name: profileData.emergencyContact.name,
                 emergency_contact_phone: profileData.emergencyContact.phone,
@@ -450,14 +721,18 @@ export const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({
             case 1:
                 return profileData.age >= 18 && profileData.age <= 80;
             case 2:
-                return !!profileData.role;
+                return !!profileData.height;
             case 3:
-                return profileData.healthRating >= 1 && profileData.healthRating <= 5;
+                return !!profileData.weight;
             case 4:
-                return true; // Conditions are optional
+                return !!profileData.role;
             case 5:
-                return !!profileData.emergencyContact.name && !!profileData.emergencyContact.phone;
+                return profileData.healthRating >= 1 && profileData.healthRating <= 5;
             case 6:
+                return true; // Conditions are optional
+            case 7:
+                return !!profileData.emergencyContact.name && !!profileData.emergencyContact.phone;
+            case 8:
                 return true;
             default:
                 return false;
@@ -475,33 +750,47 @@ export const ProfileSetupScreen: React.FC<ProfileSetupScreenProps> = ({
                 );
             case 2:
                 return (
+                    <StepHeight
+                        height={profileData.height}
+                        onHeightChange={(height) => setProfileData({ ...profileData, height })}
+                    />
+                );
+            case 3:
+                return (
+                    <StepWeight
+                        weight={profileData.weight}
+                        onWeightChange={(weight) => setProfileData({ ...profileData, weight })}
+                    />
+                );
+            case 4:
+                return (
                     <StepRole
                         role={profileData.role}
                         onRoleChange={(role) => setProfileData({ ...profileData, role })}
                     />
                 );
-            case 3:
+            case 5:
                 return (
                     <StepHealthRating
                         healthRating={profileData.healthRating}
                         onRatingChange={(rating) => setProfileData({ ...profileData, healthRating: rating })}
                     />
                 );
-            case 4:
+            case 6:
                 return (
                     <StepConditions
                         conditions={profileData.conditions}
                         onConditionsChange={(conditions) => setProfileData({ ...profileData, conditions })}
                     />
                 );
-            case 5:
+            case 7:
                 return (
                     <StepEmergencyContact
                         emergencyContact={profileData.emergencyContact}
                         onContactChange={(contact) => setProfileData({ ...profileData, emergencyContact: contact })}
                     />
                 );
-            case 6:
+            case 8:
                 return <StepSummary profileData={profileData} />;
             default:
                 return null;
